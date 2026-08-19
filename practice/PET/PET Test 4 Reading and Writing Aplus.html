@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Reading & Writing Mock Test (R4-P3) - APLUS Anti-Cheating & AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    
+    /* Anti-Selection & Security CSS */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .reading-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        height: 100%;
+    }
+    @media (min-width: 1024px) {
+        .reading-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .reading-passage-column, .reading-question-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 180px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        background-color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #003366;
+        flex-shrink: 0;
+        border: 1px solid #cbd5e1;
+    }
+    
+    /* Allow typing in inputs & textareas */
+    input[type="text"], textarea {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============================ CONSTANTS & KEYS ============================ */
+const SKILL_ORDER = ['reading', 'writing'];
+const INITIAL_TIMES = { reading: 50 * 60, writing: 40 * 60 }; 
+
+const READING_CORRECT_ANSWERS = {
+    'r_q1': 'B', 'r_q2': 'C', 'r_q3': 'A', 'r_q4': 'C', 'r_q5': 'B',
+    'r_q6': 'D', 'r_q7': 'F', 'r_q8': 'H', 'r_q9': 'A', 'r_q10': 'E',
+    'r_q11': 'A', 'r_q12': 'B', 'r_q13': 'B', 'r_q14': 'B', 'r_q15': 'A',
+    'r_q16': 'B', 'r_q17': 'A', 'r_q18': 'B', 'r_q19': 'B', 'r_q20': 'A',
+    'r_q21': 'C', 'r_q22': 'B', 'r_q23': 'C', 'r_q24': 'A', 'r_q25': 'B',
+    'r_q26': 'A', 'r_q27': 'C', 'r_q28': 'D', 'r_q29': 'B', 'r_q30': 'C',
+    'r_q31': 'B', 'r_q32': 'C', 'r_q33': 'A', 'r_q34': 'B', 'r_q35': 'A'
+};
+
+const WRITING_CORRECT_ANSWERS = {
+    'w_q1': ['is'],
+    'w_q2': ['cheaper', 'less expensive', 'cheaper / less expensive'],
+    'w_q3': ['without'],
+    'w_q4': ['have', 'keep', 'own', 'have any', 'keep any', 'own any'],
+    'w_q5': ['opened', 'was opened']
+};
+
+const TOTAL_READING_QUESTIONS = Object.keys(READING_CORRECT_ANSWERS).length;
+const TOTAL_WRITING_P1_QUESTIONS = Object.keys(WRITING_CORRECT_ANSWERS).length;
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    apiKey: '',
+    currentSkill: 'reading',
+    answers: { reading: {}, writing: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+    warningCount: 0
+};
+
+/* ============================ STATE MANAGEMENT ============================ */
+let appState = 'setup'; 
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let isWarningModalOpen = false;
+let warningMessage = '';
+let timerInterval = null;
+let aiEvaluationResult = null;
+let isEvaluatingAI = false;
+
+const root = document.getElementById('root');
+
+/* ============================ SECURITY LISTENERS ============================ */
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('selectstart', e => {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+    }
+});
+
+document.addEventListener('keydown', e => {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+        (e.ctrlKey && e.key === 'u') ||
+        (e.ctrlKey && e.key === 'c') ||
+        (e.ctrlKey && e.key === 's') ||
+        (e.ctrlKey && e.key === 'p')
+    ) {
+        e.preventDefault();
+    }
+});
+
+window.addEventListener('visibilitychange', () => {
+    if (document.hidden && appState === 'testing' && !isReportModalOpen) {
+        triggerWarning('CẢNH BÁO VI PHẠM: Bạn đã chuyển tab hoặc rời khỏi giao diện bài thi!');
+    }
+});
+
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && appState === 'testing' && !isReportModalOpen) {
+        triggerWarning('CẢNH BÁO VI PHẠM: Bạn đã thoát chế độ Toàn màn hình!');
+    }
+});
+
+function triggerWarning(msg) {
+    candidate.warningCount += 1;
+    warningMessage = msg;
+    isWarningModalOpen = true;
+    saveState();
+    render();
+}
+
+function dismissWarning() {
+    isWarningModalOpen = false;
+    const elem = document.documentElement;
+    if (!document.fullscreenElement && elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+    }
+    render();
+}
+
+/* ============================ TIMER & HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function getAnsweredCount(skill) {
+    const answers = candidate.answers[skill] || {};
+    const correctTable = skill === 'reading' ? READING_CORRECT_ANSWERS : WRITING_CORRECT_ANSWERS;
+    let count = 0;
+    Object.keys(correctTable).forEach(qId => {
+        if (answers[qId] && String(answers[qId]).trim() !== '') {
+            count++;
+        }
+    });
+    return count;
+}
+
+function isTestReadyToSubmit() {
+    const rCount = getAnsweredCount('reading');
+    const wP1Count = getAnsweredCount('writing');
+    const wAns = candidate.answers.writing || {};
+    const hasP2 = wAns['w_part2'] && wAns['w_part2'].trim().length > 0;
+    const hasP3 = wAns['w_part3'] && wAns['w_part3'].trim().length > 0;
+    return (rCount === TOTAL_READING_QUESTIONS) && (wP1Count === TOTAL_WRITING_P1_QUESTIONS) && hasP2 && hasP3;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petMockTestState_AI_R4P3_SEC', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petMockTestState_AI_R4P3_SEC');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state:', e);
+        localStorage.removeItem('petMockTestState_AI_R4P3_SEC');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+        } else {
+            pauseTimer();
+            alert(`Time is up for ${candidate.currentSkill.toUpperCase()} section!`);
+            if (candidate.currentSkill === 'reading') {
+                handleSwitchSkill('writing');
+            } else {
+                showReportModal();
+            }
+        }
+    }, 1000);
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function handleSwitchSkill(newSkill) {
+    const wasRunning = candidate.timerRunning;
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+    if (wasRunning && candidate.times[newSkill] > 0) {
+        runTimer();
+    }
+}
+
+/* ============================ EVENT HANDLERS ============================ */
+function handleStartTest(code, name, apiKey) {
+    candidate.code = code;
+    candidate.name = name;
+    candidate.apiKey = apiKey;
+    candidate.warningCount = 0;
+    appState = 'testing';
+    runTimer();
+    render();
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => console.warn(err));
+    }
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+    updateHeaderOnly();
+}
+
+function showEndTestModal() {
+    if (!isTestReadyToSubmit()) return;
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    if (!candidate.timerRunning && candidate.times[candidate.currentSkill] > 0) {
+        runTimer();
+    }
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petMockTestState_AI_R4P3_SEC');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    aiEvaluationResult = null;
+    window.location.reload();
+}
+
+/* ============================ GEMINI AI INTEGRATION ============================ */
+async function evaluateWritingWithGemini() {
+    if (!candidate.apiKey) {
+        alert("Please provide a valid Gemini API Key to enable AI scoring.");
+        return;
+    }
+
+    const wAnswers = candidate.answers.writing || {};
+    const part2Ans = wAnswers['w_part2'] || 'No answer provided.';
+    const part3Ans = wAnswers['w_part3'] || 'No answer provided.';
+
+    const prompt = `You are an official Cambridge PET (B1 Preliminary) Writing Examiner. Evaluate the candidate's responses strictly according to CEFR B1 descriptors (Content, Communicative Achievement, Organisation, Language - each 0-5 scale).
+
+=== CANDIDATE DETAILS ===
+Name: ${candidate.name}
+Code: ${candidate.code}
+
+=== PART 2 TASK (35-45 words Note) ===
+Prompt: Write a note to Alex explaining where you bought a new computer game, why you like it, and invite Alex to play.
+Candidate Response:
+"${part2Ans}"
+
+=== PART 3 TASK (~100 words Letter or Story) ===
+Prompt 7 (Letter about places to visit) OR Prompt 8 (Story starting with "I woke up feeling very excited.").
+Candidate Response:
+"${part3Ans}"
+
+=== EVALUATION REQUIREMENTS ===
+Return pure JSON with exact schema:
+{
+  "part2": {
+    "score": "X/5",
+    "wordCount": 0,
+    "content": "Feedback...",
+    "communicative": "Feedback...",
+    "organisation": "Feedback...",
+    "language": "Feedback...",
+    "overallFeedback": "Summary...",
+    "correctedVersion": "Improved version..."
+  },
+  "part3": {
+    "score": "X/5",
+    "wordCount": 0,
+    "content": "Feedback...",
+    "communicative": "Feedback...",
+    "organisation": "Feedback...",
+    "language": "Feedback...",
+    "overallFeedback": "Summary...",
+    "correctedVersion": "Improved version..."
+  }
+}`;
+
+    isEvaluatingAI = true;
+    render();
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${candidate.apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+
+        const data = await response.json();
+        let rawText = data.candidates[0].content.parts[0].text;
+        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        aiEvaluationResult = JSON.parse(rawText);
+    } catch (err) {
+        console.error("Gemini AI Error:", err);
+        alert("Failed to evaluate with Gemini AI. Check API Key or Internet connection.");
+    } finally {
+        isEvaluatingAI = false;
+        render();
+    }
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value, skill = 'reading') {
+    const correctTable = skill === 'reading' ? READING_CORRECT_ANSWERS : WRITING_CORRECT_ANSWERS;
+    const correct = correctTable[qId];
+    if (!correct) return null;
+
+    if (Array.isArray(correct)) {
+        const valStr = String(value || '').trim().toLowerCase();
+        return correct.some(c => c.toLowerCase() === valStr);
+    }
+
+    return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+}
+
+/* ============================ VIEW COMPONENTS ============================ */
+function renderReadingPassages() {
+    return `
+    <div class="reading-passage-column bg-gray-50 ielts-border custom-scrollbar">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">READING PASSAGE CONTENT</h3>
+
+        <div id="reading-part-1" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 1</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the text in each question. What does it say?</p>
+            <div class="space-y-6">
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">1</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg">THESE BOOKS CAN BE BORROWED FOR TWO DAYS WITH THE PERMISSION OF A TEACHER</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">2</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm">
+                        <p class="font-bold mb-1">James</p>
+                        <p>Neil rang. He can't play tennis with you tomorrow unless you lend him a racket because his is broken and can't be repaired.</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">3</p>
+                    <div class="border-2 border-black p-4 bg-gray-100 mb-3 text-sm text-center">
+                        <p class="font-bold text-lg">THIS BRIDGE WILL BE CLOSED FOR REPAIRS FROM SUNDAY MIDDAY FOR TWO WEEKS</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">4</p>
+                    <div class="border border-black bg-gray-100 mb-3 text-sm">
+                        <div class="border-b border-black p-2 bg-gray-200">
+                            <p><strong>To:</strong> Emma</p>
+                            <p><strong>From:</strong> Anna</p>
+                        </div>
+                        <div class="p-3">
+                            <p>Hi Emma<br/>Can you look for my hat? I had it in your car so it might be there. If not, it might be in your flat somewhere.<br/>Love Anna</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">5</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg">If you want to go on trip to Edinburgh, pay £20 deposit by Thursday.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reading-part-2" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 2</h4>
+            <p class="mb-4 text-sm font-medium italic">The people below all want to watch a TV programme.<br/>On the opposite page there are eight reviews of TV programmes.<br/>Decide which programme would be the most suitable for the following people.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">A Around the world</p><p>A camera crew and reporter spent a year following the band Skyline round the world. They're not very well known themselves but played with some famous bands. You'll see some recordings of their tours and see what really goes on behind the stage, as well as hear Skyline answer the reporter's questions.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">B Mickey Valdone</p><p>Mickey Valdone, one of the funniest men on TV, has his usual amazing selection of famous guests from the worlds of music, films, comedy and sport. Between each guest, there will be a chance to hear Mickey's band play some music.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">C A Lost World</p><p>This 30-minute programme is about some old films made at the beginning of the last century by two photographers. They were lost until a few years ago and show people going about their daily lives in the industrial cities of northern England.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">D Young Dennis</p><p>This is a chance to see a wonderful comedy series again. This is the first programme ever shown and the rest of the series will be on over the next eight weeks. The actors, who were unknown when it first appeared, are now famous. The whole family will enjoy it.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">E Ticket to Africa</p><p>William Fogg is a news reporter who has recently spent six months in Africa. This programme is the story of his journey. His aim was to talk to the people he met and find out more about their lives. There is also a book available which contains some beautiful photographs.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">F Where and when</p><p>This early-evening programme has become a family favourite. Each week two famous celebrities choose their teams from the audience and for the next 30 minutes answer questions on a range of subjects including sport, music, novels and the latest news.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">G Sammy</p><p>Actor James McVee, who is famous for the film parts he has played, stars in this latest TV series to reach our screens from Australia. It's about a musician who wants to be famous but he isn't quite good enough. It's the funniest half hour you'll see on TV this week.</p></div>
+                <div class="border p-3 bg-white rounded shadow-sm"><p class="font-bold text-[#003366] mb-1">H The House on the Hill</p><p>Martin Smithson has written the script for this two-part story taken from the book of the same name. Set in the 19th century, it follows a family as they move from one place to another. Most of the actors are very well known and the costumes are wonderful.</p></div>
+            </div>
+        </div>
+
+        <div id="reading-part-3" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 3</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the sentences below about a circus in Australia.<br/>Read the text on the opposite page to decide if each sentence is correct or incorrect.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 rounded shadow-sm leading-relaxed">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase text-[#003366]">Circus Oz</h5>
+                <p>In 1977 two already successful circus groups, Soapbox Circus and the New Circus, joined together to start Circus Oz. The performers loved ordinary circus skills but they wanted to make a different kind of show, adding music, theatre and comment. They got together a collection of old trucks and caravans and went on the road. It was a fresh and original voice in circus and was immediately popular with audiences. Only one of the original members of the circus remains now but it has kept the same aims.</p>
+                <p>Since that time, Circus Oz has performed in 26 different countries. In the mid-1980s new circus groups began to appear across the world and Circus Oz performers went to train with acrobats from China's Nanjing Acrobatic Troupe. Many of the skills learnt then are still in the show, although the style is now definitely Circus Oz rather than Chinese.</p>
+                <p>As with all circuses, performances take place inside a tent or Big Top. Circus Oz's first tent was sewn together by performers in a large basement. It was used for years to tour Australia but when it became too small, Circus Oz was forced to hire tents or move into theatres.</p>
+                <p>In 2002, Circus Oz had a new tent made. It is designed with few poles inside so people watching can see better than in other circuses.</p>
+                <p>The performances are suitable for people of all ages and each show features a live band. The Big Top is heated and air-conditioned but audiences need to dress for the time of year. Snacks and drinks are served in the Big Top but not full meals.</p>
+                <p>Circus Oz classes are held at the Circus Oz Headquarters in Port Melbourne. Every Saturday of the school term there are classes for both children and teenagers. The Introduction to Circus class is for 7-12 year olds, taking the children through a range of circus skills with a focus on developing good form and having fun. The Circus Skills class is for 8-12 year olds, and is offered to children who have already done a few terms of Introduction to Circus. The Teenage Special class is for 13-18 year olds. This class is for both beginners and those who are continuing from the Circus Skills class. Classes are also run during some of the school holidays. There is a class for 7-12 year olds along with a teenage class. Both classes are for beginners and those who have been practising their skills for a while.</p>
+            </div>
+        </div>
+
+        <div id="reading-part-4" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 4</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text and questions below.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 rounded shadow-sm leading-relaxed">
+                <h5 class="font-bold text-xl text-center mb-4 text-[#003366] underline">Teenage fiction</h5>
+                <p>Teenagers have their own TV channels, websites and magazines. So what about books?</p>
+                <p>Last year one publisher, Martins, started publishing a series called Waves. We spoke to the director Julia Smith. She explained, 'Teenage fiction has been published since the 1970s but publishers have never been particularly successful in getting teenagers to buy and read books. Now they're realising that teenagers aren't just older children but they're not adults either and often aren't interested in adult fiction. For this series we're looking for new writers who write especially for teenagers.'</p>
+                <p>Athene Gorr's novel was published in the series last year and is selling well. Its title is The Purple Ring. She says, 'The important thing is to persuade teenagers to pick up your book. I'm a new writer so, although I've got an unusual name which people might remember, nobody knows it yet! But my book has a fantastic cover which makes people want to look inside. Then they realise what a brilliant story it is!'</p>
+                <p>And what do teenagers themselves think about the series? We talked to Sophie Clarke, aged 15. She said, 'I've read a few books in the Waves series. They say they're for 14-19 year olds and I agree with that. We're not interested in the same things as people in their twenties and thirties. I like them and I think they look really good too. The only thing is that because bookshops put them in the children's section, lots of teenagers won't find them so they may not do very well. And it's a shame there's no non-fiction in the series as I think lots of teenagers, especially boys, might buy that.'</p>
+            </div>
+        </div>
+
+        <div id="reading-part-5" class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 5</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text below and choose the correct word for each space.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 leading-loose rounded shadow-sm">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase text-[#003366]">Levi Strauss</h5>
+                <p>In 1853, Levi Strauss (0) <span class="font-bold border-b border-black">travelled</span> to San Francisco from New York. His brothers (26) ___________ a business there selling pillows, blankets and clothes and Levi went to help them. He worked (27) ___________ and, over the (28) ___________ twenty years, he expanded the business.</p>
+                <p>(29) ___________ day in 1872, Levi (30) ___________ a letter from Jacob Davis who made men's clothes. In the letter Jacob (31) ___________ Levi about a difficult customer. He kept (32) ___________ tearing the pockets of his trousers. Jacob had found an answer – he had added some metal to the corners of the pockets. Levi recognised a business opportunity (33) ___________ the two men started working together. They decided to (34) ___________ some trousers out of denim, a material which was suitable for working clothes. The first pair of denim blue jeans (35) ___________ produced in 1873. Today people all around the world wear Levi jeans every day.</p>
+            </div>
+        </div>
+    </div>`;
+}
+
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}'); renderQuestionColumn();" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+function renderReadingQuestions() {
+    const part1Items = [
+        { q: "1", opts: [{v:'A', t:"Only teachers are allowed to borrow these books for longer than two days."}, {v:'B', t:"You need to ask a teacher before taking one of the books away for two days."}, {v:'C', t:"Give these books to a teacher when you bring them back after two days."}] },
+        { q: "2", opts: [{v:'A', t:"Neil has cancelled tomorrow's tennis game with James."}, {v:'B', t:"Neil will play tennis with James when his broken racket is repaired."}, {v:'C', t:"Neil is asking to borrow a racket from James for their tennis game tomorrow."}] },
+        { q: "3", opts: [{v:'A', t:"It will not be possible to use this bridge on Sunday after midday."}, {v:'B', t:"This bridge will be repaired in two weeks' time beginning on Sunday at midday."}, {v:'C', t:"Repairs on this bridge will finish on Sunday at midday."}] },
+        { q: "4", opts: [{v:'A', t:"Anna remembers leaving her hat in Emma's car."}, {v:'B', t:"Anna wants Emma to return the hat she borrowed."}, {v:'C', t:"Anna isn't sure exactly where her hat is."}] },
+        { q: "5", opts: [{v:'A', t:"You'll need to take at least £20 with you to Edinburgh on Thursday."}, {v:'B', t:"Unless you pay £20 by Thursday, you won't be able to go to Edinburgh."}, {v:'C', t:"The trip to Edinburgh costs £20 in total to be paid by Thursday."}] }
+    ];
+
+    let part1Html = part1Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50 shadow-sm">
+            <p class="font-medium mb-3 text-gray-800">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">
+                        ${radioInput(`r_q${i+1}`, opt.v, 'mr-2')}
+                        <span class="font-semibold">${opt.v}</span> ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part2People = [
+        { n: 6, name: 'Mitsuki', desc: "Mitsuki likes reading and enjoys watching historical dramas which are based on novels. She would like to watch one which has some famous actors in it." },
+        { n: 7, name: 'Callum', desc: "Callum wants to watch a comedy programme. He would like to see something new which hasn't been on TV before. He prefers to watch short programmes of about 30 minutes." },
+        { n: 8, name: 'Keiko', desc: "Keiko loves listening to music and reading about famous stars. She wants to watch some stars being interviewed and she'd like to see some live music in the same programme." },
+        { n: 9, name: 'Yann', desc: "Yann is interested in history and wants to watch a documentary which will tell him how people used to live in the past." },
+        { n: 10, name: 'Ellen', desc: "Ellen is looking for a programme which she can watch with her children. Ellen is interested in current affairs and what's going on around the world. Her children like music." }
+    ];
+
+    let part2Html = part2People.map(p => `
+        <div class="flex items-start justify-between border-b pb-3 mb-3 gap-3">
+            <div class="flex items-start gap-3">
+                <div class="avatar-circle">${p.name.charAt(0)}</div>
+                <div>
+                    <span class="font-semibold block text-gray-800">${p.n}. ${p.name}</span>
+                    <p class="text-sm text-gray-600">${p.desc}</p>
+                </div>
+            </div>
+            ${textInput(`r_q${p.n}`, 'A-H', 'w-16 text-center flex-shrink-0 font-bold uppercase')}
+        </div>`).join('');
+
+    const part3Sentences = [
+        "11 Circus Oz was formed by people who had some experience of working in circuses.",
+        "12 The aim of Circus Oz was to combine traditional circus skills with new ideas.",
+        "13 Apart from one member, the performers are the same as when Circus Oz started.",
+        "14 Some members of Circus Oz have joined a Chinese circus.",
+        "15 When Circus Oz first started, the tents were hired.",
+        "16 The audience has a better view at a Circus Oz show than at other circuses.",
+        "17 Musicians perform with Circus Oz.",
+        "18 Some food is available during Circus Oz performances.",
+        "19 Beginners can join the Circus Skills class.",
+        "20 There are classes for two age groups in the holidays."
+    ];
+
+    let part3Html = part3Sentences.map((text, i) => `
+        <div class="mb-4 border-b pb-2">
+            <p class="text-sm mb-2 font-medium text-gray-800">${text}</p>
+            <div class="space-x-6">
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(`r_q${11+i}`, 'A', 'mr-1')} A (Correct)
+                </label>
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(`r_q${11+i}`, 'B', 'mr-1')} B (Incorrect)
+                </label>
+            </div>
+        </div>`).join('');
+
+    const part4Items = [
+        { q: "21 What is the writer trying to do?", opts: [{v:'A', t:"persuade authors to write more teenage fiction"}, {v:'B', t:"explain why teenage fiction is easier to write than adult fiction"}, {v:'C', t:"give information about a new series of books"}, {v:'D', t:"compare different series of teenage fiction"}] },
+        { q: "22 Julia Smith says publishers now recognise that teenagers", opts: [{v:'A', t:"can enjoy the same kind of stories as adults."}, {v:'B', t:"are neither children nor adults."}, {v:'C', t:"grow up more quickly nowadays."}, {v:'D', t:"are more interested in reading nowadays."}] },
+        { q: "23 Athene Gorr thinks teenagers were attracted to her book because of", opts: [{v:'A', t:"her name."}, {v:'B', t:"the story."}, {v:'C', t:"its cover."}, {v:'D', t:"its title."}] },
+        { q: "24 What does Sophie Clarke say about the books in the Waves series?", opts: [{v:'A', t:"They shouldn't be kept with children's books."}, {v:'B', t:"She would prefer to read adult fiction."}, {v:'C', t:"They will be bought by lots of teenagers."}, {v:'D', t:"She isn't keen on the design."}] },
+        { q: "25 Which of these paragraphs could be used to advertise the Waves series?", opts: [{v:'A', t:"This series is for all teenagers and those who are nearly teenagers. Whether you're 10 or 19, you'll find something here to please you."}, {v:'B', t:"If you're aged between 14 and 19, don't miss the Waves series which has novels by new authors."}, {v:'C', t:"Choose a book from the Waves series. It includes both fiction and non-fiction and is aimed at teenagers aged 14+."}, {v:'D', t:"The Waves series has been popular with teenagers since the 1970s. This year we have added 20 new writers to our list."}] }
+    ];
+
+    let part4Html = part4Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50 shadow-sm">
+            <p class="font-medium mb-3 text-gray-800">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">
+                        ${radioInput(`r_q${21+i}`, opt.v, 'mr-2')}
+                        <span class="font-semibold">${opt.v}</span> ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part5Items = [
+        { n: 26, opts: ['A ran', 'B commanded', 'C influenced', 'D controlled'] },
+        { n: 27, opts: ['A long', 'B strong', 'C hard', 'D heavy'] },
+        { n: 28, opts: ['A next', 'B later', 'C last', 'D next'] },
+        { n: 29, opts: ['A That', 'B One', 'C A', 'D The'] },
+        { n: 30, opts: ['A realised', 'B fetched', 'C got', 'D gave'] },
+        { n: 31, opts: ['A said', 'B told', 'C discussed', 'D described'] },
+        { n: 32, opts: ['A on', 'B at', 'C on', 'D in'] },
+        { n: 33, opts: ['A so', 'B while', 'C but', 'D since'] },
+        { n: 34, opts: ['A making', 'B make', 'C makes', 'D made'] },
+        { n: 35, opts: ['A was', 'B is', 'C did', 'D had'] }
+    ];
+
+    let part5Html = part5Items.map(item => `
+        <div class="border p-3 rounded-lg bg-gray-50 shadow-sm">
+            <p class="font-semibold mb-2 border-b pb-1 text-[#003366]">Question ${item.n}</p>
+            <div class="space-y-1">
+                ${item.opts.map(opt => {
+                    const v = opt.charAt(0);
+                    const t = opt.substring(2);
+                    return `<label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">${radioInput(`r_q${item.n}`, v, 'mr-2')} <span class="font-bold">${v}</span> ${t}</label>`;
+                }).join('')}
+            </div>
+        </div>`).join('');
+
+    return `
+    <div class="reading-question-column bg-white ielts-border custom-scrollbar" id="reading-question-column">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">READING QUESTIONS</h3>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 1: Questions 1–5</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B or C.</p>
+            <div class="space-y-4">${part1Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 2: Questions 6–10</h4>
+            <p class="mb-4 text-sm font-medium">Write the correct letter (A–H) for each person.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part2Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 3: Questions 11–20</h4>
+            <p class="mb-4 text-sm font-medium">If it is correct, mark <strong>A</strong>. If it is not correct, mark <strong>B</strong>.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part3Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 4: Questions 21–25</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="space-y-4">${part4Html}</div>
+        </div>
+
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 5: Questions 26–35</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${part5Html}</div>
+        </div>
+    </div>`;
+}
+
+function renderReadingContent() {
+    return `
+    <div class="skill-content" id="content-reading">
+        <h2 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">READING (Paper 1: Reading and Writing)</h2>
+        <div class="reading-grid">
+            ${renderReadingPassages()}
+            ${renderReadingQuestions()}
+        </div>
+    </div>`;
+}
+
+function renderQuestionColumn() {
+    const el = document.getElementById('reading-question-column');
+    if (el) {
+        const scrollTop = el.scrollTop;
+        el.outerHTML = renderReadingQuestions();
+        const newEl = document.getElementById('reading-question-column');
+        if (newEl) newEl.scrollTop = scrollTop;
+    }
+}
+
+function renderWritingContent() {
+    const wAnswers = candidate.answers.writing || {};
+
+    return `
+    <div class="skill-content custom-scrollbar" id="content-writing">
+        <h2 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">WRITING (Paper 1: Part 1, 2 & 3)</h2>
+
+        <!-- Part 1: Sentence Transformation -->
+        <div class="mb-10 border-b pb-6">
+            <h3 class="text-xl font-bold text-[#f97316] mb-2">Part 1: Questions 1–5</h3>
+            <p class="mb-4 text-sm font-medium text-gray-700">Here are some sentences about a visit to a zoo.<br/>For each question, complete the second sentence so that it means the same as the first.<br/><strong>Use no more than three words.</strong> Write only the missing words.</p>
+
+            <div class="space-y-6 bg-gray-50 p-6 rounded-lg ielts-border">
+                <div class="border p-4 bg-white rounded shadow-sm">
+                    <p class="font-semibold text-gray-800 mb-2">1. A family ticket costs £10.</p>
+                    <div class="flex items-center flex-wrap gap-2 text-sm md:text-base">
+                        <span>The cost of a family ticket</span>
+                        <input type="text" id="w_q1" value="${(wAnswers['w_q1'] || '').replace(/"/g,'&quot;')}" placeholder="Answer" class="ielts-border rounded p-1 font-bold text-[#003366] w-32 text-center" oninput="handleSaveAnswer('writing', 'w_q1', this.value)"/>
+                        <span>£10.</span>
+                    </div>
+                </div>
+
+                <div class="border p-4 bg-white rounded shadow-sm">
+                    <p class="font-semibold text-gray-800 mb-2">2. Entrance at weekends is more expensive than on weekdays.</p>
+                    <div class="flex items-center flex-wrap gap-2 text-sm md:text-base">
+                        <span>Entrance on weekdays is</span>
+                        <input type="text" id="w_q2" value="${(wAnswers['w_q2'] || '').replace(/"/g,'&quot;')}" placeholder="Answer" class="ielts-border rounded p-1 font-bold text-[#003366] w-48 text-center" oninput="handleSaveAnswer('writing', 'w_q2', this.value)"/>
+                        <span>than at weekends.</span>
+                    </div>
+                </div>
+
+                <div class="border p-4 bg-white rounded shadow-sm">
+                    <p class="font-semibold text-gray-800 mb-2">3. You don't have to pay to visit the zoo on Thursdays.</p>
+                    <div class="flex items-center flex-wrap gap-2 text-sm md:text-base">
+                        <span>You can visit the zoo</span>
+                        <input type="text" id="w_q3" value="${(wAnswers['w_q3'] || '').replace(/"/g,'&quot;')}" placeholder="Answer" class="ielts-border rounded p-1 font-bold text-[#003366] w-32 text-center" oninput="handleSaveAnswer('writing', 'w_q3', this.value)"/>
+                        <span>paying on Thursdays.</span>
+                    </div>
+                </div>
+
+                <div class="border p-4 bg-white rounded shadow-sm">
+                    <p class="font-semibold text-gray-800 mb-2">4. There aren't any elephants at the zoo now.</p>
+                    <div class="flex items-center flex-wrap gap-2 text-sm md:text-base">
+                        <span>The zoo doesn't</span>
+                        <input type="text" id="w_q4" value="${(wAnswers['w_q4'] || '').replace(/"/g,'&quot;')}" placeholder="Answer" class="ielts-border rounded p-1 font-bold text-[#003366] w-48 text-center" oninput="handleSaveAnswer('writing', 'w_q4', this.value)"/>
+                        <span>elephants any more.</span>
+                    </div>
+                </div>
+
+                <div class="border p-4 bg-white rounded shadow-sm">
+                    <p class="font-semibold text-gray-800 mb-2">5. The new zoo restaurant has been open for a week.</p>
+                    <div class="flex items-center flex-wrap gap-2 text-sm md:text-base">
+                        <span>The new zoo restaurant</span>
+                        <input type="text" id="w_q5" value="${(wAnswers['w_q5'] || '').replace(/"/g,'&quot;')}" placeholder="Answer" class="ielts-border rounded p-1 font-bold text-[#003366] w-36 text-center" oninput="handleSaveAnswer('writing', 'w_q5', this.value)"/>
+                        <span>last week.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 2: Short Message -->
+        <div class="mb-10 border-b pb-6">
+            <h3 class="text-xl font-bold text-[#f97316] mb-2">Part 2: Question 6</h3>
+            <div class="bg-gray-50 p-6 rounded-lg ielts-border space-y-4">
+                <p class="text-sm font-medium text-gray-800">You have just bought a new computer game.<br/>Write a note to an English friend, Alex. In your note, you should:</p>
+                <ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">
+                    <li>explain where you bought the game</li>
+                    <li>say why you like it</li>
+                    <li>invite Alex to come and play it with you.</li>
+                </ul>
+                <p class="text-sm font-bold text-[#003366]">Write 35–45 words.</p>
+                <textarea id="w_part2" rows="4" class="w-full ielts-border rounded-md p-3 text-sm focus:ring-[#f97316] focus:border-[#f97316]" placeholder="Write your response here..." oninput="handleSaveAnswer('writing', 'w_part2', this.value)">${wAnswers['w_part2'] || ''}</textarea>
+            </div>
+        </div>
+
+        <!-- Part 3: Letter / Story -->
+        <div class="mb-10">
+            <h3 class="text-xl font-bold text-[#f97316] mb-2">Part 3: Question 7 & 8</h3>
+            <div class="bg-gray-50 p-6 rounded-lg ielts-border space-y-4">
+                <p class="text-sm font-medium text-gray-800">Choose ONE of the following tasks (Question 7 or Question 8). Write about 100 words.</p>
+                <div class="border p-4 bg-white rounded space-y-2">
+                    <p class="font-bold text-[#003366]">Question 7 - Letter</p>
+                    <p class="text-sm text-gray-700">This is part of a letter you receive from an English friend:</p>
+                    <blockquote class="italic text-sm bg-gray-100 p-2 rounded border-l-4 border-blue-600">"In my next school holiday, I'm going to spend a week in your country. Which places should I visit and why?"</blockquote>
+                    <p class="text-sm text-gray-700">Now write a letter answering your friend's questions.</p>
+                </div>
+                <div class="border p-4 bg-white rounded space-y-2">
+                    <p class="font-bold text-[#003366]">Question 8 - Story</p>
+                    <p class="text-sm text-gray-700">Your English teacher has asked you to write a story. Your story must begin with this sentence:</p>
+                    <blockquote class="italic text-sm bg-gray-100 p-2 rounded border-l-4 border-blue-600">"I woke up feeling very excited."</blockquote>
+                </div>
+                <textarea id="w_part3" rows="8" class="w-full ielts-border rounded-md p-3 text-sm focus:ring-[#f97316] focus:border-[#f97316]" placeholder="Write your letter or story here..." oninput="handleSaveAnswer('writing', 'w_part3', this.value)">${wAnswers['w_part3'] || ''}</textarea>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ HEADER & NAVIGATION ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+    const rCount = getAnsweredCount('reading');
+    const wP1Count = getAnsweredCount('writing');
+    const readyToSubmit = isTestReadyToSubmit();
+
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+            <span class="bg-blue-900 border border-blue-400 text-xs px-2 py-1 rounded font-bold">R: ${rCount}/${TOTAL_READING_QUESTIONS} | W: ${wP1Count}/${TOTAL_WRITING_P1_QUESTIONS}</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING (${candidate.currentSkill.toUpperCase()})</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button class="action-button bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-semibold" 
+                onclick="showEndTestModal()" 
+                ${!readyToSubmit ? 'disabled title="Cần hoàn thành tất cả các câu hỏi Reading & Writing để nộp bài"' : ''}>
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`;
+    }
+    const headerEl = document.getElementById('app-header');
+    if (headerEl) {
+        const rCount = getAnsweredCount('reading');
+        const wP1Count = getAnsweredCount('writing');
+        const endBtn = headerEl.querySelector('button[onclick="showEndTestModal()"]');
+        const progressSpan = headerEl.querySelector('span.bg-blue-900');
+        if (progressSpan) progressSpan.textContent = `R: ${rCount}/${TOTAL_READING_QUESTIONS} | W: ${wP1Count}/${TOTAL_WRITING_P1_QUESTIONS}`;
+        if (endBtn) {
+            const ready = isTestReadyToSubmit();
+            endBtn.disabled = !ready;
+            endBtn.title = !ready ? "Cần hoàn thành tất cả các câu hỏi Reading & Writing để nộp bài" : "";
+        }
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS & REPORT ============================ */
+function renderWarningModal() {
+    if (!isWarningModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-red-950 bg-opacity-90 flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md text-center border-4 border-red-600">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-extrabold">⚠️</div>
+            <h3 class="text-2xl font-extrabold text-red-600 mb-2">CẢNH BÁO VI PHẠM</h3>
+            <p class="text-gray-800 font-medium mb-4">${warningMessage}</p>
+            <div class="p-3 bg-red-50 rounded-lg border border-red-200 mb-6">
+                <p class="text-sm font-bold text-red-700">Tổng số lần vi phạm: <span class="text-xl">${candidate.warningCount}</span></p>
+                <p class="text-xs text-gray-500 mt-1">Lưu ý: Mọi hành vi vi phạm đều được ghi nhận vào bảng báo cáo kết quả!</p>
+            </div>
+            <button class="w-full py-3 rounded-md font-bold bg-red-600 hover:bg-red-700 text-white shadow-lg transition-colors" onclick="dismissWarning()">Tôi Đã Hiểu - Quay Lại Bài Thi</button>
+        </div>
+    </div>`;
+}
+
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">Are you sure you want to end the test now? You will not be able to continue after confirming.</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+
+    // Reading
+    const rAnswers = candidate.answers.reading || {};
+    const rKeys = Object.keys(READING_CORRECT_ANSWERS);
+    let rScore = 0;
+    const rCards = rKeys.map(qId => {
+        const val = rAnswers[qId] || '';
+        const isCorrect = checkAnswer(qId, val, 'reading');
+        if (isCorrect) rScore++;
+
+        return `
+            <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                <p class="font-bold text-[#003366]">${qId.toUpperCase()}</p>
+                <p><strong>Your Answer:</strong> ${val || '-'}</p>
+                <p><strong>Correct Answer:</strong> ${READING_CORRECT_ANSWERS[qId]}</p>
+                <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                    ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </p>
+            </div>`;
+    }).join('');
+
+    detailedResultsHtml += `
+        <div>
+            <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">READING</h5>
+            <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${rCards}</div>
+                <div class="mt-4 pt-4 border-t text-xl font-bold text-center text-[#003366]">
+                    Reading Score: ${rScore} / ${rKeys.length}
+                </div>
+            </div>
+        </div>`;
+
+    // Writing Part 1
+    const wAnswers = candidate.answers.writing || {};
+    const wKeys = Object.keys(WRITING_CORRECT_ANSWERS);
+    let wScore = 0;
+    const wCards = wKeys.map(qId => {
+        const val = wAnswers[qId] || '';
+        const isCorrect = checkAnswer(qId, val, 'writing');
+        if (isCorrect) wScore++;
+
+        return `
+            <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                <p class="font-bold text-[#003366]">${qId.toUpperCase()}</p>
+                <p><strong>Your Answer:</strong> ${val || '-'}</p>
+                <p><strong>Key Options:</strong> ${WRITING_CORRECT_ANSWERS[qId].join(' / ')}</p>
+                <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                    ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </p>
+            </div>`;
+    }).join('');
+
+    detailedResultsHtml += `
+        <div>
+            <h5 class="text-lg font-semibold text-[#f97316] mt-6 mb-2">WRITING PART 1 (Sentence Transformation)</h5>
+            <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${wCards}</div>
+                <div class="mt-4 pt-4 border-t text-xl font-bold text-center text-[#003366]">
+                    Writing Part 1 Score: ${wScore} / ${wKeys.length}
+                </div>
+            </div>
+        </div>`;
+
+    // Gemini AI Section
+    let aiSectionHtml = `
+        <div class="mt-6 border-t pt-4">
+            <div class="flex justify-between items-center mb-4">
+                <h5 class="text-lg font-semibold text-[#003366]">WRITING PART 2 & 3 - GEMINI AI EVALUATION</h5>
+                <button onclick="evaluateWritingWithGemini()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded shadow-md transition-all flex items-center gap-2" ${isEvaluatingAI ? 'disabled' : ''}>
+                    ${isEvaluatingAI ? 'Evaluating with Gemini AI...' : '✨ Evaluate Writing with Gemini AI'}
+                </button>
+            </div>`;
+
+    if (aiEvaluationResult) {
+        aiSectionHtml += `
+            <div class="space-y-6">
+                <div class="p-5 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div class="flex justify-between items-center border-b border-purple-200 pb-2 mb-3">
+                        <h6 class="font-bold text-purple-900 text-md">Part 2 Score: ${aiEvaluationResult.part2.score}</h6>
+                        <span class="text-xs bg-purple-200 text-purple-800 font-bold px-2 py-1 rounded">Word Count: ${aiEvaluationResult.part2.wordCount || 'N/A'}</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
+                        <p><strong>Content:</strong> ${aiEvaluationResult.part2.content}</p>
+                        <p><strong>Communicative:</strong> ${aiEvaluationResult.part2.communicative}</p>
+                        <p><strong>Organisation:</strong> ${aiEvaluationResult.part2.organisation}</p>
+                        <p><strong>Language:</strong> ${aiEvaluationResult.part2.language}</p>
+                    </div>
+                    <div class="text-xs bg-white p-3 rounded border border-purple-100 mb-2">
+                        <p class="font-bold text-purple-900 mb-1">Overall Feedback:</p>
+                        <p class="text-gray-700">${aiEvaluationResult.part2.overallFeedback}</p>
+                    </div>
+                    <div class="text-xs bg-white p-3 rounded border border-purple-100">
+                        <p class="font-bold text-green-800 mb-1">Improved Version:</p>
+                        <p class="italic text-gray-800">${aiEvaluationResult.part2.correctedVersion}</p>
+                    </div>
+                </div>
+
+                <div class="p-5 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div class="flex justify-between items-center border-b border-purple-200 pb-2 mb-3">
+                        <h6 class="font-bold text-purple-900 text-md">Part 3 Score: ${aiEvaluationResult.part3.score}</h6>
+                        <span class="text-xs bg-purple-200 text-purple-800 font-bold px-2 py-1 rounded">Word Count: ${aiEvaluationResult.part3.wordCount || 'N/A'}</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
+                        <p><strong>Content:</strong> ${aiEvaluationResult.part3.content}</p>
+                        <p><strong>Communicative:</strong> ${aiEvaluationResult.part3.communicative}</p>
+                        <p><strong>Organisation:</strong> ${aiEvaluationResult.part3.organisation}</p>
+                        <p><strong>Language:</strong> ${aiEvaluationResult.part3.language}</p>
+                    </div>
+                    <div class="text-xs bg-white p-3 rounded border border-purple-100 mb-2">
+                        <p class="font-bold text-purple-900 mb-1">Overall Feedback:</p>
+                        <p class="text-gray-700">${aiEvaluationResult.part3.overallFeedback}</p>
+                    </div>
+                    <div class="text-xs bg-white p-3 rounded border border-purple-100">
+                        <p class="font-bold text-green-800 mb-1">Improved Version:</p>
+                        <p class="italic text-gray-800">${aiEvaluationResult.part3.correctedVersion}</p>
+                    </div>
+                </div>
+            </div>`;
+    } else {
+        aiSectionHtml += `<p class="text-sm italic text-gray-500">Click the button above to generate an instant CEFR B1 score and detailed evaluation using Gemini AI.</p>`;
+    }
+
+    aiSectionHtml += `</div>`;
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-4 bg-gray-50 rounded-lg grid grid-cols-1 md:grid-cols-3 gap-4 border">
+                    <div><p><strong>Candidate Code:</strong></p><p class="text-base text-[#003366] font-bold">${candidate.code}</p></div>
+                    <div><p><strong>Full Name:</strong></p><p class="text-base text-[#003366] font-bold">${candidate.name}</p></div>
+                    <div><p><strong>Security Violations:</strong></p><p class="text-base ${candidate.warningCount > 0 ? 'text-red-600 font-extrabold' : 'text-green-600 font-bold'}">${candidate.warningCount} Warnings</p></div>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Reading:</strong> ${formatTime(candidate.times.reading)}</p>
+                    <p><strong>Writing:</strong> ${formatTime(candidate.times.writing)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+                ${aiSectionHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET MOCK TEST (R4-P3)</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+                <div>
+                    <label for="api-key" class="block text-sm font-medium text-gray-700">Gemini API Key (Optional for AI Scoring)</label>
+                    <input type="password" id="api-key" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="AIzaSy..." />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    const apiKey = document.getElementById('api-key').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name, apiKey);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${candidate.currentSkill === 'reading' ? renderReadingContent() : renderWritingContent()}
+            </main>
+        </div>
+        ${renderWarningModal()}
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INITIALIZATION ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>

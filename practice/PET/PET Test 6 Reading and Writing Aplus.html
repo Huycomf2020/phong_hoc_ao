@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Reading Mock Test - Test 2 (2025)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+    }
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .reading-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        height: 100%;
+    }
+    @media (min-width: 1024px) {
+        .reading-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .reading-passage-column, .reading-question-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 180px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 9999px;
+        background-color: #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #334155;
+        flex-shrink: 0;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============================ CONSTANTS ============================ */
+const SKILL_ORDER = ['reading'];
+const INITIAL_TIMES = { reading: 50 * 60 }; // 50 minutes (Reading portion of the 1h30 combined paper)
+
+const READING_CORRECT_ANSWERS = {
+    'r_q1': 'C', 'r_q2': 'B', 'r_q3': 'A', 'r_q4': 'C', 'r_q5': 'B',
+    'r_q6': 'H', 'r_q7': 'E', 'r_q8': 'A', 'r_q9': 'D', 'r_q10': 'C',
+    'r_q11': 'A', 'r_q12': 'B', 'r_q13': 'B', 'r_q14': 'A', 'r_q15': 'A',
+    'r_q16': 'A', 'r_q17': 'B', 'r_q18': 'A', 'r_q19': 'B', 'r_q20': 'A',
+    'r_q21': 'B', 'r_q22': 'D', 'r_q23': 'A', 'r_q24': 'D', 'r_q25': 'C',
+    'r_q26': 'B', 'r_q27': 'C', 'r_q28': 'D', 'r_q29': 'B', 'r_q30': 'A',
+    'r_q31': 'C', 'r_q32': 'B', 'r_q33': 'A', 'r_q34': 'D', 'r_q35': 'B'
+};
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'reading',
+    answers: { reading: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup'; // 'setup' | 'testing'
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let timerInterval = null;
+
+const root = document.getElementById('root');
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petMockTestState4', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state to localStorage:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petMockTestState4');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state from localStorage:', e);
+        localStorage.removeItem('petMockTestState4');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    const time = candidate.times[candidate.currentSkill];
+    if (time <= 0) {
+        pauseTimer();
+        if (candidate.currentSkill === 'reading') {
+            showReportModal();
+        }
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    runTimer();
+    render();
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+            console.warn(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    }
+}
+
+function handleSwitchSkill(newSkill) {
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petMockTestState4');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    window.location.reload();
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = READING_CORRECT_ANSWERS[qId];
+    if (!correct) return null;
+
+    if (Array.isArray(correct)) {
+        if (!Array.isArray(value)) return false;
+        const sortedCorrect = [...correct].sort();
+        const sortedValue = [...value].sort();
+        return sortedCorrect.length === sortedValue.length && sortedCorrect.every((v, i) => v === sortedValue[i]);
+    }
+
+    if (Array.isArray(value)) return false;
+    return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+}
+
+function generateReportText() {
+    let report = `PET MOCK TEST REPORT\n`;
+    report += `=========================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n\n`;
+
+    report += `REMAINING TIME\n`;
+    report += `-------------------------\n`;
+    report += `Reading: ${formatTime(candidate.times.reading)}\n\n`;
+
+    SKILL_ORDER.forEach(skill => {
+        report += `${skill.toUpperCase()} ANSWERS\n`;
+        report += `-------------------------\n`;
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+
+        if (answerKeys.length === 0) {
+            report += "No answers recorded.\n";
+        } else {
+            let score = 0;
+            answerKeys.forEach(qId => {
+                let answerValue = answers[qId] || '';
+                const isCorrect = checkAnswer(qId, answerValue);
+                if (isCorrect) score++;
+
+                if (Array.isArray(answerValue)) answerValue = answerValue.join(', ');
+                const correctValue = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                    ? READING_CORRECT_ANSWERS[qId].join(', ')
+                    : READING_CORRECT_ANSWERS[qId];
+
+                report += `${qId.toUpperCase()}:\n`;
+                report += `  Your Answer: ${answerValue}\n`;
+                report += `  Correct Answer: ${correctValue}\n`;
+                report += `  Status: ${isCorrect ? 'Correct' : 'Incorrect'}\n\n`;
+            });
+            report += `Score: ${score} / ${answerKeys.length}\n`;
+        }
+        report += `\n`;
+    });
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy report:", err);
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ ANSWER INPUT ============================ */
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}'); renderQuestionColumn();" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+/* ============================ READING PASSAGES (LEFT COLUMN) ============================ */
+function renderReadingPassages() {
+    return `
+    <div class="reading-passage-column bg-gray-50 ielts-border custom-scrollbar">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">READING PASSAGE CONTENT</h3>
+
+        <div id="reading-part-1" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 1</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the text in each question. What does it say?</p>
+            <div class="space-y-6">
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">1</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm italic">
+                        <p class="mb-2">Samir</p>
+                        <p>Josh rang to say tickets are still available for the Helix concert – you're not too late! He's able to get you a ticket. Let him know today if you're interested.</p>
+                        <p class="text-right mt-2">Alex</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">2</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg">BEFORE LEAVING TRAIN YOU MUST CHECK YOU HAVE ALL YOUR LUGGAGE</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">3</p>
+                    <div class="border border-black bg-gray-100 mb-3 text-sm">
+                        <div class="border-b border-black p-2 bg-gray-200">
+                            <p><strong>To:</strong> Gina</p>
+                            <p><strong>From:</strong> Andrea</p>
+                        </div>
+                        <div class="p-3">
+                            <p>Sorry to hear your knee is so painful you're not able to play tennis with me. Why don't we meet in town on Friday or Saturday instead? Which is better?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">4</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg">Make sure you have enough money with you before filling your car with petrol</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">5</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm italic">
+                        <p>Jake – You're coming to Sonia's party tonight, aren't you? You needn't worry about food – there'll be plenty there. Why not bring your new CDs though? Ring me, I'll pick you up.</p>
+                        <p class="text-right mt-2">Lena</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reading-part-2" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 2</h4>
+            <p class="mb-4 text-sm font-medium italic">The people below all want to go on a walk in the countryside.<br/>On the opposite page there are descriptions of eight walks.<br/>Decide which walk would be the most suitable for the following people.</p>
+
+            <h5 class="font-bold text-center mb-4 uppercase">Countryside Walks</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="border p-3 bg-white"><p class="font-bold">A Whitsbury</p><p>This short 6 km walk starts in the village of Whitsbury and goes through both farmland and woodland. The path is well signposted and completely on level ground. The 16th-century Braemore House is at the end of the walk and is open to the public. There is also a museum and café here.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">B Gullane Bay</p><p>This 14 km walk begins at the Aberlady Nature Reserve, where there are 55 different types of birds, and then follows the coast to North Berwick. Although quite long, this is an easy walk on flat ground, most of it being across the sandy beach of Gullane Bay.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">C Kingston</p><p>This 6 km walk only takes 2 hours, is well signposted and is completely on flat ground. It begins in the village of Kingston and then heads south to the coast. The ruins of 12th-century Corfe Castle are on route and are a popular place for a picnic lunch.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">D Radnor</p><p>Although this long 14 km walk is mostly on paths, at certain points the route is not marked and directions require care. The walk starts in Radnor Forest and then continues steeply uphill. It's a hard climb up Fron Hill but it is peaceful at the top and walkers can see all the way to the Black Mountains.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">E St Agnes</p><p>The starting point for this short 7 km walk is the village of St Agnes. The walk then continues along the side of a valley until it reaches the coast. The climb up the cliffs is not difficult and from the top walkers can see for miles around. The area is well known for seabirds with over 900 pairs of kittiwakes nesting here.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">F Croft Ambrey</p><p>Although fairly short, this 7 km walk offers surprising variety. It is mainly in woodland but also passes by Fishpool Valley and the 14th-century Croft Castle. The path is well signposted and on flat ground, making it a suitable walk for all age groups.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">G Langdale</p><p>This challenging 15 km walk is mostly on high ground and at certain points there are some steep climbs. A map is important as the route is not always signposted. There is a restaurant at the end of the walk in the small village of Elterwater.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">H Alnwick</p><p>Although long, this 14 km circular walk is always very popular. It is a well-signposted path that begins and finishes at Alnwick, where there is an 11th-century castle and a range of restaurants. The path takes you through parkland and alongside the River Aln. It then heads west and begins a gentle climb up to Brizlee.</p></div>
+            </div>
+        </div>
+
+        <div id="reading-part-3" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 3</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the sentences below about a search for two ships.<br/>Read the text on the opposite page to decide if each sentence is correct or incorrect.</p>
+            <div class="border p-5 bg-white text-sm space-y-4">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase">Treasure at the bottom of the sea</h5>
+                <p>In the 17th century, there were many Spanish sailing ships called galleons that carried gold and jewels from the Americas to Europe. On September 4 1622, two galleons called the Nuestra Señora de Atocha and the Santa Margarita left Cuba for Spain. Just a day later, both ships sank during a terrible storm.</p>
+                <p>Although the lost ships were known to contain huge amounts of treasure, nobody disturbed them for the next 350 years. Despite numerous efforts, no one was able to find them and they became known as the 'Ghost Galleons'.</p>
+                <p>In 1969, a treasure hunter named Mel Fisher set up a company, 'Treasure Salvors', to search for the 'Ghost Galleons'. Fisher used to be a farmer, but since 1962 he has worked at sea searching for lost ships. He was so successful at this that he could afford to set up his own company. His boat, Holly's Folly, began the search in 1969 in an area called the Middle Keys, near Florida. Fisher had studied diaries and reports from the 17th century and according to them the Atocha had sunk here.</p>
+                <p>But Fisher found nothing and he decided to get the help of Eugene Lyon, an expert in 17th-century Spanish history. Lyon soon realised what had gone wrong. Some of the islands in the area had been renamed and Holly's Folly was looking in the wrong place. Lyon redirected the search to the tiny Marquesas Keys.</p>
+                <p>It was two more years, however, before the team found a few silver coins and gold bars from the Atocha. Then, in 1973, they found 4,000 silver coins and three silver bars stamped with numbers that proved they came from the Atocha. The treasure was extremely valuable but the ship itself was nowhere to be found.</p>
+                <p>It was expensive to continue the search but Fisher didn't want to give up. He concentrated instead on finding the Margarita and started looking in an area called the Quicksands. To start with, just a few pieces of treasure were discovered by the team and then, at last, they found some half-buried pieces of wood. It was the Margarita. The divers continued taking objects from the Margarita for another two years. Stories about the find appeared in newspapers around the world and the treasure was eventually sold for £25 million. Fisher was rich and famous but he was still determined to find the Atocha and in 1985 he continued his search.</p>
+                <p>This time he concentrated on an area called the Hawk Channel. Finally on July 20, Fisher found hundreds of silver bars and chests of silver coins lying on the seabed close to the Atocha. It had taken 16 years, but at last he had found both ships.</p>
+            </div>
+        </div>
+
+        <div id="reading-part-4" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 4</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text and questions below.</p>
+            <div class="border p-5 bg-white text-sm space-y-4">
+                <h5 class="font-bold text-xl text-center mb-4 underline">Liam Killeen</h5>
+                <p>Liam Killeen is a rising star in cross-country mountain biking. He has raced since he was 12 and has had both successes and disappointments in that time. His worst moment so far was during a recent World Championship. His front tyre started to lose air in the last part of the race and he finished fourth. This was not the first time he'd been unlucky. In a previous race, it was raining heavily and he crashed his bike just minutes after the start.</p>
+                <p>He often gets nervous before a race but thinks that this is a good thing. 'Nervous energy makes you go faster and on the day, it's all about winning. The important thing is to stay positive.'</p>
+                <p>Liam likes a hard race with steep climbs. 'They make all the difference. You have to be really fit to get ahead.' He also enjoys entering competitions at top levels as there are fewer riders in the race and this makes the start easier. 'You can get into the front group more quickly.'</p>
+                <p>Liam has been chosen to go to the Olympic Games and one day he would like to win a medal. 'I'm still quite young and expect to be riding until my mid-thirties so I've got enough time to achieve my dream. I know the Olympics are hard and I'll have to produce my best performance yet. But I feel confident.'</p>
+                <p>Liam trains for 30 hours a week – always outside – and he reaches speeds of 65 kph. He thinks that cycling professionally is the best job in the world and would recommend it to anyone. His advice to people starting to race is, 'Be prepared for some hard work. If the training was easy, it wouldn't make you faster.'</p>
+            </div>
+        </div>
+
+        <div id="reading-part-5" class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 5</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text below and choose the correct word for each space.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 leading-loose">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase">Early Writing and Alphabets</h5>
+                <p>When people (0) <span class="font-bold border-b border-black">first</span> began to write, they did not use an alphabet. Instead, they drew small pictures to (26) ___________ the objects they were writing about. This was very slow because there was a different picture for (27) ___________ word.</p>
+                <p>The Ancient Egyptians had a (28) ___________ of picture writing that was (29) ___________ hieroglyphics. The meaning of this writing was forgotten for a very long time but in 1799 some scientists (30) ___________ a stone near Alexandria, in Egypt. The stone had been there for (31) ___________ a thousand years. It had both Greek and hieroglyphics on it and researchers were finally able to understand what the hieroglyphics meant.</p>
+                <p>An alphabet is quite different (32) ___________ picture writing. It (33) ___________ of letters or symbols that represent a sound and each sound is just part of one word. The Phoenicians, (34) ___________ lived about 3,000 years ago, developed the modern alphabet. It was later improved by the Romans and this alphabet is now used (35) ___________ throughout the world.</p>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ READING QUESTIONS (RIGHT COLUMN) ============================ */
+function renderReadingQuestions() {
+    const part1Items = [
+        { q: "1 What must Samir do?", opts: [{v:'A', t:"find out if Josh is interested in going to the concert"}, {v:'B', t:"let Josh know if tickets are available for the concert"}, {v:'C', t:"contact Josh if he wants to go to the concert"}] },
+        { q: "2", opts: [{v:'A', t:"Passengers mustn't put any luggage near the train doors."}, {v:'B', t:"Passengers should remember to take all their bags with them."}, {v:'C', t:"Passengers with large suitcases may leave them between the seats."}] },
+        { q: "3 The main purpose of the email is to", opts: [{v:'A', t:"suggest something."}, {v:'B', t:"apologise for something."}, {v:'C', t:"recommend something."}] },
+        { q: "4", opts: [{v:'A', t:"You must check you have chosen the right petrol before filling your car."}, {v:'B', t:"You can pay with cash or credit card after filling your car with petrol."}, {v:'C', t:"You shouldn't put petrol in your car without checking you are able to pay."}] },
+        { q: "5", opts: [{v:'A', t:"Lena wants Jake to give her a lift to Sonia's party."}, {v:'B', t:"Lena thinks Jake should take some music to Sonia's party."}, {v:'C', t:"Lena would like Jake to bring something to eat to Sonia's party."}] },
+    ];
+
+    let part1Html = part1Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-3">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm">
+                        ${radioInput(`r_q${i+1}`, opt.v, 'mr-2')}
+                        ${opt.v} ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part2People = [
+        { n: 6, name: 'Nikos', desc: "Nikos wants a long walk that involves some climbing but nothing that is too difficult. He would also like to visit an historical building and stop somewhere to buy lunch." },
+        { n: 7, name: 'Anna', desc: "Anna wants a walk by the sea that also provides her with some good views. She would like to do a little climbing and she is interested in seeing some local wildlife." },
+        { n: 8, name: 'Hiro', desc: "Hiro wants a fairly short walk on a path that is easy to follow and doesn't involve any climbing. He wants to stop somewhere to buy lunch and also visit a place of historical interest." },
+        { n: 9, name: 'Maya', desc: "Maya is an experienced walker and can easily follow a map. She wants a long walk that involves a lot of climbing and also takes her through wooded countryside." },
+        { n: 10, name: 'Toby', desc: "Toby wants a walk by the sea that doesn't involve any climbing. He would like a route that is easy to follow and he also wants to visit a building of historical interest." },
+    ];
+    let part2Html = part2People.map(p => `
+        <div class="flex items-start justify-between border-b pb-3 mb-3 gap-3">
+            <div class="flex items-start gap-3">
+                <div class="avatar-circle">${p.name.charAt(0)}</div>
+                <div>
+                    <span class="font-semibold block">${p.n}. ${p.name}</span>
+                    <p class="text-sm text-gray-600">${p.desc}</p>
+                </div>
+            </div>
+            ${textInput(`r_q${p.n}`, 'A-H', 'w-16 text-center flex-shrink-0')}
+        </div>`).join('');
+
+    const part3Sentences = [
+        "11 The Margarita and the Atocha sank a day after they had left Cuba.",
+        "12 The two ships were forgotten about for 350 years.",
+        "13 Fisher had to borrow money to start his company 'Treasure Salvors'.",
+        "14 Fisher read historical documents to find out where to begin his search.",
+        "15 Lyon told Fisher that the two ships had sunk in the Marquesas Keys area.",
+        "16 The team was certain that the treasure found in 1973 was from the Atocha.",
+        "17 Fisher continued looking for the Atocha in the Quicksands area.",
+        "18 Journalists wrote about the valuable objects found on the Margarita.",
+        "19 Soon after he had sold objects from the Margarita, Fisher thought about stopping his search for the Atocha.",
+        "20 In July 1985, some valuable objects were discovered by Fisher near the Atocha."
+    ];
+    let part3Html = part3Sentences.map((text, i) => `
+        <div class="mb-4 border-b pb-2">
+            <p class="text-sm mb-2">${text}</p>
+            <div class="space-x-4">
+                <label class="cursor-pointer text-sm">${radioInput(`r_q${11+i}`, 'A', 'mr-1')} A (Correct)</label>
+                <label class="cursor-pointer text-sm">${radioInput(`r_q${11+i}`, 'B', 'mr-1')} B (Incorrect)</label>
+            </div>
+        </div>`).join('');
+
+    const part4Items = [
+        { q: "21 What is the writer trying to do in the text?", opts: [{v:'A', t:"encourage people to cycle as a hobby"}, {v:'B', t:"give details of Liam's cycling career"}, {v:'C', t:"compare cycling with other sports"}, {v:'D', t:"explain why Liam became a cyclist"}] },
+        { q: "22 What happened towards the end of one of Liam's races?", opts: [{v:'A', t:"He fell off his bike."}, {v:'B', t:"The weather got really bad."}, {v:'C', t:"He was involved in an accident."}, {v:'D', t:"There was a problem with his bike."}] },
+        { q: "23 Liam prefers a race that", opts: [{v:'A', t:"includes some hilly ground."}, {v:'B', t:"has a lot of riders taking part."}, {v:'C', t:"attracts less experienced riders."}, {v:'D', t:"allows him to get ahead at the end."}] },
+        { q: "24 What does Liam say about the Olympics?", opts: [{v:'A', t:"He thinks he will perform badly."}, {v:'B', t:"Most riders will be younger than him."}, {v:'C', t:"The race is longer than he is used to."}, {v:'D', t:"He is looking forward to the challenge."}] },
+        { q: "25 Which of the following would Liam say about cycling?", opts: [
+            {v:'A', t:"I think everyone should start cycling. You don't need to train very hard to get good at the sport and it's great fun."},
+            {v:'B', t:"I often get nervous before a race and I think that makes me perform badly but I don't intend to give up."},
+            {v:'C', t:"I know it's not possible to win every race but I love cycling. I plan to continue the sport for quite a few more years."},
+            {v:'D', t:"I have to cycle at least 4 hours a day. To get faster I'll have to do even more and I don't know if I have enough time for that."}
+        ] },
+    ];
+    let part4Html = part4Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-3">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm">
+                        ${radioInput(`r_q${21+i}`, opt.v, 'mr-2')}
+                        ${opt.v} ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part5Items = [
+        { n: 26, opts: ['A notice', 'B show', 'C appear', 'D mark'] },
+        { n: 27, opts: ['A some', 'B all', 'C every', 'D any'] },
+        { n: 28, opts: ['A practice', 'B manner', 'C plan', 'D system'] },
+        { n: 29, opts: ['A known', 'B called', 'C described', 'D referred'] },
+        { n: 30, opts: ['A discovered', 'B realised', 'C delivered', 'D invented'] },
+        { n: 31, opts: ['A quite', 'B more', 'C over', 'D already'] },
+        { n: 32, opts: ['A at', 'B from', 'C before', 'D between'] },
+        { n: 33, opts: ['A consists', 'B includes', 'C contains', 'D involves'] },
+        { n: 34, opts: ['A which', 'B whose', 'C what', 'D who'] },
+        { n: 35, opts: ['A broadly', 'B widely', 'C deeply', 'D hugely'] },
+    ];
+    let part5Html = part5Items.map(item => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-2 border-b pb-1">Question ${item.n}</p>
+            <div class="space-y-1">
+                ${item.opts.map(opt => {
+                    const v = opt.charAt(0);
+                    const t = opt.substring(2);
+                    return `<label class="block cursor-pointer text-sm">${radioInput(`r_q${item.n}`, v, 'mr-2')} ${v} ${t}</label>`;
+                }).join('')}
+            </div>
+        </div>`).join('');
+
+    return `
+    <div class="reading-question-column bg-white ielts-border custom-scrollbar" id="reading-question-column">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">READING QUESTIONS</h3>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 1: Questions 1–5</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B or C.</p>
+            <div class="space-y-4">${part1Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 2: Questions 6–10</h4>
+            <p class="mb-4 text-sm font-medium">Write the correct letter (A–H) for each person. (Each letter used at most once.)</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part2Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 3: Questions 11–20</h4>
+            <p class="mb-4 text-sm font-medium">If it is correct, mark <strong>A</strong>. If it is not correct, mark <strong>B</strong>.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part3Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 4: Questions 21–25</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="space-y-4">${part4Html}</div>
+        </div>
+
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 5: Questions 26–35</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${part5Html}</div>
+        </div>
+    </div>`;
+}
+
+function renderReadingContent() {
+    return `
+    <div class="skill-content" id="content-reading">
+        <h2 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">READING (Paper 1: Reading and Writing)</h2>
+        <div class="reading-grid">
+            ${renderReadingPassages()}
+            ${renderReadingQuestions()}
+        </div>
+    </div>`;
+}
+
+// Re-render only the question column to preserve passage scroll position on answer change
+function renderQuestionColumn() {
+    const el = document.getElementById('reading-question-column');
+    if (el) {
+        const scrollTop = el.scrollTop;
+        el.outerHTML = renderReadingQuestions();
+        const newEl = document.getElementById('reading-question-column');
+        if (newEl) newEl.scrollTop = scrollTop;
+    }
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button class="action-button bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-semibold" onclick="showEndTestModal()">
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`;
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">Are you sure you want to end the test now? You will not be able to continue after confirming.</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+    SKILL_ORDER.forEach(skill => {
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+        let score = 0;
+
+        const cards = answerKeys.map(qId => {
+            const answerValue = answers[qId] || '';
+            const isCorrect = checkAnswer(qId, answerValue);
+            if (isCorrect) score++;
+
+            const displayAnswer = Array.isArray(answerValue) ? answerValue.join(', ') : answerValue;
+            const displayCorrect = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                ? READING_CORRECT_ANSWERS[qId].join(', ')
+                : READING_CORRECT_ANSWERS[qId];
+
+            return `
+                <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                    <p class="font-bold">${qId.toUpperCase()}</p>
+                    <p><strong>Your Answer:</strong> ${displayAnswer || '-'}</p>
+                    <p><strong>Correct Answer:</strong> ${displayCorrect}</p>
+                    <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                        ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </p>
+                </div>`;
+        }).join('');
+
+        detailedResultsHtml += `
+            <div>
+                <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">${skill.toUpperCase()}</h5>
+                <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
+                    <div class="mt-4 pt-4 border-t text-xl font-bold text-center">
+                        Total Score: ${score} / ${answerKeys.length}
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                    <p><strong>Full Name:</strong> ${candidate.name}</p>
+                    <p><strong>Test Status:</strong> Completed / Ended by user</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg">
+                    <p><strong>Reading:</strong> ${formatTime(candidate.times.reading)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Copy Report</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET READING MOCK TEST</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${renderReadingContent()}
+            </main>
+        </div>
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>

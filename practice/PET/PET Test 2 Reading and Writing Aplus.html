@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Reading Mock Test - Test 1 (2020)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+    }
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .reading-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        height: 100%;
+    }
+    @media (min-width: 1024px) {
+        .reading-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .reading-passage-column, .reading-question-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 180px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 9999px;
+        background-color: #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #334155;
+        flex-shrink: 0;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============================ CONSTANTS ============================ */
+const SKILL_ORDER = ['reading'];
+const INITIAL_TIMES = { reading: 45 * 60 }; // 45 minutes
+
+const READING_CORRECT_ANSWERS = {
+    'r_q1': 'C', 'r_q2': 'A', 'r_q3': 'A', 'r_q4': 'B', 'r_q5': 'C',
+    'r_q6': 'F', 'r_q7': 'B', 'r_q8': 'G', 'r_q9': 'A', 'r_q10': 'E',
+    'r_q11': 'D', 'r_q12': 'B', 'r_q13': 'A', 'r_q14': 'B', 'r_q15': 'C',
+    'r_q16': 'E', 'r_q17': 'B', 'r_q18': 'H', 'r_q19': 'D', 'r_q20': 'G',
+    'r_q21': 'B', 'r_q22': 'D', 'r_q23': 'A', 'r_q24': 'B', 'r_q25': 'C', 'r_q26': 'C',
+    'r_q27': 'where', 'r_q28': 'If', 'r_q29': 'in', 'r_q30': 'not', 'r_q31': 'was', 'r_q32': 'of'
+};
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'reading',
+    answers: { reading: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup'; // 'setup' | 'testing'
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let timerInterval = null;
+
+const root = document.getElementById('root');
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petMockTestState2', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state to localStorage:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petMockTestState2');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state from localStorage:', e);
+        localStorage.removeItem('petMockTestState2');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    const time = candidate.times[candidate.currentSkill];
+    if (time <= 0) {
+        pauseTimer();
+        if (candidate.currentSkill === 'reading') {
+            showReportModal();
+        }
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    runTimer();
+    render();
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+            console.warn(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    }
+}
+
+function handleSwitchSkill(newSkill) {
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petMockTestState2');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    window.location.reload();
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = READING_CORRECT_ANSWERS[qId];
+    if (!correct) return null;
+
+    if (Array.isArray(correct)) {
+        if (!Array.isArray(value)) return false;
+        const sortedCorrect = [...correct].sort();
+        const sortedValue = [...value].sort();
+        return sortedCorrect.length === sortedValue.length && sortedCorrect.every((v, i) => v === sortedValue[i]);
+    }
+
+    if (Array.isArray(value)) return false;
+    return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+}
+
+function generateReportText() {
+    let report = `PET MOCK TEST REPORT\n`;
+    report += `=========================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n\n`;
+
+    report += `REMAINING TIME\n`;
+    report += `-------------------------\n`;
+    report += `Reading: ${formatTime(candidate.times.reading)}\n\n`;
+
+    SKILL_ORDER.forEach(skill => {
+        report += `${skill.toUpperCase()} ANSWERS\n`;
+        report += `-------------------------\n`;
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+
+        if (answerKeys.length === 0) {
+            report += "No answers recorded.\n";
+        } else {
+            let score = 0;
+            answerKeys.forEach(qId => {
+                let answerValue = answers[qId] || '';
+                const isCorrect = checkAnswer(qId, answerValue);
+                if (isCorrect) score++;
+
+                if (Array.isArray(answerValue)) answerValue = answerValue.join(', ');
+                const correctValue = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                    ? READING_CORRECT_ANSWERS[qId].join(', ')
+                    : READING_CORRECT_ANSWERS[qId];
+
+                report += `${qId.toUpperCase()}:\n`;
+                report += `  Your Answer: ${answerValue}\n`;
+                report += `  Correct Answer: ${correctValue}\n`;
+                report += `  Status: ${isCorrect ? 'Correct' : 'Incorrect'}\n\n`;
+            });
+            report += `Score: ${score} / ${answerKeys.length}\n`;
+        }
+        report += `\n`;
+    });
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy report:", err);
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ ANSWER INPUT ============================ */
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}'); renderQuestionColumn();" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+/* ============================ READING PASSAGES (LEFT COLUMN) ============================ */
+function renderReadingPassages() {
+    return `
+    <div class="reading-passage-column bg-gray-50 ielts-border custom-scrollbar">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">READING PASSAGE CONTENT</h3>
+
+        <div id="reading-part-1" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 1</h4>
+            <p class="mb-4 text-sm font-medium italic">For each question, choose the correct answer.</p>
+            <div class="space-y-6">
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">1</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg mb-2">School Badminton Club Membership</p>
+                        <p>If you'd like to join the new badminton club, sign below by Friday (tomorrow). There are only 18 places left now. Practice evenings are Tuesdays and Thursdays.</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">2</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm text-center">
+                        <p class="font-bold mb-2">Recycling</p>
+                        <p>Put paper cups in green bin, plastic bottles and cups in blue bin, and food waste in red bin.</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">3</p>
+                    <div class="border border-black bg-gray-100 mb-3 text-sm rounded-2xl overflow-hidden">
+                        <div class="border-b border-black p-2 bg-gray-200 text-center font-semibold">Daniel</div>
+                        <div class="p-3">
+                            <p>Your little brother's just texted me. He'll be late this afternoon. He forgot he had football practice at 4 p.m. Can you wait for him and bring him home as I'm really busy?</p>
+                            <p class="text-right italic mt-2">Mum</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">4</p>
+                    <div class="border border-black bg-gray-100 mb-3 text-sm">
+                        <div class="border-b border-black p-2 bg-gray-200">
+                            <p><strong>From:</strong> Library</p>
+                            <p><strong>To:</strong> Members</p>
+                        </div>
+                        <div class="p-3">
+                            <p>Summer reading challenge for library members aged 12–18. Choose from the attached book list. You'll get a certificate for each book you read and a prize if you read six.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">5</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg mb-2">OUTDOOR COURTS</p>
+                        <p class="mb-2">All players need T-shirts, shorts, sun hats and proper tennis shoes, apart from under-10s, who may wear their gym shoes.</p>
+                        <p>No entry for students wearing the wrong shoes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reading-part-2" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 2</h4>
+            <p class="mb-4 text-sm font-medium italic">The young people below are interested in joining a dance or drama group.<br/>On the opposite page there are descriptions of eight dance and drama groups.<br/>Decide which group would be the most suitable for the people below.</p>
+
+            <h5 class="font-bold text-center mb-4 uppercase">Dance and drama groups</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="border p-3 bg-white"><p class="font-bold">A Let's go!</p><p>We offer classes for advanced dance and drama students who want to develop their talents to a really high level. Our expert teachers will work with you on your acting and your preferred dance style so that you are ready to compete against the best!</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">B Mouse House</p><p>We welcome all levels of ability and experience, and offer drama classes for children of all ages, led by professional performers. The activities are fun and great for building self-confidence, so you are soon ready to enter competitions. We meet every Saturday and parents are welcome to wait in the hall.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">C The Phoenix Group</p><p>With us, you'll take part in weekend drama workshops and receive a free ticket per term to watch a play at the local theatre. You'll have opportunities to perform to the public throughout the year. No experience is necessary, but you will need to book a term in advance.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">D Monsters DC</p><p>This group is for young people under 16 who want to develop their acting ability, or for more experienced actors who want to teach others their skills. All our members are encouraged to take part in our annual show, and every month you can meet successful actors and get their advice on a career in acting.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">E Peppermint Performers</p><p>Working with experienced theatre directors, you'll learn performance skills through a year-long programme of workshops. The first term is a series of skills-based sessions covering a range of different performance styles, with certificates for successful students. In future terms, you'll take part in plays performed for the general public.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">F Moon Productions</p><p>In our classes, we teach jazz, tap and street dance, and you'll soon be creating your own dances. We hold contests against other clubs and put on displays for parents every summer. Want to find out what a life as a professional dancer is like? Every term we invite a star to talk about their career.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">G The Focus Group</p><p>Classes are available every evening. You'll receive excellent training in dance and drama, and develop techniques and performance skills in no time. One-to-one tuition is offered, and it's possible to work towards a certificate. You'll also have the opportunity to take part in a professional play.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">H Bubble Company</p><p>Just come along with your friends and we'll do the rest. There's no need to have any experience, and we provide all the costumes and special dance shoes if you need them. We run small hour-long classes in dance or drama every evening after school, and family members are welcome to stay and watch.</p></div>
+            </div>
+        </div>
+
+        <div id="reading-part-3" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 3</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text below, then answer the questions on the right.</p>
+            <div class="border p-5 bg-white text-sm space-y-4">
+                <p>My name's Martin Cabello and I'm a young photographer. Taking photographs was always my favourite activity as a child. And when I was 15, I felt that if I wanted to take my hobby to the next level, I had to do something special. So I decided to start a personal project: I would take one photograph every day for a whole year of my life. I knew that many other young photographers before me had done the same thing, but it seemed like a really great idea, and so I started.</p>
+                <p>After a few weeks, I decided to put these photos onto a website for young photographers because I was keen to create a photo diary, and also to have the chance to show other people my photos. I was amazed to discover that there were others who liked the way I saw and photographed things. I was also enjoying photographing a wide range of subjects. Then someone suggested that if my photographs all had a common topic or idea to connect them, my project would be even better – and I agreed.</p>
+                <p>So I began to concentrate more on taking photos of nature scenes, especially of birds and the sky. A lot of them were black and white photographs, which was very different to what many other young photographers were doing – they were all taking colour photos. As a result, I sometimes had doubts about my project, and I almost gave up several times. In the end, however, I trusted my own feelings, and became more confident about my photographic style and choices.</p>
+                <p>One day I showed my project to my art teacher at school. She told me about a national photography competition for people my age. So I entered some of my photos, just for fun. I'll never forget the moment when the judges told me that I had won first prize; I was so happy, as my project meant so much to me. It was the first time I realised that maybe my photography really was good, and that I might actually be able to work as a professional photographer. I now have my own photography studio and I've never regretted my career choice.</p>
+            </div>
+        </div>
+
+        <div id="reading-part-4" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 4</h4>
+            <p class="mb-4 text-sm font-medium italic">Five sentences have been removed from the text below (marked 16–20). Choose the correct sentence A–H on the right for each gap. There are three extra sentences you do not need to use.</p>
+            <div class="border p-5 bg-white text-sm space-y-4">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase">Ballet for children and teenagers</h5>
+                <p>It can take a long time to reach a professional level in ballet, so most dancers begin their training very young. It is essential that very young dancers learn the ballet movements properly right from the beginning. <span class="font-bold text-[#003366]">[16]</span> This is because it is usually more difficult to change old habits than to learn new ones.</p>
+                <p>The first thing that young children who are interested in learning to dance often do is attend creative movement classes, where they can practise basic skills like jumping and turning, and just have fun. <span class="font-bold text-[#003366]">[17]</span> In addition, some people recommend that they should learn either to sing or play an instrument.</p>
+                <p>Young people who decide they want to have a ballet career can attend a dance school. Here, students not only study normal school subjects but also do daily dance training. <span class="font-bold text-[#003366]">[18]</span> And the whole dance-school environment is set up to support the young people's artistic development; it allows them to focus on their dance more easily, and prepares them for their future. But how can a young dancer and their parents tell which dance school is the most suitable? <span class="font-bold text-[#003366]">[19]</span> The older students taking part in it should clearly have more highly-developed ballet skills than the younger dancers.</p>
+                <p>By the time they are 16 or 17, many ballet dancers are entering ballet competitions and taking classes at professional studios. <span class="font-bold text-[#003366]">[20]</span> It is important for young dancers to know how well they are doing, because the dance world is very competitive and the training hard; not everyone makes it to the top.</p>
+
+                <div class="border-t pt-4 mt-4">
+                    <p class="font-bold mb-2">Choose from sentences A–H:</p>
+                    <div class="space-y-2">
+                        <p><strong>A</strong> For all these reasons, they enjoy meeting other dancers.</p>
+                        <p><strong>B</strong> Listening to different styles of music also helps.</p>
+                        <p><strong>C</strong> Travelling long distances to dance schools can be tiring, too.</p>
+                        <p><strong>D</strong> Attending one of their public performances is a good way of finding out.</p>
+                        <p><strong>E</strong> If they develop poor technique, they may have problems later on.</p>
+                        <p><strong>F</strong> Few people know where to find them.</p>
+                        <p><strong>G</strong> This allows them to compare themselves with teenagers from other schools.</p>
+                        <p><strong>H</strong> That means they do not waste time travelling from home to dance classes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reading-part-5" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 5</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text below and choose the correct word for each space.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 leading-loose">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase">Living on a boat</h5>
+                <p>Fourteen-year-old Jon Atkins hasn't had a typical childhood. His parents had always intended to buy a boat and sail round the world, and when Jon was eight they did (21) ___________ that. When they first told him of the plan, Jon felt sad about (22) ___________ his friends, but also excited because of the adventures he would (23) ___________ . Since then, Jon has sailed over 8,000 km and (24) ___________ that he loves living on a boat.</p>
+                <p>The boat has two sleeping cabins and Jon's cabin has just enough (25) ___________ to sit up in. In the main cabin there's a desk where he studies every day, as he needs to continue his education. Although he doesn't have any teachers, he doesn't think his lifestyle will (26) ___________ his future choices. He plans to become a ship's captain, and is certain that life on a boat is excellent preparation for this.</p>
+            </div>
+        </div>
+
+        <div id="reading-part-6" class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 6</h4>
+            <p class="mb-4 text-sm font-medium italic">Write ONE word for each gap.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 leading-loose">
+                <h5 class="font-bold text-xl text-center mb-1 uppercase">My city</h5>
+                <p class="text-center italic mb-4">by Harry Salter</p>
+                <p>Do you live in a nice place? I do! The city (27) ___________ I live is called Bristol, and it's in the south-west of England. It's not very big, but there are loads of things for teenagers to do here.</p>
+                <p>(28) ___________ you're interested in television, you should go to the Bristol TV and Radio Studios. On the tour of the studios, you can have a go at presenting and appear (29) ___________ your own radio drama.</p>
+                <p>Or if you're into sport, why (30) ___________ try canoeing? The best place is a very pretty local section of the Kennet and Avon canal. It connects Bristol to London and it (31) ___________ built in the early 18th century, so you can experience some local history at the same time.</p>
+                <p>These are just two (32) ___________ the many things you can do here. It really is a great place.</p>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ READING QUESTIONS (RIGHT COLUMN) ============================ */
+function renderReadingQuestions() {
+    const part1Items = [
+        { q: "1", opts: [{v:'A', t:"There are three badminton sessions a week at the new club."}, {v:'B', t:"The new badminton club can only have 18 members."}, {v:'C', t:"Students need to decide quickly whether they want to join the new club."}] },
+        { q: "2", opts: [{v:'A', t:"Unfinished burgers should go in the red bin."}, {v:'B', t:"Only bottles should go in the blue bin."}, {v:'C', t:"Plastic cups should be put in the green bin."}] },
+        { q: "3 Daniel's mother is texting him to", opts: [{v:'A', t:"ask Daniel to do her a favour."}, {v:'B', t:"complain that she has too much to do."}, {v:'C', t:"apologise for forgetting to tell Daniel something."}] },
+        { q: "4", opts: [{v:'A', t:"People can read any book from the library as part of the reading challenge."}, {v:'B', t:"Only certain people can take part in the reading challenge."}, {v:'C', t:"Everyone who takes part in the reading challenge will receive a prize."}] },
+        { q: "5", opts: [{v:'A', t:"Younger players must have proper tennis shoes to play here."}, {v:'B', t:"Only older students are allowed to play on these courts."}, {v:'C', t:"All players must wear the correct kit when using these courts."}] },
+    ];
+
+    let part1Html = part1Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-3">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm">
+                        ${radioInput(`r_q${i+1}`, opt.v, 'mr-2')}
+                        ${opt.v} ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part2People = [
+        { n: 6, name: 'Maiko', desc: "Maiko loves dancing and wants to learn new dance styles quickly. She'd like to meet successful dancers and also take part in competitions." },
+        { n: 7, name: 'Marta', desc: "Marta and her younger sister would like to join an acting group at the weekend. They haven't done anything like this before, so their mum wants to go with them at first." },
+        { n: 8, name: 'Eliana', desc: "Eliana's quite nervous so would like the possibility of some drama training on her own at first. She's free during the week and hopes to act in a play one day." },
+        { n: 9, name: 'Henri', desc: "Henri is an experienced dancer who enjoys entering competitions. He wants to concentrate on jazz dance and improve his drama skills too." },
+        { n: 10, name: 'José', desc: "José wants to perform in plays, and is interested in joining an acting course run by professionals with a diploma at the end." },
+    ];
+    let part2Html = part2People.map(p => `
+        <div class="flex items-start justify-between border-b pb-3 mb-3 gap-3">
+            <div class="flex items-start gap-3">
+                <div class="avatar-circle">${p.name.charAt(0)}</div>
+                <div>
+                    <span class="font-semibold block">${p.n}. ${p.name}</span>
+                    <p class="text-sm text-gray-600">${p.desc}</p>
+                </div>
+            </div>
+            ${textInput(`r_q${p.n}`, 'A-H', 'w-16 text-center flex-shrink-0')}
+        </div>`).join('');
+
+    const part3Items = [
+        { q: "11 Martin started his project because he wanted to", opts: [{v:'A', t:"influence other photographers."}, {v:'B', t:"try an original idea of his own."}, {v:'C', t:"take a lot more photos than he had before."}, {v:'D', t:"develop his photography further."}] },
+        { q: "12 What happened after Martin put his photos on the website?", opts: [{v:'A', t:"He became more interested in other photographers' pictures."}, {v:'B', t:"He was given some advice to improve his project."}, {v:'C', t:"He decided that his photos weren't good enough."}, {v:'D', t:"He discovered that the website wasn't the best place for his photos."}] },
+        { q: "13 How did Martin feel when he took his first nature photos?", opts: [{v:'A', t:"He wasn't sure that he was doing the right thing."}, {v:'B', t:"He was certain that the photos would be better in colour."}, {v:'C', t:"He was anxious about what others would think."}, {v:'D', t:"He was worried that his photos might not be interesting."}] },
+        { q: "14 How did winning the competition affect Martin?", opts: [{v:'A', t:"He realised how enjoyable competitions can be."}, {v:'B', t:"It helped him to make a decision about his future."}, {v:'C', t:"It gave him the opportunity to meet more young photographers."}, {v:'D', t:"He started putting more effort into his photography."}] },
+        { q: "15 What would be a good title for this text?", opts: [{v:'A', t:"My favourite websites for sharing photographs."}, {v:'B', t:"The best way to become a successful young photographer."}, {v:'C', t:"How a photography project changed my life."}, {v:'D', t:"Why more photographers should take pictures of nature."}] },
+    ];
+    let part3Html = part3Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-3">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm">
+                        ${radioInput(`r_q${11+i}`, opt.v, 'mr-2')}
+                        ${opt.v} ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    let part4Html = [16,17,18,19,20].map(num => `
+        <div class="flex items-center justify-between border-b pb-2 mb-2">
+            <span class="font-semibold">Question ${num}</span>
+            ${textInput(`r_q${num}`, 'A-H', 'w-16 text-center')}
+        </div>`).join('');
+
+    const part5Items = [
+        { n: 21, opts: ['A definitely', 'B exactly', 'C certainly', 'D absolutely'] },
+        { n: 22, opts: ['A departing', 'B moving', 'C remembering', 'D leaving'] },
+        { n: 23, opts: ['A have', 'B set', 'C do', 'D make'] },
+        { n: 24, opts: ['A expected', 'B discovered', 'C imagined', 'D believed'] },
+        { n: 25, opts: ['A area', 'B size', 'C space', 'D place'] },
+        { n: 26, opts: ['A contain', 'B fix', 'C limit', 'D control'] },
+    ];
+    let part5Html = part5Items.map(item => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-2 border-b pb-1">Question ${item.n}</p>
+            <div class="space-y-1">
+                ${item.opts.map(opt => {
+                    const v = opt.charAt(0);
+                    const t = opt.substring(2);
+                    return `<label class="block cursor-pointer text-sm">${radioInput(`r_q${item.n}`, v, 'mr-2')} ${v} ${t}</label>`;
+                }).join('')}
+            </div>
+        </div>`).join('');
+
+    let part6Html = [27,28,29,30,31,32].map(num => `
+        <div class="flex items-center justify-between border-b pb-2 mb-2">
+            <span class="font-semibold">Question ${num}</span>
+            ${textInput(`r_q${num}`, 'one word', 'w-32 text-center')}
+        </div>`).join('');
+
+    return `
+    <div class="reading-question-column bg-white ielts-border custom-scrollbar" id="reading-question-column">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">READING QUESTIONS</h3>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 1: Questions 1–5</h4>
+            <p class="mb-4 text-sm font-medium">For each question, choose the correct answer.</p>
+            <div class="space-y-4">${part1Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 2: Questions 6–10</h4>
+            <p class="mb-4 text-sm font-medium">Write the correct letter (A–H) for each person.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part2Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 3: Questions 11–15</h4>
+            <p class="mb-4 text-sm font-medium">For each question, choose the correct answer.</p>
+            <div class="space-y-4">${part3Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 4: Questions 16–20</h4>
+            <p class="mb-4 text-sm font-medium">Write the correct letter (A–H) for each gap. (See passage for the sentence options.)</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part4Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 5: Questions 21–26</h4>
+            <p class="mb-4 text-sm font-medium">For each question, choose the correct answer.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${part5Html}</div>
+        </div>
+
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 6: Questions 27–32</h4>
+            <p class="mb-4 text-sm font-medium">Write ONE word for each gap.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part6Html}</div>
+        </div>
+    </div>`;
+}
+
+function renderReadingContent() {
+    return `
+    <div class="skill-content" id="content-reading">
+        <h2 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">READING (45 minutes)</h2>
+        <div class="reading-grid">
+            ${renderReadingPassages()}
+            ${renderReadingQuestions()}
+        </div>
+    </div>`;
+}
+
+// Re-render only the question column to preserve passage scroll position on answer change
+function renderQuestionColumn() {
+    const el = document.getElementById('reading-question-column');
+    if (el) {
+        const scrollTop = el.scrollTop;
+        el.outerHTML = renderReadingQuestions();
+        const newEl = document.getElementById('reading-question-column');
+        if (newEl) newEl.scrollTop = scrollTop;
+    }
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button class="action-button bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-semibold" onclick="showEndTestModal()">
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`;
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">Are you sure you want to end the test now? You will not be able to continue after confirming.</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+    SKILL_ORDER.forEach(skill => {
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+        let score = 0;
+
+        const cards = answerKeys.map(qId => {
+            const answerValue = answers[qId] || '';
+            const isCorrect = checkAnswer(qId, answerValue);
+            if (isCorrect) score++;
+
+            const displayAnswer = Array.isArray(answerValue) ? answerValue.join(', ') : answerValue;
+            const displayCorrect = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                ? READING_CORRECT_ANSWERS[qId].join(', ')
+                : READING_CORRECT_ANSWERS[qId];
+
+            return `
+                <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                    <p class="font-bold">${qId.toUpperCase()}</p>
+                    <p><strong>Your Answer:</strong> ${displayAnswer || '-'}</p>
+                    <p><strong>Correct Answer:</strong> ${displayCorrect}</p>
+                    <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                        ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </p>
+                </div>`;
+        }).join('');
+
+        detailedResultsHtml += `
+            <div>
+                <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">${skill.toUpperCase()}</h5>
+                <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
+                    <div class="mt-4 pt-4 border-t text-xl font-bold text-center">
+                        Total Score: ${score} / ${answerKeys.length}
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                    <p><strong>Full Name:</strong> ${candidate.name}</p>
+                    <p><strong>Test Status:</strong> Completed / Ended by user</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg">
+                    <p><strong>Reading:</strong> ${formatTime(candidate.times.reading)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Copy Report</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET READING MOCK TEST</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${renderReadingContent()}
+            </main>
+        </div>
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>

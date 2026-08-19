@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Reading Mock Test 3 (R3-P3) - APLUS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+    }
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .reading-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        height: 100%;
+    }
+    @media (min-width: 1024px) {
+        .reading-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .reading-passage-column, .reading-question-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 180px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        background-color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #003366;
+        flex-shrink: 0;
+        border: 1px solid #cbd5e1;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============================ CONSTANTS ============================ */
+const SKILL_ORDER = ['reading'];
+const INITIAL_TIMES = { reading: 50 * 60 }; // 50 minutes
+
+// Correct Key strictly from r3-p3 KEY.png
+const READING_CORRECT_ANSWERS = {
+    'r_q1': 'C', 'r_q2': 'A', 'r_q3': 'B', 'r_q4': 'B', 'r_q5': 'C',
+    'r_q6': 'G', 'r_q7': 'B', 'r_q8': 'F', 'r_q9': 'C', 'r_q10': 'D',
+    'r_q11': 'A', 'r_q12': 'A', 'r_q13': 'A', 'r_q14': 'B', 'r_q15': 'A',
+    'r_q16': 'B', 'r_q17': 'A', 'r_q18': 'B', 'r_q19': 'B', 'r_q20': 'B',
+    'r_q21': 'C', 'r_q22': 'C', 'r_q23': 'B', 'r_q24': 'C', 'r_q25': 'A',
+    'r_q26': 'B', 'r_q27': 'A', 'r_q28': 'D', 'r_q29': 'D', 'r_q30': 'B',
+    'r_q31': 'A', 'r_q32': 'C', 'r_q33': 'B', 'r_q34': 'D', 'r_q35': 'B'
+};
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'reading',
+    answers: { reading: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup'; // 'setup' | 'testing'
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let timerInterval = null;
+
+const root = document.getElementById('root');
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petMockTestState_R3P3', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state to localStorage:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petMockTestState_R3P3');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state from localStorage:', e);
+        localStorage.removeItem('petMockTestState_R3P3');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    const time = candidate.times[candidate.currentSkill];
+    if (time <= 0) {
+        pauseTimer();
+        if (candidate.currentSkill === 'reading') {
+            showReportModal();
+        }
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    runTimer();
+    render();
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+            console.warn(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    }
+}
+
+function handleSwitchSkill(newSkill) {
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petMockTestState_R3P3');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    window.location.reload();
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = READING_CORRECT_ANSWERS[qId];
+    if (!correct) return null;
+
+    if (Array.isArray(correct)) {
+        if (!Array.isArray(value)) return false;
+        const sortedCorrect = [...correct].sort();
+        const sortedValue = [...value].sort();
+        return sortedCorrect.length === sortedValue.length && sortedCorrect.every((v, i) => v === sortedValue[i]);
+    }
+
+    if (Array.isArray(value)) return false;
+    return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+}
+
+function generateReportText() {
+    let report = `PET MOCK TEST REPORT\n`;
+    report += `=========================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n\n`;
+
+    report += `REMAINING TIME\n`;
+    report += `-------------------------\n`;
+    report += `Reading: ${formatTime(candidate.times.reading)}\n\n`;
+
+    SKILL_ORDER.forEach(skill => {
+        report += `${skill.toUpperCase()} ANSWERS\n`;
+        report += `-------------------------\n`;
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+
+        if (answerKeys.length === 0) {
+            report += "No answers recorded.\n";
+        } else {
+            let score = 0;
+            answerKeys.forEach(qId => {
+                let answerValue = answers[qId] || '';
+                const isCorrect = checkAnswer(qId, answerValue);
+                if (isCorrect) score++;
+
+                if (Array.isArray(answerValue)) answerValue = answerValue.join(', ');
+                const correctValue = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                    ? READING_CORRECT_ANSWERS[qId].join(', ')
+                    : READING_CORRECT_ANSWERS[qId];
+
+                report += `${qId.toUpperCase()}:\n`;
+                report += `  Your Answer: ${answerValue}\n`;
+                report += `  Correct Answer: ${correctValue}\n`;
+                report += `  Status: ${isCorrect ? 'Correct' : 'Incorrect'}\n\n`;
+            });
+            report += `Score: ${score} / ${answerKeys.length}\n`;
+        }
+        report += `\n`;
+    });
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy report:", err);
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ ANSWER INPUT ============================ */
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}'); renderQuestionColumn();" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+/* ============================ READING PASSAGES (LEFT COLUMN) ============================ */
+function renderReadingPassages() {
+    return `
+    <div class="reading-passage-column bg-gray-50 ielts-border custom-scrollbar">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">READING PASSAGE CONTENT</h3>
+
+        <!-- Part 1 -->
+        <div id="reading-part-1" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 1</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the text in each question. What does it say?</p>
+
+            <div class="space-y-6">
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">1</p>
+                    <div class="border-2 border-black p-3 bg-gray-100 mb-3 text-sm">
+                        <p><strong>From:</strong> Roberto</p>
+                        <p><strong>To:</strong> Sam</p>
+                        <hr class="my-2 border-gray-400"/>
+                        <p>Sorry I missed you yesterday. I'm not in at all next week, but the following Thursday's fine. Why not see if Sven's free as well?</p>
+                    </div>
+                </div>
+
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">2</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm">
+                        <p class="mb-2">Need to relax after our journey – car broke down (fixed now!). At this hotel until 16th then staying overnight with Anna on the way home.</p>
+                        <p class="text-right font-semibold">Kaye and Brian</p>
+                    </div>
+                </div>
+
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">3</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg mb-1">Welcome to Greenhill School.</p>
+                        <p class="font-semibold">All visitors to report to school office on first floor.</p>
+                    </div>
+                </div>
+
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">4</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm">
+                        <p class="font-bold mb-1">Tim</p>
+                        <p>No more eggs left, so I'll collect some at the farm. Please buy bread in town and tell Megan to get a salad ready tonight.</p>
+                        <p class="text-right font-semibold">Mum</p>
+                    </div>
+                </div>
+
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2 text-gray-700">5</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg uppercase mb-1">EVENING PERFORMANCE</p>
+                        <p>Refreshments are served only during the interval.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 2 -->
+        <div id="reading-part-2" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 2</h4>
+            <p class="mb-4 text-sm font-medium italic">The people below are all on holiday in Sydney, Australia.<br/>On the opposite page there are descriptions of eight places to visit.<br/>Decide which place would be the most suitable for the following people.</p>
+
+            <h5 class="font-bold text-center my-4 uppercase text-gray-700">PLACES TO VISIT IN SYDNEY</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">A The Harbourside Development</p>
+                    <p>The Harbourside Development is one of the world's most exciting places to shop. It's situated right on the edge of Sydney Harbour, and there are over 200 shops, selling everything from home-made sweets to the very latest in fashion; from Australian souvenirs to Swiss watches and Japanese cameras.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">B The Australian Wildlife Park</p>
+                    <p>The Australian Wildlife Park has been specially built to give people an extra close look at Australia's native animals. Have your photo taken with a kangaroo, touch and feed koala bears. There are talks every afternoon about these animals, which are only found in this part of the world. Excellent souvenir shop.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">C A visit to the Australian Museum</p>
+                    <p>A visit to the Australian Museum is like an adventure across Australia. There are exhibitions on the people and their way of life, and the whole continent. Talks and guided tours help to make your visit unforgettable. There's also a café and a good bookshop, selling excellent maps.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">D The Opera House</p>
+                    <p>This is a 20th century masterpiece of engineering and offers top international performances. A guided tour lasts two hours and is available any day between 9 am and 4 pm. Special 'backstage' tours are available on Sundays.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">E The State Library</p>
+                    <p>The State Library is in the oldest part of Sydney. There are free film screenings, guided tours and educational activities. It has regular exhibitions of books on science and technology. Learn to use a micro-computer, watch a video, or look through the Library Shop.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">F Surrounded by the modern city</p>
+                    <p>the Rocks is the oldest part of Sydney and full of history. On weekends there are outdoor concerts and street theatre to enjoy. Every Saturday and Sunday there is a market where it is possible to buy the works of local artists.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">G Powerhouse Museum</p>
+                    <p>One of the world's leading museums, the Powerhouse Museum has over 25 exhibitions on the latest developments in science and technology. Everything from a NASA space station to the first car ever built can be found at this museum. There are also many activities for children here.</p>
+                </div>
+                <div class="border p-3 bg-white rounded shadow-sm">
+                    <p class="font-bold text-[#003366] mb-1">H Taronga Zoo</p>
+                    <p>Taronga Zoo has Australia's finest collection of rainforest birds and a sea-life centre which has many of the fish that can be found off the coasts of Australia and New Zealand. Taronga is also famous for its large group of South East Asian monkeys. Snacks are available at the café.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 3 -->
+        <div id="reading-part-3" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 3</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the sentences below about an art gallery.<br/>Read the text on the opposite page to decide if each sentence is correct or incorrect.</p>
+
+            <div class="border p-5 bg-white text-sm space-y-4 rounded shadow-sm leading-relaxed">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase text-[#003366]">Gallery News</h5>
+
+                <p><strong>Easter quiz for children</strong><br/>
+                During the Easter holidays young visitors can take part in a quiz on the subject of Surprises. The free quiz sheets can be picked up from the desk at the Orange Street entrance. Children will be directed to 14 surprising paintings and asked a variety of questions about them.<br/>
+                The quiz sheets will be available during normal gallery hours from 25 March until 9 April.</p>
+
+                <p><strong>New picture</strong><br/>
+                The Gallery now has a fine still life by the Dutch 18th century painter Jan van Os. This large picture (89.1 x 71 cm) of flowers and fruit is painted in light, bright colours on wood. It is one of the first pictures of this type in the Gallery. The picture is signed and dated 1777 and 1778. It is not unusual for a picture like this to be dated in two years: the artist waited for particular flowers to bloom in their different seasons in order to paint them. The picture was generously given to the Gallery by Miss Violet Churchman in memory of her sister Ida Nancy. It is now on display in Room 25.</p>
+
+                <p><strong>Special exhibition</strong><br/>
+                The exhibition 'Painting in Spain during the late 18th century' opened in the Sunley Room on 15 March. Recently the Gallery has bought works by three Spanish painters of this period: Paret, Melendez and Francisco Bayeu, who are the focus of the exhibition. These three artists are joined by Francisco's brother Ramon, by Antonio Gonzalez, and by two Italians who worked in Spain during these years - Corrado Giaquinto and Giovanni Battista Tiepolo. The exhibition runs until 31 May.</p>
+
+                <p><strong>Lecture news</strong><br/>
+                The series of lectures arranged to go with the special exhibition continues every Wednesday. On 5 April Lizzie Barker will discuss the work of Melendez, while on 12 April Sarah Symmons will lecture on Luis Paret. On 19 and 26 April Juliet Wilson will talk about Francisco Bayeu.<br/>
+                On Tuesdays in April, Erika Langmuir will explain how artists often 'tell a story' through their pictures.</p>
+
+                <p><strong>Gallery restaurant improvements</strong><br/>
+                The Gallery is delighted to announce that an improved and expanded service is now available in the Gallery restaurant. With its new kitchens the restaurant offers a wide choice of hot and cold dishes at reasonable prices.</p>
+
+                <p><strong>Information for visitors</strong><br/>
+                Free guided tours of the Gallery take place every day at 11.00 am and 3.00 pm (except Sundays). These tours introduce some of the Gallery's greatest pictures, and show the whole range of the Gallery's collection of some of the most important European paintings from the 13th to the early 20th centuries.</p>
+            </div>
+        </div>
+
+        <!-- Part 4 -->
+        <div id="reading-part-4" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 4</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text and questions below.</p>
+
+            <div class="border p-5 bg-white text-sm space-y-4 rounded shadow-sm leading-relaxed">
+                <p>When I injured my back I had to take a break from my running career. I decided to introduce more women to the sport, to show them how much fun it can be and to give them the confidence to get out and run.</p>
+                <p>I decided to start a running club for women in my area because I was annoyed by the attitude of many race organisers. They complain about the lack of women in the sport but also use this as an excuse for not providing separate changing facilities.</p>
+                <p>I put up posters and 40 women, young and old, fit and unfit, joined. All of them were attracted by the idea of losing weight but I don't think they had really thought about running before. When or if they did, they had a picture of painful training. They didn't think of chatting and smiling while running in beautiful places, like by a river.</p>
+                <p>At first they ran for only a minute now they can run for thirty minutes. They've also learned from other runners about diet and keeping fit in general.</p>
+                <p>I wanted to do something for women's running and I've had so much pleasure watching their progress - almost as much as they've had themselves.</p>
+            </div>
+        </div>
+
+        <!-- Part 5 -->
+        <div id="reading-part-5" class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 5</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text below and choose the correct word for each space.</p>
+
+            <div class="border p-5 bg-white text-sm space-y-4 leading-loose rounded shadow-sm">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase text-[#003366]">MONEY</h5>
+                <p>What is money? The pound, the dollar or the euro are actually just (0) <span class="font-bold border-b border-black">like</span> a gram or a kilometre. The difference is that you can exchange money for something (26) ___________ . A ten pound note may buy a book, a huge bag of sweets, or a (27) ___________ of cinema tickets. But the note itself is only a printed (28) ___________ of paper which costs almost nothing to make. Thousands of years (29) ___________ people didn't have money as we know (30) ___________ . There were no banks (31) ___________ even shops. In those days, Mr Green the farmer exchanged the corn he (32) ___________ grown for Mr Hive's honey. This was an exchange arranged between two (33) ___________ , each of whom had something that the other wanted. But in time, most societies invented their own 'currencies' (34) ___________ that people could exchange more. The different currencies began to join together, which is why (35) ___________ everyone uses the same currency in their country.</p>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ READING QUESTIONS (RIGHT COLUMN) ============================ */
+function renderReadingQuestions() {
+    const part1Items = [
+        {
+            q: "1",
+            opts: [
+                {v:'A', t:"Sven is unavailable for a meeting next week."},
+                {v:'B', t:"he will join Sam in a meeting next Thursday."},
+                {v:'C', t:"Sam should invite Sven to their next meeting."}
+            ]
+        },
+        {
+            q: "2",
+            opts: [
+                {v:'A', t:"Kaye and Brian found their drive to the hotel stressful."},
+                {v:'B', t:"Kaye and Brian's car needs to be repaired before they leave."},
+                {v:'C', t:"Kaye and Brian will drive straight back after their hotel stay."}
+            ]
+        },
+        {
+            q: "3",
+            opts: [
+                {v:'A', t:"Staff must tell the office when they arrive."},
+                {v:'B', t:"People visiting the school should inform the office."},
+                {v:'C', t:"School reports are available in the office."}
+            ]
+        },
+        {
+            q: "4 Tim's mother wants him to get some",
+            opts: [
+                {v:'A', t:"salad."},
+                {v:'B', t:"bread."},
+                {v:'C', t:"eggs."}
+            ]
+        },
+        {
+            q: "5",
+            opts: [
+                {v:'A', t:"Snacks are available before the performance."},
+                {v:'B', t:"Help yourself to drinks after the performance."},
+                {v:'C', t:"You can have a drink during the break."}
+            ]
+        }
+    ];
+
+    let part1Html = part1Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50 shadow-sm">
+            <p class="font-medium mb-3 text-gray-800">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">
+                        ${radioInput(`r_q${i+1}`, opt.v, 'mr-2')}
+                        <span class="font-semibold">${opt.v}</span> ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part2People = [
+        { n: 6, name: 'Mark', desc: "Mark is an engineer and would like to spend a day looking at modern inventions and scientific discoveries. His 12-year-old daughter will probably go with him." },
+        { n: 7, name: 'Sarah Jones', desc: "Sarah Jones and her young son want to spend a day out and see some of the animals that Australia is famous for. Sarah also wants to buy presents to take home." },
+        { n: 8, name: 'Susan', desc: "Before she leaves Australia, Susan wants to spend a day shopping. She is looking for something special for her father, who is interested in art. She dislikes large shopping centres." },
+        { n: 9, name: 'Mario', desc: "Mario is hoping to spend six months touring round the whole of Australia. Before setting off he wants to find out as much as possible about its history and inhabitants." },
+        { n: 10, name: 'Stefan Holmstrom', desc: "Stefan Holmstrom is interested in modern buildings, and always likes to get to know as much as possible about them. He also enjoys listening to music." }
+    ];
+
+    let part2Html = part2People.map(p => `
+        <div class="flex items-start justify-between border-b pb-3 mb-3 gap-3">
+            <div class="flex items-start gap-3">
+                <div class="avatar-circle">${p.name.charAt(0)}</div>
+                <div>
+                    <span class="font-semibold block text-gray-800">${p.n}. ${p.name}</span>
+                    <p class="text-sm text-gray-600">${p.desc}</p>
+                </div>
+            </div>
+            ${textInput(`r_q${p.n}`, 'A-H', 'w-16 text-center flex-shrink-0 font-bold uppercase')}
+        </div>`).join('');
+
+    const part3Sentences = [
+        "11 Children can answer quiz questions about some specially chosen pictures.",
+        "12 The Gallery has few pictures like their new one by Jan van Os.",
+        "13 It took Jan van Os a lot of time to complete his picture.",
+        "14 The Gallery had to pay a lot for the new picture.",
+        "15 The special exhibition has pictures by Spanish artists and by other artists who worked in Spain.",
+        "16 The Easter quiz is on for longer than the special exhibition.",
+        "17 In the Gallery on any Wednesday in April you can learn about 18th century Spanish painters.",
+        "18 The Gallery has just opened a restaurant for visitors.",
+        "19 A guide takes visitors round the Gallery twice every day.",
+        "20 You can see paintings from all over the world in the Gallery."
+    ];
+
+    let part3Html = part3Sentences.map((text, i) => `
+        <div class="mb-4 border-b pb-2">
+            <p class="text-sm mb-2 font-medium text-gray-800">${text}</p>
+            <div class="space-x-6">
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(`r_q${11+i}`, 'A', 'mr-1')} A (Correct)
+                </label>
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(`r_q${11+i}`, 'B', 'mr-1')} B (Incorrect)
+                </label>
+            </div>
+        </div>`).join('');
+
+    const part4Items = [
+        {
+            q: "21 What is the writer's main aim in writing the text?",
+            opts: [
+                {v:'A', t:"to describe her own running career"},
+                {v:'B', t:"to complain about race organisers"},
+                {v:'C', t:"to talk about women runners"},
+                {v:'D', t:"to describe good running methods"}
+            ]
+        },
+        {
+            q: "22 What would a reader find out from the text?",
+            opts: [
+                {v:'A', t:"how runners can avoid injuring themselves"},
+                {v:'B', t:"the best kinds of places for running"},
+                {v:'C', t:"the progress made by the women in the club"},
+                {v:'D', t:"the teaching skills of the writer"}
+            ]
+        },
+        {
+            q: "23 What is the writer's opinion of the runners she trained?",
+            opts: [
+                {v:'A', t:"They were too serious."},
+                {v:'B', t:"They needed encouraging."},
+                {v:'C', t:"They couldn't develop their skills."},
+                {v:'D', t:"They were difficult to train."}
+            ]
+        },
+        {
+            q: "24 The women joined the running club to",
+            opts: [
+                {v:'A', t:"have a good time."},
+                {v:'B', t:"meet other people."},
+                {v:'C', t:"help them lose weight."},
+                {v:'D', t:"become top runners."}
+            ]
+        },
+        {
+            q: "25 Which of the following would be the best title for the club poster?",
+            opts: [
+                {v:'A', t:"Discover the pleasures of running"},
+                {v:'B', t:"Riverside Running Club for Women"},
+                {v:'C', t:"Athletics competitions: how to win"},
+                {v:'D', t:"KEEP FIT BY TRAINING HARD"}
+            ]
+        }
+    ];
+
+    let part4Html = part4Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50 shadow-sm">
+            <p class="font-medium mb-3 text-gray-800">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">
+                        ${radioInput(`r_q${21+i}`, opt.v, 'mr-2')}
+                        <span class="font-semibold">${opt.v}</span> ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part5Items = [
+        { n: 26, opts: ['A other', 'B else', 'C another', 'D apart'] },
+        { n: 27, opts: ['A couple', 'B double', 'C few', 'D several'] },
+        { n: 28, opts: ['A slice', 'B part', 'C side', 'D piece'] },
+        { n: 29, opts: ['A since', 'B past', 'C before', 'D ago'] },
+        { n: 30, opts: ['A them', 'B it', 'C some', 'D that'] },
+        { n: 31, opts: ['A or', 'B neither', 'C and', 'D but'] },
+        { n: 32, opts: ['A did', 'B was', 'C had', 'D has'] },
+        { n: 33, opts: ['A jobs', 'B people', 'C things', 'D goods'] },
+        { n: 34, opts: ['A for', 'B by', 'C because', 'D so'] },
+        { n: 35, opts: ['A tomorrow', 'B today', 'C recently', 'D soon'] }
+    ];
+
+    let part5Html = part5Items.map(item => `
+        <div class="border p-3 rounded-lg bg-gray-50 shadow-sm">
+            <p class="font-semibold mb-2 border-b pb-1 text-[#003366]">Question ${item.n}</p>
+            <div class="space-y-1">
+                ${item.opts.map(opt => {
+                    const v = opt.charAt(0);
+                    const t = opt.substring(2);
+                    return `<label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">${radioInput(`r_q${item.n}`, v, 'mr-2')} <span class="font-bold">${v}</span> ${t}</label>`;
+                }).join('')}
+            </div>
+        </div>`).join('');
+
+    return `
+    <div class="reading-question-column bg-white ielts-border custom-scrollbar" id="reading-question-column">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">READING QUESTIONS</h3>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 1: Questions 1–5</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B or C.</p>
+            <div class="space-y-4">${part1Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 2: Questions 6–10</h4>
+            <p class="mb-4 text-sm font-medium">Write the correct letter (A–H) for each person.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part2Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 3: Questions 11–20</h4>
+            <p class="mb-4 text-sm font-medium">If it is correct, mark <strong>A</strong>. If it is not correct, mark <strong>B</strong>.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part3Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 4: Questions 21–25</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="space-y-4">${part4Html}</div>
+        </div>
+
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 5: Questions 26–35</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${part5Html}</div>
+        </div>
+    </div>`;
+}
+
+function renderReadingContent() {
+    return `
+    <div class="skill-content" id="content-reading">
+        <h2 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">READING (Test 3 - R3-P3)</h2>
+        <div class="reading-grid">
+            ${renderReadingPassages()}
+            ${renderReadingQuestions()}
+        </div>
+    </div>`;
+}
+
+function renderQuestionColumn() {
+    const el = document.getElementById('reading-question-column');
+    if (el) {
+        const scrollTop = el.scrollTop;
+        el.outerHTML = renderReadingQuestions();
+        const newEl = document.getElementById('reading-question-column');
+        if (newEl) newEl.scrollTop = scrollTop;
+    }
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button class="action-button bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-semibold" onclick="showEndTestModal()">
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`;
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">Are you sure you want to end the test now? You will not be able to continue after confirming.</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+    SKILL_ORDER.forEach(skill => {
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+        let score = 0;
+
+        const cards = answerKeys.map(qId => {
+            const answerValue = answers[qId] || '';
+            const isCorrect = checkAnswer(qId, answerValue);
+            if (isCorrect) score++;
+
+            const displayAnswer = Array.isArray(answerValue) ? answerValue.join(', ') : answerValue;
+            const displayCorrect = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                ? READING_CORRECT_ANSWERS[qId].join(', ')
+                : READING_CORRECT_ANSWERS[qId];
+
+            return `
+                <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                    <p class="font-bold text-[#003366]">${qId.toUpperCase()}</p>
+                    <p><strong>Your Answer:</strong> ${displayAnswer || '-'}</p>
+                    <p><strong>Correct Answer:</strong> ${displayCorrect}</p>
+                    <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                        ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </p>
+                </div>`;
+        }).join('');
+
+        detailedResultsHtml += `
+            <div>
+                <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">${skill.toUpperCase()}</h5>
+                <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
+                    <div class="mt-4 pt-4 border-t text-xl font-bold text-center text-[#003366]">
+                        Total Score: ${score} / ${answerKeys.length}
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                    <p><strong>Full Name:</strong> ${candidate.name}</p>
+                    <p><strong>Test Status:</strong> Completed / Ended by user</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Reading:</strong> ${formatTime(candidate.times.reading)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Copy Report</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET MOCK TEST (R3-P3)</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${renderReadingContent()}
+            </main>
+        </div>
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>

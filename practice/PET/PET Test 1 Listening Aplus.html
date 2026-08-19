@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Listening Mock Test - Complete Cambridge Practice Test</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+    }
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .listening-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 190px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============================ CONSTANTS & IMAGES ============================ */
+const SKILL_ORDER = ['listening'];
+const INITIAL_TIMES = { listening: 35 * 60 }; // 35 minutes
+
+const LISTENING_CORRECT_ANSWERS = {
+    'l_q1': 'A', 'l_q2': 'C', 'l_q3': 'B', 'l_q4': 'C', 'l_q5': 'A', 'l_q6': 'C', 'l_q7': 'B',
+    'l_q8': 'B', 'l_q9': 'A', 'l_q10': 'A', 'l_q11': 'C', 'l_q12': 'C', 'l_q13': 'B',
+    'l_q14': 'Creative', 'l_q15': 'T-shirt', 'l_q16': 'picture', 'l_q17': '9', 'l_q18': 'photo', 'l_q19': 'DVD player',
+    'l_q20': 'B', 'l_q21': 'A', 'l_q22': 'B', 'l_q23': 'A', 'l_q24': 'B', 'l_q25': 'B'
+};
+
+const TOTAL_QUESTIONS = Object.keys(LISTENING_CORRECT_ANSWERS).length;
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'listening',
+    answers: { listening: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup'; // 'setup' | 'testing'
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let timerInterval = null;
+
+const root = document.getElementById('root');
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function getAnsweredCount() {
+    const answers = candidate.answers.listening || {};
+    let count = 0;
+    Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+        if (answers[qId] && String(answers[qId]).trim() !== '') {
+            count++;
+        }
+    });
+    return count;
+}
+
+function isTestCompleted() {
+    return getAnsweredCount() === TOTAL_QUESTIONS;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petListeningMockTestState_v2', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petListeningMockTestState_v2');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state:', e);
+        localStorage.removeItem('petListeningMockTestState_v2');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    const time = candidate.times[candidate.currentSkill];
+    if (time <= 0) {
+        pauseTimer();
+        showReportModal();
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    runTimer();
+    render();
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+            console.warn(`Fullscreen error: ${err.message}`);
+        });
+    }
+}
+
+function handleSwitchSkill(newSkill) {
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+    updateHeaderOnly();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    if (!isTestCompleted()) return;
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petListeningMockTestState_v2');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    window.location.reload();
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = LISTENING_CORRECT_ANSWERS[qId];
+    if (!correct) return null;
+    
+    const userVal = String(value || '').trim().toLowerCase();
+    const correctVal = String(correct).trim().toLowerCase();
+
+    if (qId === 'l_q14' && (userVal === 'creative')) return true;
+    if (qId === 'l_q17' && (userVal === '9' || userVal === '9th')) return true;
+
+    return userVal === correctVal;
+}
+
+function generateReportText() {
+    let report = `PET LISTENING MOCK TEST REPORT\n`;
+    report += `=========================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n\n`;
+
+    report += `REMAINING TIME\n`;
+    report += `-------------------------\n`;
+    report += `Listening: ${formatTime(candidate.times.listening)}\n\n`;
+
+    report += `LISTENING ANSWERS\n`;
+    report += `-------------------------\n`;
+    const answers = candidate.answers.listening || {};
+    let score = 0;
+
+    Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+        let answerValue = answers[qId] || '';
+        const isCorrect = checkAnswer(qId, answerValue);
+        if (isCorrect) score++;
+
+        const correctValue = LISTENING_CORRECT_ANSWERS[qId];
+
+        report += `${qId.toUpperCase()}:\n`;
+        report += `  Your Answer: ${answerValue}\n`;
+        report += `  Correct Answer: ${correctValue}\n`;
+        report += `  Status: ${isCorrect ? 'Correct' : 'Incorrect'}\n\n`;
+    });
+    report += `Score: ${score} / ${TOTAL_QUESTIONS}\n`;
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy report:", err);
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ INPUT BUILDERS ============================ */
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}')" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+/* ============================ LISTENING CONTENT ============================ */
+function renderListeningContent() {
+    // Images array mapping to Part 1 questions with updated ImgBB direct links
+    const part1Data = [
+        { id: 'l_q1', title: '1. Which cyclist won the race?', imgSrc: 'https://i.ibb.co/ZCDwc06/q1.png' },
+        { id: 'l_q2', title: "2. Why couldn't the girl go to photography club yesterday?", imgSrc: 'https://i.ibb.co/TDNvV6QY/q2.png' },
+        { id: 'l_q3', title: '3. Where will the boy and his friend practise basketball?', imgSrc: 'https://i.ibb.co/0jd2dZ8W/q3.png' },
+        { id: 'l_q4', title: '4. How did the girl get to school?', imgSrc: 'https://i.ibb.co/bjrFm1qL/q4.png' },
+        { id: 'l_q5', title: '5. Which music poster does the boy prefer?', imgSrc: 'https://i.ibb.co/rG5sbyrR/q5.png' },
+        { id: 'l_q6', title: '6. Where will they go after the cinema?', imgSrc: 'https://i.ibb.co/4w6snFzD/q6.png' },
+        { id: 'l_q7', title: '7. What will Sam take on the school museum trip tomorrow?', imgSrc: 'https://i.ibb.co/kscGTQLR/q7.png' }
+    ];
+
+    const part1Html = part1Data.map(q => `
+        <div class="border p-4 rounded-lg bg-gray-50 shadow-sm mb-6">
+            <p class="font-semibold text-gray-800 mb-3 text-base">${q.title}</p>
+            <div class="mb-4 bg-white p-2 rounded border text-center">
+                <img src="${q.imgSrc}" alt="${q.title}" class="w-full max-w-2xl mx-auto rounded shadow-sm" />
+            </div>
+            <div class="flex justify-center space-x-12 bg-white p-2 rounded border">
+                <label class="cursor-pointer font-bold text-gray-700 hover:text-[#003366] flex items-center">
+                    ${radioInput(q.id, 'A', 'mr-2 scale-125')} A
+                </label>
+                <label class="cursor-pointer font-bold text-gray-700 hover:text-[#003366] flex items-center">
+                    ${radioInput(q.id, 'B', 'mr-2 scale-125')} B
+                </label>
+                <label class="cursor-pointer font-bold text-gray-700 hover:text-[#003366] flex items-center">
+                    ${radioInput(q.id, 'C', 'mr-2 scale-125')} C
+                </label>
+            </div>
+        </div>
+    `).join('');
+
+    // Part 2
+    const part2Questions = [
+        { id: 'l_q8', text: "8. Why did Sarah first become interested in the weather?", opts: ['A. She studied weather in school science lessons.', 'B. She had experience of bad weather where she lived.', 'C. She saw programmes about weather on TV.'] },
+        { id: 'l_q9', text: "9. Who encouraged Sarah's interest in the weather at home?", opts: ["A. her mother", "B. her father", "C. her grandfather"] },
+        { id: 'l_q10', text: "10. Pupils at Sarah's school club", opts: ["A. produced a book about the weather.", "B. provided information to the school for projects.", "C. set up equipment for studying the weather."] },
+        { id: 'l_q11', text: "11. What mistake did Sarah's family make during a sailing trip?", opts: ["A. They didn't recognise signs of bad weather coming.", "B. They hadn't made preparations for bad weather.", "C. They failed to check weather forecasts regularly."] },
+        { id: 'l_q12', text: "12. Sarah thinks in future she'd like to", opts: ["A. work in the area of sport.", "B. be on TV weather programmes.", "C. travel abroad for her job."] },
+        { id: 'l_q13', text: "13. What kind of weather does Sarah like best?", opts: ["A. when the sun is shining", "B. when it's raining hard", "C. when there's fog"] }
+    ];
+
+    const part2Html = part2Questions.map(q => `
+        <div class="border p-4 rounded-lg bg-gray-50 shadow-sm mb-4">
+            <p class="font-semibold text-gray-800 mb-3">${q.text}</p>
+            <div class="space-y-2">
+                ${q.opts.map(opt => {
+                    const val = opt.charAt(0);
+                    return `
+                    <label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">
+                        ${radioInput(q.id, val, 'mr-2')} ${opt}
+                    </label>`;
+                }).join('')}
+            </div>
+        </div>
+    `).join('');
+
+    // Part 4
+    const part4Questions = [
+        { id: 'l_q20', text: "20. Mark was disappointed at the amount of snow at his holiday centre." },
+        { id: 'l_q21', text: "21. Anna is surprised at how quickly Mark learnt to snowboard." },
+        { id: 'l_q22', text: "22. Mark thinks it's important to be fit in order to snowboard well." },
+        { id: 'l_q23', text: "23. Anna is shocked that some people don't protect themselves better when snowboarding." },
+        { id: 'l_q24', text: "24. Mark is keen to learn more advanced snowboarding in future." },
+        { id: 'l_q25', text: "25. Anna and Mark both prefer doing snowboarding to other winter sports." }
+    ];
+
+    const part4Html = part4Questions.map(q => `
+        <div class="flex items-center justify-between border-b pb-3 mb-3 gap-4">
+            <p class="text-sm font-medium text-gray-800">${q.text}</p>
+            <div class="flex space-x-6 flex-shrink-0">
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(q.id, 'A', 'mr-1')} A (YES)
+                </label>
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(q.id, 'B', 'mr-1')} B (NO)
+                </label>
+            </div>
+        </div>
+    `).join('');
+
+    return `
+    <div class="skill-content" id="content-listening">
+        <!-- Audio Player Sticky Header -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 sticky top-0 z-20 shadow-md">
+            <h3 class="font-bold text-[#003366] mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                LISTENING AUDIO PLAYER
+            </h3>
+            <audio controls class="w-full">
+                <source src="https://ia600709.us.archive.org/5/items/l-1-pet/L1-PET.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <div class="listening-column custom-scrollbar">
+            <!-- PART 1 -->
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 1 (Questions 1-7)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">There are seven questions in this part. For each question, choose the correct answer (A, B or C).</p>
+                ${part1Html}
+            </div>
+
+            <!-- PART 2 -->
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 2 (Questions 8-13)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">You will hear an interview with a student called Sarah Mercer, who is planning to become a weather forecaster. For each question, choose the correct answer A, B or C.</p>
+                ${part2Html}
+            </div>
+
+            <!-- PART 3 -->
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 3 (Questions 14-19)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">You will hear an art teacher talking to a class about a design competition run by an online magazine. For each question, fill in the missing information in the numbered space.</p>
+                
+                <div class="border p-6 rounded-lg bg-yellow-50/50 max-w-2xl mx-auto space-y-4 text-sm shadow-sm">
+                    <h5 class="font-bold text-base text-center text-[#003366] tracking-wider uppercase">DESIGN COMPETITION</h5>
+                    <p class="font-semibold border-b pb-1">DETAILS:</p>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">Name of magazine:</span>
+                            <div class="w-64">(14) ${textInput('l_q14', 'Your answer...', 'text-sm')}</div>
+                        </div>
+                        <p class="font-semibold pt-2 border-b pb-1">Designs</p>
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">Design a (15):</span>
+                            <div class="w-64">${textInput('l_q15', 'for the magazine...', 'text-sm')}</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">The design must include a (16):</span>
+                            <div class="w-64">${textInput('l_q16', 'Your answer...', 'text-sm')}</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">Entries can be sent in up to (17):</span>
+                            <div class="w-64 flex items-center gap-2">
+                                ${textInput('l_q17', 'Day/Date...', 'text-sm')} <span class="font-bold">May</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">If possible, pupils should also send their (18):</span>
+                            <div class="w-64">${textInput('l_q18', 'with the entry...', 'text-sm')}</div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">The winning school will receive a (19):</span>
+                            <div class="w-64">${textInput('l_q19', 'Your answer...', 'text-sm')}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 4 -->
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 4 (Questions 20-25)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Look at the six sentences for this part. You will hear a boy, Mark, and a girl, Anna, talking about winter sports. Decide if each sentence is correct or incorrect. Choose A for YES or B for NO.</p>
+                <div class="p-4 border rounded-lg bg-gray-50">
+                    ${part4Html}
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 180 && remainingTime > 0;
+    const answeredCount = getAnsweredCount();
+    const completed = isTestCompleted();
+
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET LISTENING MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">PROGRESS</span>
+                <span class="text-sm font-bold ${completed ? 'text-green-400' : 'text-yellow-400'}" id="progress-text">${answeredCount}/${TOTAL_QUESTIONS} Answered</span>
+            </div>
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500 animate-pulse' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button id="end-test-btn" 
+                class="action-button bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold transition-all duration-200" 
+                onclick="showEndTestModal()" 
+                ${!completed ? 'disabled title="Please answer all 25 questions to unlock"' : ''}>
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 180 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500 animate-pulse' : 'text-[#f97316]'}`;
+    }
+
+    const progressText = document.getElementById('progress-text');
+    const completed = isTestCompleted();
+    if (progressText) {
+        progressText.textContent = `${getAnsweredCount()}/${TOTAL_QUESTIONS} Answered`;
+        progressText.className = `text-sm font-bold ${completed ? 'text-green-400' : 'text-yellow-400'}`;
+    }
+
+    const endBtn = document.getElementById('end-test-btn');
+    if (endBtn) {
+        endBtn.disabled = !completed;
+        endBtn.title = completed ? '' : 'Please answer all 25 questions to unlock';
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">You have completed all questions. Are you sure you want to submit your listening test now?</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+    const answers = candidate.answers.listening || {};
+    let score = 0;
+
+    const cards = Object.keys(LISTENING_CORRECT_ANSWERS).map(qId => {
+        const answerValue = answers[qId] || '';
+        const isCorrect = checkAnswer(qId, answerValue);
+        if (isCorrect) score++;
+
+        const displayAnswer = String(answerValue);
+        const displayCorrect = LISTENING_CORRECT_ANSWERS[qId];
+
+        return `
+            <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                <p class="font-bold text-[#003366]">${qId.toUpperCase()}</p>
+                <p><strong>Your Answer:</strong> ${displayAnswer || '-'}</p>
+                <p><strong>Correct Answer:</strong> ${displayCorrect}</p>
+                <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                    ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </p>
+            </div>`;
+    }).join('');
+
+    detailedResultsHtml = `
+        <div>
+            <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">LISTENING PAPER</h5>
+            <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
+                <div class="mt-4 pt-4 border-t text-xl font-bold text-center text-[#003366]">
+                    Total Score: ${score} / ${TOTAL_QUESTIONS}
+                </div>
+            </div>
+        </div>`;
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                    <p><strong>Full Name:</strong> ${candidate.name}</p>
+                    <p><strong>Test Status:</strong> Completed / Ended</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Listening:</strong> ${formatTime(candidate.times.listening)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Copy Report</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET LISTENING MOCK TEST</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${renderListeningContent()}
+            </main>
+        </div>
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>

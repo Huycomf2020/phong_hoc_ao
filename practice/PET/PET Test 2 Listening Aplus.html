@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Listening Mock Test 2 - Aplus Foreign Language Centre</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    
+    /* Vô hiệu hóa bôi đen chọn văn bản toàn trang */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Cho phép thao tác nhập liệu bình thường trên các ô input */
+    input, textarea {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+    }
+
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .listening-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 190px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Toast Cảnh Báo Chuột Phải / Bôi Đen -->
+<div id="warning-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-lg shadow-2xl font-bold hidden z-50 transition-all duration-300 flex items-center gap-2">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+    <span>CẢNH BÁO: Không được sử dụng chuột phải hoặc bôi đen trong khi làm bài!</span>
+</div>
+
+<script>
+/* ============================ CONSTANTS & ANSWERS ============================ */
+const SKILL_ORDER = ['listening'];
+const INITIAL_TIMES = { listening: 35 * 60 }; // 35 minutes
+
+const LISTENING_CORRECT_ANSWERS = {
+    'l_q1': 'B', 'l_q2': 'B', 'l_q3': 'C', 'l_q4': 'B', 'l_q5': 'A', 'l_q6': 'C', 'l_q7': 'C',
+    'l_q8': 'B', 'l_q9': 'C', 'l_q10': 'B', 'l_q11': 'C', 'l_q12': 'A', 'l_q13': 'B',
+    'l_q14': '3.70', 'l_q15': 'hour', 'l_q16': 'video', 'l_q17': 'information desk', 'l_q18': 'tunnel', 'l_q19': 'snack',
+    'l_q20': 'A', 'l_q21': 'A', 'l_q22': 'B', 'l_q23': 'A', 'l_q24': 'B', 'l_q25': 'B'
+};
+
+const TOTAL_QUESTIONS = Object.keys(LISTENING_CORRECT_ANSWERS).length;
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'listening',
+    answers: { listening: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+    violations: 0 // Số lần vi phạm thoát Fullscreen
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup'; // 'setup' | 'testing'
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let isFullscreenWarningOpen = false;
+let timerInterval = null;
+let toastTimeout = null;
+
+const root = document.getElementById('root');
+
+/* ============================ SECURITY & ANTI-CHEAT ============================ */
+// 1. Chống chuột phải
+document.addEventListener('contextmenu', function (e) {
+    if (appState === 'testing') {
+        e.preventDefault();
+        showWarningToast('CẢNH BÁO: Thao tác chuột phải bị cấm trong khi làm bài!');
+    }
+});
+
+// 2. Chống bôi đen sao chép văn bản
+document.addEventListener('selectstart', function (e) {
+    if (appState === 'testing' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        showWarningToast('CẢNH BÁO: Thao tác bôi đen sao chép bị cấm!');
+    }
+});
+
+function showWarningToast(msg) {
+    const toast = document.getElementById('warning-toast');
+    if (toast) {
+        toast.querySelector('span').textContent = msg;
+        toast.classList.remove('hidden');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+}
+
+// 3. Theo dõi trạng thái Fullscreen
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+
+function handleFullscreenChange() {
+    if (appState === 'testing' && !isReportModalOpen && !isEndModalOpen) {
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+        if (!isFS) {
+            candidate.violations = (candidate.violations || 0) + 1;
+            saveState();
+            pauseTimer();
+            isFullscreenWarningOpen = true;
+            render();
+        }
+    }
+}
+
+function requestFullscreenMode() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().then(() => {
+            isFullscreenWarningOpen = false;
+            runTimer();
+            render();
+        }).catch(err => {
+            console.warn(`Fullscreen error: ${err.message}`);
+        });
+    }
+}
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function getAnsweredCount() {
+    const answers = candidate.answers.listening || {};
+    let count = 0;
+    Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+        if (answers[qId] && String(answers[qId]).trim() !== '') {
+            count++;
+        }
+    });
+    return count;
+}
+
+function isTestCompleted() {
+    return getAnsweredCount() === TOTAL_QUESTIONS;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petListeningMockTest3State', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petListeningMockTest3State');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state:', e);
+        localStorage.removeItem('petListeningMockTest3State');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    const time = candidate.times[candidate.currentSkill];
+    if (time <= 0) {
+        pauseTimer();
+        showReportModal();
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    requestFullscreenMode();
+}
+
+function handleSwitchSkill(newSkill) {
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+    updateHeaderOnly();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    if (!isTestCompleted()) return;
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petListeningMockTest3State');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    isFullscreenWarningOpen = false;
+    window.location.reload();
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = LISTENING_CORRECT_ANSWERS[qId];
+    if (!correct) return null;
+    
+    let userVal = String(value || '').trim().toLowerCase();
+    let correctVal = String(correct).trim().toLowerCase();
+
+    // Part 3 flexible matching
+    if (qId === 'l_q14') {
+        userVal = userVal.replace('£', '').trim();
+        return userVal === '3.70' || userVal === '3.7';
+    }
+    if (qId === 'l_q15') {
+        return userVal === 'hour' || userVal === 'hourly';
+    }
+    if (qId === 'l_q16') {
+        return userVal === 'video' || userVal === 'videos';
+    }
+    if (qId === 'l_q19') {
+        return userVal === 'snack' || userVal === 'snacks';
+    }
+
+    return userVal === correctVal;
+}
+
+function generateReportText() {
+    let report = `PET LISTENING MOCK TEST 2 REPORT\n`;
+    report += `=========================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n`;
+    report += `Fullscreen Exit Violations: ${candidate.violations || 0}\n\n`;
+
+    report += `REMAINING TIME\n`;
+    report += `-------------------------\n`;
+    report += `Listening: ${formatTime(candidate.times.listening)}\n\n`;
+
+    report += `LISTENING ANSWERS\n`;
+    report += `-------------------------\n`;
+    const answers = candidate.answers.listening || {};
+    let score = 0;
+
+    Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+        let answerValue = answers[qId] || '';
+        const isCorrect = checkAnswer(qId, answerValue);
+        if (isCorrect) score++;
+
+        const correctValue = LISTENING_CORRECT_ANSWERS[qId];
+
+        report += `${qId.toUpperCase()}:\n`;
+        report += `  Your Answer: ${answerValue}\n`;
+        report += `  Correct Answer: ${correctValue}\n`;
+        report += `  Status: ${isCorrect ? 'Correct' : 'Incorrect'}\n\n`;
+    });
+    report += `Score: ${score} / ${TOTAL_QUESTIONS}\n`;
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy report:", err);
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ INPUT BUILDERS ============================ */
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}')" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+/* ============================ LISTENING CONTENT ============================ */
+function renderListeningContent() {
+    const part1Data = [
+        { id: 'l_q1', title: "1. What was in the woman's bag?", imgSrc: 'https://i.ibb.co/gbTnv2Fz/q1-l1-p3.png' },
+        { id: 'l_q2', title: '2. Which film is the man talking about?', imgSrc: 'https://i.ibb.co/Zz0TmBwr/q2-l1-p3.png' },
+        { id: 'l_q3', title: '3. What should the woman do first?', imgSrc: 'https://i.ibb.co/HSdvs03/q3-l1-p3.png' },
+        { id: 'l_q4', title: '4. What is David going to do this weekend?', imgSrc: 'https://i.ibb.co/5xgTpcC5/q4-l1-p3.png' },
+        { id: 'l_q5', title: '5. How did the man get to work today?', imgSrc: 'https://i.ibb.co/DPW2SJyx/q5-l1-p3.png' },
+        { id: 'l_q6', title: '6. Which tie does the man choose?', imgSrc: 'https://i.ibb.co/gLVkF0zy/q6-l1-p3.png' },
+        { id: 'l_q7', title: '7. What time is the appointment?', imgSrc: 'https://i.ibb.co/LzPgVq63/q7-l1-p3.png' }
+    ];
+
+    const part1Html = part1Data.map(q => `
+        <div class="border p-4 rounded-lg bg-gray-50 shadow-sm mb-6">
+            <p class="font-semibold text-gray-800 mb-3 text-base">${q.title}</p>
+            <div class="mb-4 bg-white p-2 rounded border text-center">
+                <img src="${q.imgSrc}" alt="${q.title}" class="w-full max-w-2xl mx-auto rounded shadow-sm" />
+            </div>
+            <div class="flex justify-center space-x-12 bg-white p-2 rounded border">
+                <label class="cursor-pointer font-bold text-gray-700 hover:text-[#003366] flex items-center">
+                    ${radioInput(q.id, 'A', 'mr-2 scale-125')} A
+                </label>
+                <label class="cursor-pointer font-bold text-gray-700 hover:text-[#003366] flex items-center">
+                    ${radioInput(q.id, 'B', 'mr-2 scale-125')} B
+                </label>
+                <label class="cursor-pointer font-bold text-gray-700 hover:text-[#003366] flex items-center">
+                    ${radioInput(q.id, 'C', 'mr-2 scale-125')} C
+                </label>
+            </div>
+        </div>
+    `).join('');
+
+    const part2Questions = [
+        { id: 'l_q8', text: "8. The Railway Princess is on television from", opts: ['A. 9.00 to 10.00.', 'B. 9.00 to 10.30.', 'C. 9.30 to 11.00.'] },
+        { id: 'l_q9', text: "9. There is a music programme for teenagers", opts: ["A. early in the morning.", "B. before lunch.", "C. at lunchtime."] },
+        { id: 'l_q10', text: "10. You can see a football match between", opts: ["A. Ireland and Spain.", "B. Brazil and Ireland.", "C. Spain and Italy."] },
+        { id: 'l_q11', text: "11. If the weather is bad, there will be no", opts: ["A. cycling.", "B. skiing.", "C. tennis."] },
+        { id: 'l_q12', text: "12. In the quiz programme, teams have to guess", opts: ["A. the year.", "B. the person.", "C. the place."] },
+        { id: 'l_q13', text: "13. What kind of film is I Could Live Forever?", opts: ["A. a comedy", "B. a musical", "C. a thriller"] }
+    ];
+
+    const part2Html = part2Questions.map(q => `
+        <div class="border p-4 rounded-lg bg-gray-50 shadow-sm mb-4">
+            <p class="font-semibold text-gray-800 mb-3">${q.text}</p>
+            <div class="space-y-2">
+                ${q.opts.map(opt => {
+                    const val = opt.charAt(0);
+                    return `
+                    <label class="block cursor-pointer text-sm hover:bg-gray-100 p-1 rounded">
+                        ${radioInput(q.id, val, 'mr-2')} ${opt}
+                    </label>`;
+                }).join('')}
+            </div>
+        </div>
+    `).join('');
+
+    const part4Questions = [
+        { id: 'l_q20', text: "20. This will be the Sanchez family's first trip to England." },
+        { id: 'l_q21', text: "21. Michael suggests sightseeing in London." },
+        { id: 'l_q22', text: "22. The Sanchez children are teenagers." },
+        { id: 'l_q23', text: "23. Jane has been to the car museum." },
+        { id: 'l_q24', text: "24. Michael thinks everyone enjoys visiting museums." },
+        { id: 'l_q25', text: "25. Jane and Michael have bought tickets for the tennis competition." }
+    ];
+
+    const part4Html = part4Questions.map(q => `
+        <div class="flex items-center justify-between border-b pb-3 mb-3 gap-4">
+            <p class="text-sm font-medium text-gray-800">${q.text}</p>
+            <div class="flex space-x-6 flex-shrink-0">
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(q.id, 'A', 'mr-1')} A (YES)
+                </label>
+                <label class="cursor-pointer text-sm font-semibold hover:text-[#003366]">
+                    ${radioInput(q.id, 'B', 'mr-1')} B (NO)
+                </label>
+            </div>
+        </div>
+    `).join('');
+
+    return `
+    <div class="skill-content" id="content-listening">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 sticky top-0 z-20 shadow-md">
+            <h3 class="font-bold text-[#003366] mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                LISTENING AUDIO PLAYER - TEST 2
+            </h3>
+            <audio controls class="w-full">
+                <source src="https://ia600105.us.archive.org/0/items/l-1-p-3/L1-P3.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <div class="listening-column custom-scrollbar">
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 1 (Questions 1-7)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">There are seven questions in this part. For each question there are three pictures and a short recording. Choose the correct picture and put a tick in the box below it.</p>
+                ${part1Html}
+            </div>
+
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 2 (Questions 8-13)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">You will hear an announcement about what's on television tomorrow. For each question, put a tick in the correct box.</p>
+                ${part2Html}
+            </div>
+
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 3 (Questions 14-19)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">You will hear a radio announcer talking about Plymouth Sea Life Centre. For each question, fill in the missing information in the numbered space.</p>
+                
+                <div class="border p-6 rounded-lg bg-yellow-50/50 max-w-2xl mx-auto space-y-4 text-sm shadow-sm">
+                    <h5 class="font-bold text-base text-center text-[#003366] tracking-wider uppercase">Plymouth Sea Life Centre</h5>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <span class="w-48 font-medium">COST:</span>
+                            <div class="w-64 flex items-center gap-1">
+                                Adults (14) £ ${textInput('l_q14', '3.70', 'text-sm')} , children £2.00.<br/>Special prices for over sixties and school groups.
+                            </div>
+                        </div>
+                        <div class="border-t pt-2">
+                            <span class="font-semibold block mb-1">OPENING TIMES:</span>
+                            <p>Every day except 25 and 26 December.</p>
+                        </div>
+                        <div class="border-t pt-2 space-y-2">
+                            <span class="font-semibold block">FOR CHILDREN:</span>
+                            <p>Special quiz.</p>
+                            <div class="flex items-center">
+                                <span class="w-48 font-medium">Animals are fed every (15):</span>
+                                <div class="w-64">${textInput('l_q15', 'hour / hourly...', 'text-sm')} from 9.30 am.</div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-48 font-medium">Slide and (16):</span>
+                                <div class="w-64">${textInput('l_q16', 'video / videos...', 'text-sm')} shows from 10.00 am.</div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-2">
+                            <span class="font-semibold block mb-1">GROUPS:</span>
+                            <div class="flex items-center">
+                                <span class="w-48 font-medium">Guided tours available - ask at the (17):</span>
+                                <div class="w-64">${textInput('l_q17', 'information desk...', 'text-sm')}</div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-2">
+                            <span class="font-semibold block mb-1">NEW ATTRACTION:</span>
+                            <div class="flex items-center">
+                                <span class="w-48 font-medium">Walk through the big (18):</span>
+                                <div class="w-64">${textInput('l_q18', 'tunnel...', 'text-sm')} made of glass.</div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-2">
+                            <span class="font-semibold block mb-1">REFRESHMENTS:</span>
+                            <div class="flex items-center">
+                                <span class="w-48 font-medium">Family area sells (19):</span>
+                                <div class="w-64">${textInput('l_q19', 'snack / snacks...', 'text-sm')}, cold drinks, ice creams.</div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-2 text-center font-semibold text-gray-700">
+                            FOR MORE INFORMATION TELEPHONE 01743 564219.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h4 class="text-lg font-bold text-[#003366] border-b pb-2 mb-2">Listening Part 4 (Questions 20-25)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Look at the six sentences for this part. You will hear a conversation between a girl, Jane, and her brother, Michael, about a Spanish family who are coming to visit them in England. Decide if each sentence is correct or incorrect. Choose A for YES or B for NO.</p>
+                <div class="p-4 border rounded-lg bg-gray-50">
+                    ${part4Html}
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 180 && remainingTime > 0;
+    const answeredCount = getAnsweredCount();
+    const completed = isTestCompleted();
+
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET LISTENING MOCK TEST 2</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+            ${candidate.violations ? `<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">Thoát FS: ${candidate.violations} lần</span>` : ''}
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">PROGRESS</span>
+                <span class="text-sm font-bold ${completed ? 'text-green-400' : 'text-yellow-400'}" id="progress-text">${answeredCount}/${TOTAL_QUESTIONS} Answered</span>
+            </div>
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500 animate-pulse' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button id="end-test-btn" 
+                class="action-button bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold transition-all duration-200" 
+                onclick="showEndTestModal()" 
+                ${!completed ? 'disabled title="Please answer all 25 questions to unlock"' : ''}>
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 180 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500 animate-pulse' : 'text-[#f97316]'}`;
+    }
+
+    const progressText = document.getElementById('progress-text');
+    const completed = isTestCompleted();
+    if (progressText) {
+        progressText.textContent = `${getAnsweredCount()}/${TOTAL_QUESTIONS} Answered`;
+        progressText.className = `text-sm font-bold ${completed ? 'text-green-400' : 'text-yellow-400'}`;
+    }
+
+    const endBtn = document.getElementById('end-test-btn');
+    if (endBtn) {
+        endBtn.disabled = !completed;
+        endBtn.title = completed ? '' : 'Please answer all 25 questions to unlock';
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderFullscreenWarningModal() {
+    if (!isFullscreenWarningOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-red-950 bg-opacity-90 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center border-4 border-red-600">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-2xl font-extrabold text-red-600 mb-2">CẢNH BÁO VI PHẠM PHÒNG THI</h3>
+            <p class="text-gray-700 font-medium mb-4">Bạn vừa thoát khỏi chế độ toàn màn hình (Fullscreen). Hành vi này đã được ghi nhận trên hệ thống!</p>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-200 mb-6">
+                <p class="text-sm text-red-700 font-bold">Số lần vi phạm: <span class="text-xl">${candidate.violations || 1}</span></p>
+            </div>
+            <button onclick="requestFullscreenMode()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors">
+                QUAY LẠI TOÀN MÀN HÌNH ĐỂ TIẾP TỤC
+            </button>
+        </div>
+    </div>`;
+}
+
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">You have completed all 25 questions. Are you sure you want to submit your listening test now?</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+    const answers = candidate.answers.listening || {};
+    let score = 0;
+
+    const cards = Object.keys(LISTENING_CORRECT_ANSWERS).map(qId => {
+        const answerValue = answers[qId] || '';
+        const isCorrect = checkAnswer(qId, answerValue);
+        if (isCorrect) score++;
+
+        const displayAnswer = String(answerValue);
+        const displayCorrect = LISTENING_CORRECT_ANSWERS[qId];
+
+        return `
+            <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                <p class="font-bold text-[#003366]">${qId.toUpperCase()}</p>
+                <p><strong>Your Answer:</strong> ${displayAnswer || '-'}</p>
+                <p><strong>Correct Answer:</strong> ${displayCorrect}</p>
+                <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                    ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </p>
+            </div>`;
+    }).join('');
+
+    detailedResultsHtml = `
+        <div>
+            <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">LISTENING PAPER 3</h5>
+            <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
+                <div class="mt-4 pt-4 border-t text-xl font-bold text-center text-[#003366]">
+                    Total Score: ${score} / ${TOTAL_QUESTIONS}
+                </div>
+            </div>
+        </div>`;
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                    <p><strong>Full Name:</strong> ${candidate.name}</p>
+                    <p><strong>Violations (FS Exit):</strong> ${candidate.violations || 0} time(s)</p>
+                    <p><strong>Test Status:</strong> Completed / Ended</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg border">
+                    <p><strong>Listening:</strong> ${formatTime(candidate.times.listening)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Copy Report</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET LISTENING MOCK TEST 2</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${renderListeningContent()}
+            </main>
+        </div>
+        ${renderFullscreenWarningModal()}
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>

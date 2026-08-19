@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PET Reading Mock Test - Test 1 (2025)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f7f7f7;
+        overflow-y: hidden;
+        margin: 0;
+    }
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 2px;
+        border: none;
+        background-color: transparent;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 3px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .reading-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        height: 100%;
+    }
+    @media (min-width: 1024px) {
+        .reading-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .reading-passage-column, .reading-question-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 180px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 9999px;
+        background-color: #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #334155;
+        flex-shrink: 0;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============================ CONSTANTS ============================ */
+const SKILL_ORDER = ['reading'];
+const INITIAL_TIMES = { reading: 50 * 60 }; // 50 minutes (Reading portion of the 1h30 combined paper)
+
+const READING_CORRECT_ANSWERS = {
+    'r_q1': 'C', 'r_q2': 'A', 'r_q3': 'A', 'r_q4': 'B', 'r_q5': 'C',
+    'r_q6': 'B', 'r_q7': 'F', 'r_q8': 'E', 'r_q9': 'C', 'r_q10': 'H',
+    'r_q11': 'B', 'r_q12': 'A', 'r_q13': 'B', 'r_q14': 'B', 'r_q15': 'A',
+    'r_q16': 'B', 'r_q17': 'A', 'r_q18': 'B', 'r_q19': 'A', 'r_q20': 'A',
+    'r_q21': 'D', 'r_q22': 'B', 'r_q23': 'A', 'r_q24': 'A', 'r_q25': 'C',
+    'r_q26': 'B', 'r_q27': 'B', 'r_q28': 'A', 'r_q29': 'C', 'r_q30': 'D',
+    'r_q31': 'C', 'r_q32': 'D', 'r_q33': 'B', 'r_q34': 'A', 'r_q35': 'B'
+};
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'reading',
+    answers: { reading: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup'; // 'setup' | 'testing'
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let timerInterval = null;
+
+const root = document.getElementById('root');
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('petMockTestState3', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state to localStorage:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('petMockTestState3');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state from localStorage:', e);
+        localStorage.removeItem('petMockTestState3');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    const time = candidate.times[candidate.currentSkill];
+    if (time <= 0) {
+        pauseTimer();
+        if (candidate.currentSkill === 'reading') {
+            showReportModal();
+        }
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    runTimer();
+    render();
+
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+            console.warn(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    }
+}
+
+function handleSwitchSkill(newSkill) {
+    pauseTimer();
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('petMockTestState3');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    window.location.reload();
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = READING_CORRECT_ANSWERS[qId];
+    if (!correct) return null;
+
+    if (Array.isArray(correct)) {
+        if (!Array.isArray(value)) return false;
+        const sortedCorrect = [...correct].sort();
+        const sortedValue = [...value].sort();
+        return sortedCorrect.length === sortedValue.length && sortedCorrect.every((v, i) => v === sortedValue[i]);
+    }
+
+    if (Array.isArray(value)) return false;
+    return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+}
+
+function generateReportText() {
+    let report = `PET MOCK TEST REPORT\n`;
+    report += `=========================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n\n`;
+
+    report += `REMAINING TIME\n`;
+    report += `-------------------------\n`;
+    report += `Reading: ${formatTime(candidate.times.reading)}\n\n`;
+
+    SKILL_ORDER.forEach(skill => {
+        report += `${skill.toUpperCase()} ANSWERS\n`;
+        report += `-------------------------\n`;
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+
+        if (answerKeys.length === 0) {
+            report += "No answers recorded.\n";
+        } else {
+            let score = 0;
+            answerKeys.forEach(qId => {
+                let answerValue = answers[qId] || '';
+                const isCorrect = checkAnswer(qId, answerValue);
+                if (isCorrect) score++;
+
+                if (Array.isArray(answerValue)) answerValue = answerValue.join(', ');
+                const correctValue = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                    ? READING_CORRECT_ANSWERS[qId].join(', ')
+                    : READING_CORRECT_ANSWERS[qId];
+
+                report += `${qId.toUpperCase()}:\n`;
+                report += `  Your Answer: ${answerValue}\n`;
+                report += `  Correct Answer: ${correctValue}\n`;
+                report += `  Status: ${isCorrect ? 'Correct' : 'Incorrect'}\n\n`;
+            });
+            report += `Score: ${score} / ${answerKeys.length}\n`;
+        }
+        report += `\n`;
+    });
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy report:", err);
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ ANSWER INPUT ============================ */
+function radioInput(name, value, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${candidate.currentSkill}', '${name}', '${value}'); renderQuestionColumn();" />`;
+}
+
+function textInput(id, placeholder, extraClass) {
+    const answers = candidate.answers[candidate.currentSkill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${candidate.currentSkill}', '${id}', this.value)" />`;
+}
+
+/* ============================ READING PASSAGES (LEFT COLUMN) ============================ */
+function renderReadingPassages() {
+    return `
+    <div class="reading-passage-column bg-gray-50 ielts-border custom-scrollbar">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">READING PASSAGE CONTENT</h3>
+
+        <div id="reading-part-1" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 1</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the text in each question. What does it say?</p>
+            <div class="space-y-6">
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">1</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg">From tomorrow, buses will depart every 10 minutes instead of every 20 minutes.</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">2</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold text-lg mb-2">Sports Hall</p>
+                        <p>Don't leave clothes in lockers overnight. Keys for lockers available at reception desk.</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">3</p>
+                    <div class="border border-black bg-gray-100 mb-3 text-sm">
+                        <div class="border-b border-black p-2 bg-gray-200">
+                            <p><strong>To:</strong> John</p>
+                            <p><strong>From:</strong> Saskia</p>
+                        </div>
+                        <div class="p-3">
+                            <p>Anna's going to book the hotel tonight for our holiday. She wants you to send her £50 as she has to pay a deposit. Ring her if that's a problem.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">4</p>
+                    <div class="border-2 border-black p-4 bg-white mb-3 text-sm text-center">
+                        <p class="font-bold">Go to desk in corner for concert tickets already paid for.</p>
+                        <p class="font-bold">Do not queue here.</p>
+                    </div>
+                </div>
+                <div class="border p-4 rounded bg-white">
+                    <p class="font-bold mb-2">5</p>
+                    <div class="border p-3 bg-gray-100 mb-3 text-sm italic">
+                        <p class="mb-2">Gianni</p>
+                        <p>A friend of mine has lent me this book about Peru. I know you're flying there next week so why don't you read it first?</p>
+                        <p class="text-right mt-2">Sarah</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reading-part-2" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 2</h4>
+            <p class="mb-4 text-sm font-medium italic">The people below all want to go to a restaurant.<br/>On the opposite page there are eight reviews of restaurants.<br/>Decide which restaurant would be the most suitable for the following people.</p>
+
+            <h5 class="font-bold text-center mb-4 uppercase">Places to eat</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="border p-3 bg-white"><p class="font-bold">A The Olive Tree</p><p>is an Italian restaurant with a beautiful view across the valley but it's fairly expensive. It has a car park and a large room for groups but no garden. Open lunchtimes Thursday–Sunday and every evening except Mondays and Tuesdays.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">B Peppers</p><p>is in a country park just two kilometres from the city centre and looks over a lovely lake. It's usually popular with families as there's play equipment in the garden. The nearest car park is 20 minutes' walk away. It serves mainly French and Italian dishes and isn't expensive. Open at weekends (lunchtimes and evenings).</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">C The Dragon</p><p>is just off the city's Market Square so it is usually difficult to park. There's a sunny area at the back with tables. The food is excellent but expensive. It offers a wide range of Chinese dishes including meat, fish and vegetarian choices and the menu is never the same. Open lunchtimes Monday–Friday and evenings at weekends.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">D The Paprika</p><p>in the city centre serves wonderful Indian food but is small so there isn't space for large groups. It's often busy but the food always tastes delicious and it isn't expensive. There are a few tables outside and a small car park. Open every evening.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">E O'Brady's</p><p>is just outside the city centre by the river with a car park at the front and a large back garden with tables and swings. It's well known for its traditional British dishes which are good value. The service is sometimes slow at weekends. Open lunchtimes and evenings except Tuesdays.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">F Gabrielle's</p><p>is in the city centre and has a large car park. Both the food and service are excellent. There aren't many tables so everyone is served quickly. The menu includes many vegetarian and fish dishes. It's expensive however. Open every evening and lunchtimes at weekends.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">G Waltons</p><p>is by the canal just outside the city so is especially popular with walkers in summer. It serves mainly inexpensive Italian dishes. There's a small garden at the back for children to play in but no car park. Open from five till midnight every day.</p></div>
+                <div class="border p-3 bg-white"><p class="font-bold">H The Atrium</p><p>is a restaurant which is rarely quiet even in the middle of the afternoon. It's beside the city's main car park. There's a large room upstairs which can be booked by groups. The menu has a range of dishes including meat, fish and vegetarian and none are expensive. Open from midday to midnight every day.</p></div>
+            </div>
+        </div>
+
+        <div id="reading-part-3" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 3</h4>
+            <p class="mb-4 text-sm font-medium italic">Look at the sentences below about the Lofoten Islands in Norway.<br/>Read the text on the opposite page to decide if each sentence is correct or incorrect.</p>
+            <div class="border p-5 bg-white text-sm space-y-4">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase">A Visit to the Lofoten Islands</h5>
+                <p>We arrived in the Lofoten Islands in Norway on a bright July evening. At this time of year, the sun never goes down so it never gets dark because the islands are so far north. We sat for hours, watching the sunlight shining on the mountains across the water.</p>
+                <p>We spent the next few days exploring the islands in brilliant sunshine. We travelled by car, going from one island to another by bridge or tunnel. These bridges and tunnels have replaced the ferries between the largest islands.</p>
+                <p>One day we decided we would take a boat trip. They leave at 12 noon every day. You have to book the day before or by 10.30 at the latest on the day of the trip. I'd booked the day before, not realising that the weather here can change quickly. I was warned that they needed a minimum of five passengers for the trip. When we got up that day, it was raining hard but we set off, hoping other people had also booked. We were lucky. When we got in the boat, the sun came out again and there were enough of us, all eager to see the islands from the sea. We went past islands with ruined villages where nobody wants to live any more. We also had the chance to catch our own fish which we could eat later on.</p>
+                <p>On our last day we visited the Museum of Lofoten Life. By the year 900 the islands were famous for cod fishing. People sailed there in small open boats from other areas so they could make the most of the fishing opportunities. All these visiting fishermen needed somewhere to stay and over the years many fishermen's cabins were built by the water's edge. In the museum, some of these are on display as well as fishing equipment, boathouses and traditional boats. In summer (June 20–Aug 20), it's open daily from 11am–5.30pm and during the rest of the year it's open from Monday to Friday 11am–3pm.</p>
+                <p>People on the islands have always made a living from fishing and farming. Fishing is still an essential part of the economy but, although agriculture is still important in some areas, the number of farms has decreased in the past 30 years.</p>
+                <p>I'd highly recommend a trip to the Lofoten Islands. The quickest way to get there is to fly from the Norwegian capital, Oslo, to Bodø which is on the coast opposite the Lofoten islands and then take a flight to Leknes on one of the northern islands. It is also possible to catch a ferry from Bodø to Svolvær which is much cheaper.</p>
+            </div>
+        </div>
+
+        <div id="reading-part-4" class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 4</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text and questions below.</p>
+            <div class="border p-5 bg-white text-sm space-y-4">
+                <h5 class="font-bold text-xl text-center mb-4 underline">A musical evening</h5>
+                <p>Last night I went to see 'Bennie', the musical which has just opened in the Albert Theatre in London.</p>
+                <p>There is of course already both a film and a book called 'Bennie', about a child who becomes a famous singer. I enjoyed the book so I was excited when I heard about the film. I was disappointed, however, when I finally saw it because unfortunately they managed to make all the amusing parts of the book seem serious. It was also long and slow. I came to the musical without much hope but it was more entertaining than the film. They've had to change parts of the story but I really thought it was as good as the book.</p>
+                <p>Apart from one actor whose voice isn't as strong as the others, I thought the acting was brilliant. Although the orchestra isn't very large, the music was perfect. I especially liked the piano and drums. Most of the parts in musicals I've seen recently have been for young actors. In several, as in 'Bennie', the main part is for a child. I was surprised, therefore, when I realised at one point that three-quarters of the people on stage were at least 40 or over and some of them are very well known. This is a great advantage to the production.</p>
+                <p>I noticed that quite a few people didn't buy the programme. The main complaint was that it was too expensive at £4. While it costs more than most programmes, it was worth it. I didn't have time to read it all in the interval as it's huge and full of details but it's a lovely souvenir to take home.</p>
+            </div>
+        </div>
+
+        <div id="reading-part-5" class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#f97316]">Part 5</h4>
+            <p class="mb-4 text-sm font-medium italic">Read the text below and choose the correct word for each space.</p>
+            <div class="border p-5 bg-white text-sm space-y-4 leading-loose">
+                <h5 class="font-bold text-xl text-center mb-4 uppercase">A lucky picnic</h5>
+                <p>When I was a child we used to (0) <span class="font-bold border-b border-black">go</span> to my grandmother's house. We often had a picnic in a wood which was (26) ___________ of wild flowers. We always used to go to the (27) ___________ place. One day when we had finished our picnic, my mother noticed that she had (28) ___________ her ring, (29) ___________ had her initials inside it.</p>
+                <p>We looked everywhere for it and we carried on until it was dark and we had to give (30) ___________ . Thirty years later, I was on holiday with my own children and we (31) ___________ the same wood. We decided to have a picnic there. It was my son who made it a lucky day. He was bored with the picnic (32) ___________ he started digging a hole (33) ___________ a tree. Suddenly, he (34) ___________ up a ring. It had some writing inside it and we all (35) ___________ it was my mother's ring. She was really happy when we gave it back to her!</p>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ READING QUESTIONS (RIGHT COLUMN) ============================ */
+function renderReadingQuestions() {
+    const part1Items = [
+        { q: "1", opts: [{v:'A', t:"Buses will leave ten minutes earlier tomorrow."}, {v:'B', t:"Until tomorrow, bus journeys will take ten minutes longer."}, {v:'C', t:"After today, there will be more buses than before."}] },
+        { q: "2", opts: [{v:'A', t:"You must remove your clothes from the lockers by the end of the day."}, {v:'B', t:"You mustn't leave keys in the lockers after taking your clothes out."}, {v:'C', t:"Any clothes left overnight can be collected from the reception desk."}] },
+        { q: "3 Saskia wants John to", opts: [{v:'A', t:"let Anna know if he isn't able to give her £50."}, {v:'B', t:"tell Anna if he doesn't want to go to the hotel."}, {v:'C', t:"send the deposit to the hotel for Anna."}] },
+        { q: "4", opts: [{v:'A', t:"There are still some tickets available at the desk in the corner."}, {v:'B', t:"You shouldn't queue here if you've paid for your ticket in advance."}, {v:'C', t:"You should go to the desk in the corner to pay for your ticket."}] },
+        { q: "5", opts: [{v:'A', t:"Sarah has read the book and is advising Gianni to read it."}, {v:'B', t:"Sarah's friend recommended that Gianni read the book before his trip."}, {v:'C', t:"Sarah is suggesting that Gianni reads the book before she does."}] },
+    ];
+
+    let part1Html = part1Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-3">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm">
+                        ${radioInput(`r_q${i+1}`, opt.v, 'mr-2')}
+                        ${opt.v} ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part2People = [
+        { n: 6, name: 'Carolina & Greta', desc: "Carolina and Greta enjoy eating Italian food but they don't have much money. On Sunday lunchtime they want to walk from the city centre to a restaurant with a nice view." },
+        { n: 7, name: 'Dennis & Jennifer', desc: "Dennis and Jennifer want to drive to a quiet restaurant on Tuesday evening. They both love fish. They don't mind how much they spend but they hate waiting for their food." },
+        { n: 8, name: 'Rena', desc: "Rena has three young children and she wants to take them out for lunch on Thursday. She needs to park her car at the restaurant. The children enjoy playing outside when they get bored." },
+        { n: 9, name: 'Chloe', desc: "Chloe often has lunch with her mother on Fridays in the city centre. They like eating outside and the cost isn't important. They walk or take a taxi." },
+        { n: 10, name: 'Michael', desc: "Michael wants to go out with twenty friends in the city centre on Saturday evening. They don't want to spend too much. Some of his friends never eat meat. They'll drive to the restaurant." },
+    ];
+    let part2Html = part2People.map(p => `
+        <div class="flex items-start justify-between border-b pb-3 mb-3 gap-3">
+            <div class="flex items-start gap-3">
+                <div class="avatar-circle">${p.name.charAt(0)}</div>
+                <div>
+                    <span class="font-semibold block">${p.n}. ${p.name}</span>
+                    <p class="text-sm text-gray-600">${p.desc}</p>
+                </div>
+            </div>
+            ${textInput(`r_q${p.n}`, 'A-H', 'w-16 text-center flex-shrink-0')}
+        </div>`).join('');
+
+    const part3Sentences = [
+        "11 On the first evening, the writer watched the sun set behind the mountains.",
+        "12 Ferries used to be the only way of crossing from one island to another.",
+        "13 It is necessary to reserve a place on a boat 24 hours before it leaves.",
+        "14 The boats hold up to five people.",
+        "15 The passengers in the boat saw some places where people no longer live.",
+        "16 The fisherman in the boat caught some fish for the passengers.",
+        "17 It is possible to see some of the original fishermen's huts in the museum.",
+        "18 The museum is open at weekends every day of the year.",
+        "19 There are fewer farms now than there were 30 years ago.",
+        "20 You need to change planes to fly from Oslo to the Lofoten Islands."
+    ];
+    let part3Html = part3Sentences.map((text, i) => `
+        <div class="mb-4 border-b pb-2">
+            <p class="text-sm mb-2">${text}</p>
+            <div class="space-x-4">
+                <label class="cursor-pointer text-sm">${radioInput(`r_q${11+i}`, 'A', 'mr-1')} A (Correct)</label>
+                <label class="cursor-pointer text-sm">${radioInput(`r_q${11+i}`, 'B', 'mr-1')} B (Incorrect)</label>
+            </div>
+        </div>`).join('');
+
+    const part4Items = [
+        { q: "21 What is the writer trying to do?", opts: [{v:'A', t:"say what happened in a musical"}, {v:'B', t:"explain the reasons why a musical was written"}, {v:'C', t:"suggest improvements that could be made to a musical"}, {v:'D', t:"write a review of a musical"}] },
+        { q: "22 How did the writer feel about the film 'Bennie'?", opts: [{v:'A', t:"It was as bad as he had expected."}, {v:'B', t:"It wasn't as funny as the book."}, {v:'C', t:"It needed to be longer."}, {v:'D', t:"It didn't follow the story closely enough."}] },
+        { q: "23 How is the musical 'Bennie' different from other recent musicals?", opts: [{v:'A', t:"The actors are older."}, {v:'B', t:"It has a very young star."}, {v:'C', t:"The orchestra is bigger."}, {v:'D', t:"It has more actors in it."}] },
+        { q: "24 What does the writer think of the programme he bought?", opts: [{v:'A', t:"He recommends it."}, {v:'B', t:"It cost too much."}, {v:'C', t:"He complained about it."}, {v:'D', t:"It contains too little information."}] },
+        { q: "25 Which of these sentences appeared at the top of the text?", opts: [
+            {v:'A', t:"Journalist Jack Whittaker was pleased to have the chance to see one of the last performances of 'Bennie'."},
+            {v:'B', t:"Journalist Jack Whittaker watched the musical 'Bennie', which is soon to be made into a film."},
+            {v:'C', t:"Journalist Jack Whittaker went to see 'Bennie', the musical based on a book of the same name."},
+            {v:'D', t:"Journalist Jack Whittaker spent an evening watching 'Bennie', the musical which has made its actors famous."}
+        ] },
+    ];
+    let part4Html = part4Items.map((item, i) => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-3">${item.q}</p>
+            <div class="space-y-2">
+                ${item.opts.map(opt => `
+                    <label class="block cursor-pointer text-sm">
+                        ${radioInput(`r_q${21+i}`, opt.v, 'mr-2')}
+                        ${opt.v} ${opt.t}
+                    </label>`).join('')}
+            </div>
+        </div>`).join('');
+
+    const part5Items = [
+        { n: 26, opts: ['A busy', 'B full', 'C complete', 'D crowded'] },
+        { n: 27, opts: ['A single', 'B same', 'C similar', 'D alike'] },
+        { n: 28, opts: ['A lost', 'B stolen', 'C disappeared', 'D missed'] },
+        { n: 29, opts: ['A where', 'B whose', 'C which', 'D who'] },
+        { n: 30, opts: ['A back', 'B away', 'C out', 'D up'] },
+        { n: 31, opts: ['A realised', 'B came', 'C found', 'D met'] },
+        { n: 32, opts: ['A because', 'B but', 'C although', 'D so'] },
+        { n: 33, opts: ['A on', 'B under', 'C between', 'D at'] },
+        { n: 34, opts: ['A held', 'B took', 'C looked', 'D came'] },
+        { n: 35, opts: ['A persuaded', 'B agreed', 'C promised', 'D recommended'] },
+    ];
+    let part5Html = part5Items.map(item => `
+        <div class="border p-3 rounded-lg bg-gray-50">
+            <p class="font-medium mb-2 border-b pb-1">Question ${item.n}</p>
+            <div class="space-y-1">
+                ${item.opts.map(opt => {
+                    const v = opt.charAt(0);
+                    const t = opt.substring(2);
+                    return `<label class="block cursor-pointer text-sm">${radioInput(`r_q${item.n}`, v, 'mr-2')} ${v} ${t}</label>`;
+                }).join('')}
+            </div>
+        </div>`).join('');
+
+    return `
+    <div class="reading-question-column bg-white ielts-border custom-scrollbar" id="reading-question-column">
+        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">READING QUESTIONS</h3>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 1: Questions 1–5</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B or C.</p>
+            <div class="space-y-4">${part1Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 2: Questions 6–10</h4>
+            <p class="mb-4 text-sm font-medium">Write the correct letter (A–H) for each person.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part2Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 3: Questions 11–20</h4>
+            <p class="mb-4 text-sm font-medium">If it is correct, mark <strong>A</strong>. If it is not correct, mark <strong>B</strong>.</p>
+            <div class="space-y-3 p-4 border rounded-lg bg-gray-50">${part3Html}</div>
+        </div>
+
+        <div class="mb-8 border-b pb-4">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 4: Questions 21–25</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="space-y-4">${part4Html}</div>
+        </div>
+
+        <div class="mb-8">
+            <h4 class="text-lg font-semibold mb-2 text-[#003366]">Part 5: Questions 26–35</h4>
+            <p class="mb-4 text-sm font-medium">Mark the correct letter A, B, C or D.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${part5Html}</div>
+        </div>
+    </div>`;
+}
+
+function renderReadingContent() {
+    return `
+    <div class="skill-content" id="content-reading">
+        <h2 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">READING (Paper 1: Reading and Writing)</h2>
+        <div class="reading-grid">
+            ${renderReadingPassages()}
+            ${renderReadingQuestions()}
+        </div>
+    </div>`;
+}
+
+// Re-render only the question column to preserve passage scroll position on answer change
+function renderQuestionColumn() {
+    const el = document.getElementById('reading-question-column');
+    if (el) {
+        const scrollTop = el.scrollTop;
+        el.outerHTML = renderReadingQuestions();
+        const newEl = document.getElementById('reading-question-column');
+        if (newEl) newEl.scrollTop = scrollTop;
+    }
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = candidate.times[candidate.currentSkill];
+    const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">PET MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TIME REMAINING</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button class="action-button bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-semibold" onclick="showEndTestModal()">
+                End Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = candidate.times[candidate.currentSkill];
+        const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`;
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        ${SKILL_ORDER.map(skill => `
+            <button class="tab-button ${candidate.currentSkill === skill ? 'active' : ''}" onclick="handleSwitchSkill('${skill}')">
+                ${skill.toUpperCase()}
+            </button>`).join('')}
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Confirm End Test</h3>
+            <p class="mb-6 text-gray-700">Are you sure you want to end the test now? You will not be able to continue after confirming.</p>
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Cancel</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">End & View Report</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    let detailedResultsHtml = '';
+    SKILL_ORDER.forEach(skill => {
+        const answers = candidate.answers[skill] || {};
+        const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+        let score = 0;
+
+        const cards = answerKeys.map(qId => {
+            const answerValue = answers[qId] || '';
+            const isCorrect = checkAnswer(qId, answerValue);
+            if (isCorrect) score++;
+
+            const displayAnswer = Array.isArray(answerValue) ? answerValue.join(', ') : answerValue;
+            const displayCorrect = Array.isArray(READING_CORRECT_ANSWERS[qId])
+                ? READING_CORRECT_ANSWERS[qId].join(', ')
+                : READING_CORRECT_ANSWERS[qId];
+
+            return `
+                <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                    <p class="font-bold">${qId.toUpperCase()}</p>
+                    <p><strong>Your Answer:</strong> ${displayAnswer || '-'}</p>
+                    <p><strong>Correct Answer:</strong> ${displayCorrect}</p>
+                    <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                        ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </p>
+                </div>`;
+        }).join('');
+
+        detailedResultsHtml += `
+            <div>
+                <h5 class="text-lg font-semibold text-[#f97316] mt-3 mb-2">${skill.toUpperCase()}</h5>
+                <div class="space-y-3 p-4 bg-white ielts-border rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
+                    <div class="mt-4 pt-4 border-t text-xl font-bold text-center">
+                        Total Score: ${score} / ${answerKeys.length}
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">TEST RESULT REPORT</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                    <p><strong>Full Name:</strong> ${candidate.name}</p>
+                    <p><strong>Test Status:</strong> Completed / Ended by user</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">REMAINING TIME</h4>
+                <div class="grid grid-cols-1 gap-4 p-3 bg-gray-50 rounded-lg">
+                    <p><strong>Reading:</strong> ${formatTime(candidate.times.reading)}</p>
+                </div>
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">DETAILED RESULTS</h4>
+                ${detailedResultsHtml}
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Copy Report</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Close & Finish</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-3xl font-bold text-center text-[#003366] mb-6">PET READING MOCK TEST</h1>
+            <p class="text-center text-gray-600 mb-6">Please enter candidate details to begin.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">Candidate Code</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APL0101" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                START TEST
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Clear Old Data & Restart
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Please enter both Candidate Code and Full Name.';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${renderReadingContent()}
+            </main>
+        </div>
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>
