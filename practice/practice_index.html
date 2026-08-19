@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GÓC LUYỆN THI - PHÒNG HỌC ẢO APLUS</title>
+    <!-- Font Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: 'Nunito', sans-serif;
+            background-color: #0d1117;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Background Video Overlay & Styling */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(3px) brightness(1.0) opacity(1.0);
+            transform: scale(1.05);
+            transition: transform 0.1s ease-out;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(16, 37, 28, 0.4) 0%, rgba(5, 12, 9, 0.85) 100%);
+            pointer-events: none;
+        }
+
+        /* Perspective Container */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Header UI */
+        header {
+            width: 100%;
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            font-size: 22px;
+            color: #fff;
+        }
+
+        h1.header-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #ffffff, #a7f3d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+            color: #a7f3d0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Content Container */
+        .main-content {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px 30px 50px 30px;
+            margin: auto 0;
+            z-index: 5;
+        }
+
+        /* Banner Title Area */
+        .page-banner {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-banner h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5);
+        }
+
+        .page-banner p {
+            font-size: 16px;
+            color: #a7f3d0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid Categories Cards */
+        .practice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .card-3d {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 20px;
+            padding: 28px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #10b981;
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.25);
+        }
+
+        .card-3d:hover::before {
+            opacity: 1;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 55px;
+            height: 55px;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #a7f3d0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .card-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #a7f3d0;
+            font-weight: 700;
+            font-size: 14px;
+            transition: gap 0.2s ease, color 0.2s ease;
+        }
+
+        .card-3d:hover .card-action {
+            gap: 12px;
+            color: #10b981;
+        }
+
+        /* Footer */
+        footer {
+            padding: 20px;
+            z-index: 10;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+            h1.header-title {
+                font-size: 18px;
+            }
+            .page-banner h2 {
+                font-size: 24px;
+            }
+            .practice-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Background -->
+    <div class="bg-container">
+        <video class="bg-video" autoplay loop muted playsinline>
+            <source src="../images/background.mp4" type="video/mp4">
+        </video>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="scene-container">
+        
+        <!-- Header đồng bộ -->
+        <header>
+            <a href="../index.html" class="logo-container">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h1 class="header-title">PHÒNG HỌC ẢO APLUS</h1>
+            </a>
+            <nav class="nav-links">
+                <a href="../index.html" class="nav-btn"><i class="fa-solid fa-house"></i> Trang Chủ</a>
+                <a href="../knowledge/knowledge_index.html" class="nav-btn"><i class="fa-solid fa-book-open"></i> Kiến Thức</a>
+                <a href="practice_index.html" class="nav-btn active"><i class="fa-solid fa-pen-ruler"></i> Luyện Thi</a>
+            </nav>
+        </header>
+
+        <!-- Content Area -->
+        <div class="main-content">
+            <div class="page-banner">
+                <h2>HỆ THỐNG ĐỀ LUYỆN THI APLUS</h2>
+                <p>Chọn chương trình luyện thi tương ứng để bắt đầu làm bài trắc nghiệm và đánh giá năng lực.</p>
+            </div>
+
+            <div class="practice-grid">
+                
+                <!-- 1. Starters -->
+                <a href="Starters/index.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-child"></i>
+                            </div>
+                            <span class="badge">CAMBRIDGE</span>
+                        </div>
+                        <h3 class="card-title">Starters</h3>
+                        <p class="card-desc">Bộ đề luyện thi Pre-A1 Starters dành cho học sinh tiểu học bắt đầu làm quen với Tiếng Anh.</p>
+                    </div>
+                    <div class="card-action">Vào luyện thi <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- 2. Movers -->
+                <a href="Movers/index.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-user-ninja"></i>
+                            </div>
+                            <span class="badge">CAMBRIDGE</span>
+                        </div>
+                        <h3 class="card-title">Movers</h3>
+                        <p class="card-desc">Chương trình luyện thi A1 Movers phát triển toàn diện kỹ năng Nghe - Nói - Đọc - Viết.</p>
+                    </div>
+                    <div class="card-action">Vào luyện thi <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- 3. Flyers -->
+                <a href="Flyers/index.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-plane-up"></i>
+                            </div>
+                            <span class="badge">CAMBRIDGE</span>
+                        </div>
+                        <h3 class="card-title">Flyers</h3>
+                        <p class="card-desc">Luyện đề A2 Flyers giúp học sinh vững vàng kiến thức tiểu học và tự tin giao tiếp.</p>
+                    </div>
+                    <div class="card-action">Vào luyện thi <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- 4. PET -->
+                <a href="PET/index.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <span class="badge">CAMBRIDGE</span>
+                        </div>
+                        <h3 class="card-title">PET (B1)</h3>
+                        <p class="card-desc">Hệ thống bài thi B1 Preliminary (PET) nâng cao tư duy ngôn ngữ và cấu trúc đề thi thực tế.</p>
+                    </div>
+                    <div class="card-action">Vào luyện thi <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- 5. IELTS -->
+                <a href="IELTS/index.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-earth-americas"></i>
+                            </div>
+                            <span class="badge">ACADEMIC</span>
+                        </div>
+                        <h3 class="card-title">IELTS</h3>
+                        <p class="card-desc">Kho đề thi thử IELTS chuẩn Academic đầy đủ Listening, Reading, Writing và Speaking.</p>
+                    </div>
+                    <div class="card-action">Vào luyện thi <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- 6. Chuyen -->
+                <a href="Chuyen/index.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <span class="badge">CHUYÊN SÂU</span>
+                        </div>
+                        <h3 class="card-title">Luyện Thi Chuyên</h3>
+                        <p class="card-desc">Bộ đề chuyên Anh, đề thi học sinh giỏi các cấp với các dạng bài phân hóa nâng cao.</p>
+                    </div>
+                    <div class="card-action">Vào luyện thi <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 PHÒNG HỌC ẢO APLUS. Thiết kế hiện đại & sinh động cho không gian học tập trực tuyến.</p>
+        </footer>
+
+    </div>
+
+    <!-- Script hiệu ứng tương tác chuột -->
+    <script>
+        const bgVideo = document.querySelector('.bg-video');
+
+        window.addEventListener('mousemove', (e) => {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            const mouseX = (e.clientX - windowWidth / 2) / (windowWidth / 2);
+            const mouseY = (e.clientY - windowHeight / 2) / (windowHeight / 2);
+
+            if (bgVideo) {
+                bgVideo.style.transform = `scale(1.05) translate(${-mouseX * 8}px, ${-mouseY * 8}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
