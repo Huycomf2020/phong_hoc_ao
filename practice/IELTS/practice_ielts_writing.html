@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS WRITING TESTS - PHÒNG HỌC ẢO APLUS</title>
+    <!-- Font Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: 'Nunito', sans-serif;
+            background-color: #0d1117;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Background Video Overlay & Styling */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(3px) brightness(1.0) opacity(1.0);
+            transform: scale(1.05);
+            transition: transform 0.1s ease-out;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(16, 37, 28, 0.4) 0%, rgba(5, 12, 9, 0.85) 100%);
+            pointer-events: none;
+        }
+
+        /* Perspective Container */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Header UI */
+        header {
+            width: 100%;
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            font-size: 22px;
+            color: #fff;
+        }
+
+        h1.header-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #ffffff, #a7f3d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+            color: #a7f3d0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Content Container */
+        .main-content {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px 30px 50px 30px;
+            margin: auto 0;
+            z-index: 5;
+        }
+
+        /* Banner Title Area */
+        .page-banner {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-banner h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5);
+        }
+
+        .page-banner p {
+            font-size: 16px;
+            color: #a7f3d0;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* Grid Categories Cards */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card-3d {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 18px;
+            padding: 22px;
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: #10b981;
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.25);
+        }
+
+        .card-3d:hover::before {
+            opacity: 1;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #a7f3d0;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        .card-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #a7f3d0;
+            font-weight: 700;
+            font-size: 13px;
+            transition: gap 0.2s ease, color 0.2s ease;
+        }
+
+        .card-3d:hover .card-action {
+            gap: 10px;
+            color: #10b981;
+        }
+
+        /* Footer */
+        footer {
+            padding: 20px;
+            z-index: 10;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+            h1.header-title {
+                font-size: 18px;
+            }
+            .page-banner h2 {
+                font-size: 24px;
+            }
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Background -->
+    <div class="bg-container">
+        <video class="bg-video" autoplay loop muted playsinline>
+            <source src="../../images/background.mp4" type="video/mp4">
+        </video>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="scene-container">
+        
+        <!-- Header đồng bộ -->
+        <header>
+            <a href="../../index.html" class="logo-container">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h1 class="header-title">PHÒNG HỌC ẢO APLUS</h1>
+            </a>
+            <nav class="nav-links">
+                <a href="../../index.html" class="nav-btn"><i class="fa-solid fa-house"></i> Trang Chủ</a>
+                <a href="../../knowledge/knowledge_index.html" class="nav-btn"><i class="fa-solid fa-book-open"></i> Kiến Thức</a>
+                <a href="practice_ielts.html" class="nav-btn active"><i class="fa-solid fa-pen-nib"></i> IELTS Writing</a>
+            </nav>
+        </header>
+
+        <!-- Content Area -->
+        <div class="main-content">
+            <div class="page-banner">
+                <h2>IELTS WRITING PRACTICE TESTS</h2>
+                <p>Bộ đề luyện viết IELTS Writing Task 1 & Task 2 có kèm bài mẫu Band 7.0+ và từ vựng ăn điểm từ APLUS.</p>
+            </div>
+
+            <div class="test-grid">
+
+                <!-- Test 1 -->
+                <a href="IELTS Writing Test 1 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 1</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 1 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 2 -->
+                <a href="IELTS Writing Test 2 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 2</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 2 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 3 -->
+                <a href="IELTS Writing Test 3 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 3</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 3 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 4 -->
+                <a href="IELTS Writing Test 4 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 4</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 4 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 5 -->
+                <a href="IELTS Writing Test 5 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 5</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 5 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 6 -->
+                <a href="IELTS Writing Test 6 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 6</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 6 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 7 -->
+                <a href="IELTS Writing Test 7 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 7</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 7 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 8 -->
+                <a href="IELTS Writing Test 8 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 8</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 8 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 9 -->
+                <a href="IELTS Writing Test 9 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 9</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 9 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 10 -->
+                <a href="IELTS Writing Test 10 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 10</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 10 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 11 -->
+                <a href="IELTS Writing Test 11 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 11</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 11 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 12 -->
+                <a href="IELTS Writing Test 12 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 12</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 12 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 13 -->
+                <a href="IELTS Writing Test 13 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 13</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 13 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 14 -->
+                <a href="IELTS Writing Test 14 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 14</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 14 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Test 15 -->
+                <a href="IELTS Writing Test 15 Aplus.html" class="card-3d">
+                    <div>
+                        <div class="card-top">
+                            <div class="card-icon">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <span class="badge">WRITING</span>
+                        </div>
+                        <h3 class="card-title">Writing Test 15</h3>
+                        <p class="card-desc">Đề thi IELTS Writing Test 15 gồm Task 1 (Graph/Chart) & Task 2 (Essay) kèm Sample.</p>
+                    </div>
+                    <div class="card-action">Làm bài ngay <i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 PHÒNG HỌC ẢO APLUS. Thiết kế hiện đại & sinh động cho không gian học tập trực tuyến.</p>
+        </footer>
+
+    </div>
+
+    <!-- Script hiệu ứng tương tác chuột -->
+    <script>
+        const bgVideo = document.querySelector('.bg-video');
+
+        window.addEventListener('mousemove', (e) => {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            const mouseX = (e.clientX - windowWidth / 2) / (windowWidth / 2);
+            const mouseY = (e.clientY - windowHeight / 2) / (windowHeight / 2);
+
+            if (bgVideo) {
+                bgVideo.style.transform = `scale(1.05) translate(${-mouseX * 8}px, ${-mouseY * 8}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
