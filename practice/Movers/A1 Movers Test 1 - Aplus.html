@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cambridge English Qualifications - A1 Movers Practice Test - Aplus Foreign Language Centre</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f3f4f6;
+        overflow-y: hidden;
+        margin: 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    input, textarea {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+    }
+
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .header {
+        background-color: #003366;
+        color: white;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 64px;
+    }
+    .main-content {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .skill-tabs {
+        background-color: #e5e7eb;
+        padding: 0 1rem;
+        border-bottom: 2px solid #ccc;
+    }
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 700;
+        color: #4b5563;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-right: 4px;
+        border: none;
+        background-color: #d1d5db;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #003366;
+        border-top: 4px solid #f97316;
+    }
+    .skill-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background-color: white;
+    }
+    .ielts-border {
+        border: 1px solid #d1d5db;
+    }
+    .exam-column {
+        overflow-y: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        height: calc(100vh - 190px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 4px;
+    }
+    .action-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<div id="warning-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-lg shadow-2xl font-bold hidden z-50 transition-all duration-300 flex items-center gap-2">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+    <span>CẢNH BÁO: Thao tác không hợp lệ trong phòng thi!</span>
+</div>
+
+<script>
+/* ============================ CONSTANTS & ANSWERS ============================ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+const SKILL_ORDER = ['listening', 'reading_writing'];
+const INITIAL_TIMES = { listening: 25 * 60, reading_writing: 35 * 60 }; // Total 60 mins
+
+const CORRECT_ANSWERS = {
+    // LISTENING
+    'l_q1': 'Ann', 'l_q2': 'Paul', 'l_q3': 'Jane', 'l_q4': 'Sam', 'l_q5': 'Jill',
+    'l_q6': 'tennis', 'l_q7': 'Lewis', 'l_q8': 'Park', 'l_q9': 'sandwiches', 'l_q10': 'towel',
+    'l_q11': 'A', 'l_q12': 'B', 'l_q13': 'E', 'l_q14': 'F', 'l_q15': 'D',
+    'l_q16': 'B', 'l_q17': 'A', 'l_q18': 'C', 'l_q19': 'C', 'l_q20': 'C',
+    'l_q21': 'orange', 'l_q22': 'purple', 'l_q23': 'island', 'l_q24': 'red', 'l_q25': 'blue',
+
+    // READING & WRITING
+    'rw_q1': 'stars', 'rw_q2': 'a bowl', 'rw_q3': 'penguins', 'rw_q4': 'toothpaste', 'rw_q5': 'snails',
+    'rw_q6': 'C', 'rw_q7': 'B', 'rw_q8': 'A', 'rw_q9': 'A', 'rw_q10': 'B', 'rw_q11': 'A',
+    'rw_q12': 'sunny', 'rw_q13': 'laughed', 'rw_q14': 'big', 'rw_q15': 'vegetables', 'rw_q16': 'write', 'rw_q17': 'Going to the farm',
+    'rw_q18': 'something', 'rw_q19': 'take', 'rw_q20': 'because', 'rw_q21': 'not', 'rw_q22': 'like',
+    'rw_q23': 'helmet', 'rw_q24': 'a laptop', 'rw_q25': 'three friends', 'rw_q26': 'didn\'t want', 'rw_q27': 'shower', 'rw_q28': 'pancakes', 'rw_q29': 'a huge party',
+    'rw_q30': 'water', 'rw_q31': 'net', 'rw_q32': 'in the tree', 'rw_q33': 'brown'
+};
+
+const TOTAL_QUESTIONS = Object.keys(CORRECT_ANSWERS).length;
+
+const INITIAL_CANDIDATE_STATE = {
+    code: '',
+    name: '',
+    currentSkill: 'listening',
+    answers: { listening: {}, reading_writing: {} },
+    times: { ...INITIAL_TIMES },
+    timerRunning: false,
+    violations: 0
+};
+
+/* ============================ STATE ============================ */
+let appState = 'setup';
+let candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+let isEndModalOpen = false;
+let isReportModalOpen = false;
+let isFullscreenWarningOpen = false;
+let isSubmitting = false;
+let timerInterval = null;
+let toastTimeout = null;
+
+const root = document.getElementById('root');
+
+/* ============================ SECURITY & ANTI-CHEAT ============================ */
+document.addEventListener('contextmenu', function (e) {
+    if (appState === 'testing') {
+        e.preventDefault();
+        showWarningToast('CẢNH BÁO: Thao tác chuột phải bị cấm trong khi làm bài!');
+    }
+});
+
+document.addEventListener('selectstart', function (e) {
+    if (appState === 'testing' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        showWarningToast('CẢNH BÁO: Thao tác bôi đen sao chép bị cấm!');
+    }
+});
+
+function showWarningToast(msg) {
+    const toast = document.getElementById('warning-toast');
+    if (toast) {
+        toast.querySelector('span').textContent = msg;
+        toast.classList.remove('hidden');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+
+function handleFullscreenChange() {
+    if (appState === 'testing' && !isReportModalOpen && !isEndModalOpen) {
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+        if (!isFS) {
+            candidate.violations = (candidate.violations || 0) + 1;
+            saveState();
+            pauseTimer();
+            isFullscreenWarningOpen = true;
+            render();
+        }
+    }
+}
+
+function requestFullscreenMode() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().then(() => {
+            isFullscreenWarningOpen = false;
+            runTimer();
+            render();
+        }).catch(err => {
+            console.warn(`Fullscreen error: ${err.message}`);
+        });
+    }
+}
+
+/* ============================ HELPERS ============================ */
+function formatTime(seconds) {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+function getTotalRemainingSeconds() {
+    return candidate.times.listening + candidate.times.reading_writing;
+}
+
+function getAnsweredCount() {
+    let count = 0;
+    const lAns = candidate.answers.listening || {};
+    const rwAns = candidate.answers.reading_writing || {};
+
+    Object.keys(CORRECT_ANSWERS).forEach(qId => {
+        if (qId.startsWith('l_')) {
+            if (lAns[qId] && String(lAns[qId]).trim() !== '') count++;
+        } else {
+            if (rwAns[qId] && String(rwAns[qId]).trim() !== '') count++;
+        }
+    });
+    return count;
+}
+
+function isTestCompleted() {
+    return getAnsweredCount() === TOTAL_QUESTIONS;
+}
+
+function saveState() {
+    if (appState === 'testing') {
+        try {
+            localStorage.setItem('a1MoversMockTest1State', JSON.stringify(candidate));
+        } catch (e) {
+            console.error('Failed to save state:', e);
+        }
+    }
+}
+
+function loadState() {
+    try {
+        const savedData = localStorage.getItem('a1MoversMockTest1State');
+        if (savedData) {
+            const loaded = JSON.parse(savedData);
+            candidate = loaded;
+            if (loaded.code && loaded.name) {
+                appState = 'testing';
+                if (loaded.timerRunning) {
+                    runTimer();
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load state:', e);
+        localStorage.removeItem('a1MoversMockTest1State');
+    }
+}
+
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    candidate.timerRunning = false;
+    saveState();
+}
+
+function runTimer() {
+    if (timerInterval) return;
+    candidate.timerRunning = true;
+    saveState();
+
+    timerInterval = setInterval(() => {
+        if (candidate.times[candidate.currentSkill] > 0) {
+            candidate.times[candidate.currentSkill] -= 1;
+            updateHeaderOnly();
+            saveState();
+            checkTimerEnd();
+        } else {
+            if (candidate.currentSkill === 'listening' && candidate.times.reading_writing > 0) {
+                candidate.currentSkill = 'reading_writing';
+                render();
+            } else {
+                pauseTimer();
+                showReportModal();
+            }
+        }
+    }, 1000);
+}
+
+function checkTimerEnd() {
+    if (getTotalRemainingSeconds() <= 0) {
+        pauseTimer();
+        showReportModal();
+    }
+}
+
+function handleStartTest(code, name) {
+    candidate.code = code;
+    candidate.name = name;
+    appState = 'testing';
+    requestFullscreenMode();
+}
+
+function handleSwitchSkill(newSkill) {
+    candidate.currentSkill = newSkill;
+    render();
+}
+
+function handleSaveAnswer(skill, qId, value) {
+    candidate.answers[skill] = candidate.answers[skill] || {};
+    candidate.answers[skill][qId] = value;
+    saveState();
+    updateHeaderOnly();
+}
+
+function handleToggleTimer() {
+    if (candidate.timerRunning) {
+        pauseTimer();
+    } else {
+        runTimer();
+    }
+    render();
+}
+
+function showEndTestModal() {
+    pauseTimer();
+    isEndModalOpen = true;
+    render();
+}
+
+function closeEndTestModal() {
+    isEndModalOpen = false;
+    runTimer();
+    render();
+}
+
+function showReportModal() {
+    pauseTimer();
+    isEndModalOpen = false;
+    isReportModalOpen = true;
+    render();
+    sendDataToGoogleSheet();
+}
+
+function handleReset() {
+    pauseTimer();
+    localStorage.removeItem('a1MoversMockTest1State');
+    candidate = JSON.parse(JSON.stringify(INITIAL_CANDIDATE_STATE));
+    appState = 'setup';
+    isReportModalOpen = false;
+    isFullscreenWarningOpen = false;
+    window.location.reload();
+}
+
+/* ============================ GOOGLE SHEET INTEGRATION ============================ */
+function sendDataToGoogleSheet() {
+    const lAns = candidate.answers.listening || {};
+    const rwAns = candidate.answers.reading_writing || {};
+    let score = 0;
+
+    Object.keys(CORRECT_ANSWERS).forEach(qId => {
+        const isL = qId.startsWith('l_');
+        const userVal = isL ? lAns[qId] : rwAns[qId];
+        if (checkAnswer(qId, userVal)) score++;
+    });
+
+    const payload = {
+        sheetName: "A1-A2",
+        testType: "A1 MOVERS MOCK TEST 1",
+        candidateCode: candidate.code,
+        candidateName: candidate.name,
+        correctCount: `${score}/${TOTAL_QUESTIONS}`,
+        score: (score / TOTAL_QUESTIONS * 10).toFixed(1),
+        comment: `Đã làm ${getAnsweredCount()}/${TOTAL_QUESTIONS} câu. Tình trạng: Hoàn thành bài thi.`,
+        warningCount: candidate.violations || 0
+    };
+
+    isSubmitting = true;
+
+    fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    }).then(() => {
+        console.log("Results sent to Google Sheet successfully!");
+        isSubmitting = false;
+    }).catch(err => {
+        console.error("Error sending to Google Sheet:", err);
+        isSubmitting = false;
+    });
+}
+
+/* ============================ ANSWER CHECKING ============================ */
+function checkAnswer(qId, value) {
+    const correct = CORRECT_ANSWERS[qId];
+    if (!correct) return false;
+
+    let userVal = String(value || '').trim().toLowerCase();
+    let correctVal = String(correct).trim().toLowerCase();
+
+    if (qId === 'rw_q18') return userVal === 'something';
+    if (qId === 'rw_q19') return userVal === 'take';
+    if (qId === 'rw_q20') return userVal === 'because';
+    if (qId === 'rw_q21') return userVal === 'not';
+    if (qId === 'rw_q22') return userVal === 'like';
+
+    if (qId === 'rw_q23') return userVal === 'helmet' || userVal === 'a helmet';
+    if (qId === 'rw_q24') return userVal === 'laptop' || userVal === 'a laptop';
+    if (qId === 'rw_q25') return userVal.includes('3') || userVal.includes('three');
+    if (qId === 'rw_q26') return userVal.includes("didn't want") || userVal.includes("did not want");
+    if (qId === 'rw_q27') return userVal.includes('shower');
+    if (qId === 'rw_q28') return userVal.includes('pancake');
+    if (qId === 'rw_q29') return userVal.includes('huge party') || userVal.includes('big party') || userVal.includes('party');
+
+    if (qId === 'rw_q30') return userVal === 'water' || userVal === 'the water' || userVal === 'in the water';
+    if (qId === 'rw_q31') return userVal === 'net' || userVal === 'a net';
+    if (qId === 'rw_q32') return userVal.includes('tree');
+    if (qId === 'rw_q33') return userVal.includes('brown') || userVal.includes('yellow');
+
+    return userVal === correctVal;
+}
+
+function generateReportText() {
+    let report = `CAMBRIDGE A1 MOVERS MOCK TEST REPORT\n`;
+    report += `===================================\n`;
+    report += `Candidate Code: ${candidate.code}\n`;
+    report += `Full Name: ${candidate.name}\n`;
+    report += `Fullscreen Exit Violations: ${candidate.violations || 0}\n\n`;
+
+    let score = 0;
+    const lAns = candidate.answers.listening || {};
+    const rwAns = candidate.answers.reading_writing || {};
+
+    report += `DETAILED RESULTS:\n`;
+    Object.keys(CORRECT_ANSWERS).forEach(qId => {
+        const isL = qId.startsWith('l_');
+        const userVal = isL ? lAns[qId] : rwAns[qId];
+        const isCorrect = checkAnswer(qId, userVal);
+        if (isCorrect) score++;
+
+        report += `${qId.toUpperCase()}: ${userVal || 'N/A'} | Key: ${CORRECT_ANSWERS[qId]} -> ${isCorrect ? 'CORRECT' : 'INCORRECT'}\n`;
+    });
+
+    report += `\nTOTAL SCORE: ${score} / ${TOTAL_QUESTIONS}\n`;
+    return report;
+}
+
+function handleCopyReport() {
+    const text = generateReportText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Report copied to clipboard!");
+    }).catch(err => {
+        alert("Failed to copy report. Please copy manually.");
+    });
+}
+
+/* ============================ INPUT BUILDERS ============================ */
+function radioInput(skill, name, value, extraClass) {
+    const answers = candidate.answers[skill] || {};
+    const checked = answers[name] === value ? 'checked' : '';
+    return `<input type="radio" name="${name}" value="${value}" ${checked} class="${extraClass || ''}" onchange="handleSaveAnswer('${skill}', '${name}', '${value}')" />`;
+}
+
+function textInput(skill, id, placeholder, extraClass) {
+    const answers = candidate.answers[skill] || {};
+    const value = answers[id] || '';
+    return `<input type="text" id="${id}" value="${value.replace(/"/g,'&quot;')}" placeholder="${placeholder}" class="ielts-border rounded-md p-2 w-full ${extraClass || ''}" oninput="handleSaveAnswer('${skill}', '${id}', this.value)" />`;
+}
+
+function selectInput(skill, id, options, extraClass) {
+    const answers = candidate.answers[skill] || {};
+    const value = answers[id] || '';
+    return `
+    <select id="${id}" class="ielts-border rounded-md p-2 w-full font-bold text-[#003366] ${extraClass || ''}" onchange="handleSaveAnswer('${skill}', '${id}', this.value)">
+        <option value="">-- Choose Name --</option>
+        ${options.map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+    </select>`;
+}
+
+/* ============================ CONTENT RENDERERS ============================ */
+function renderListeningContent() {
+    return `
+    <div class="skill-content" id="content-listening">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 sticky top-0 z-20 shadow-md">
+            <h3 class="font-bold text-[#003366] mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                A1 MOVERS LISTENING AUDIO PLAYER
+            </h3>
+            <audio controls class="w-full">
+                <source src="https://audio.jukehost.co.uk/019ffa68-15a3-71f1-aa85-cd244c0ef6f8.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <div class="exam-column custom-scrollbar">
+            <!-- PART 1 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 1 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Listen and select the correct person for each description in the main picture. There is one example (Daisy).</p>
+                <div class="mb-6 text-center bg-gray-50 p-2 rounded-lg border">
+                    <img src="https://i.ibb.co/nqD8nxSY/a1-q1.png" alt="A1 Movers Listening Part 1 Picture" class="max-w-full mx-auto rounded shadow-sm" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Question 1: Woman in red coat buying flowers</label>
+                        ${selectInput('listening', 'l_q1', ['Ann', 'Jane', 'Paul', 'Jill', 'Sam', 'Kim'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Question 2: Boy waving out of the blue car window</label>
+                        ${selectInput('listening', 'l_q2', ['Ann', 'Jane', 'Paul', 'Jill', 'Sam', 'Kim'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Question 3: Woman buying meat at butcher's shop</label>
+                        ${selectInput('listening', 'l_q3', ['Ann', 'Jane', 'Paul', 'Jill', 'Sam', 'Kim'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Question 4: Man riding bike carrying long bread</label>
+                        ${selectInput('listening', 'l_q4', ['Ann', 'Jane', 'Paul', 'Jill', 'Sam', 'Kim'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Question 5: Woman walking a small brown dog</label>
+                        ${selectInput('listening', 'l_q5', ['Ann', 'Jane', 'Paul', 'Jill', 'Sam', 'Kim'])}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 2 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 2 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Listen and write a word or a number. There is one example.</p>
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="lg:w-1/2">
+                        <img src="https://i.ibb.co/4Zx4TKcB/a1-q2.png" alt="A1 Movers Listening Part 2" class="w-full rounded shadow-sm border" />
+                    </div>
+                    <div class="lg:w-1/2 border p-6 rounded-xl bg-orange-50/50 space-y-4">
+                        <h5 class="text-lg font-bold text-center text-[#003366] underline">Sports For All! - Every Day After Class!</h5>
+                        <p><strong>Name:</strong> Tom Baker (Example)</p>
+                        <p><strong>Age:</strong> 9 (Example)</p>
+                        <div class="space-y-3 pt-2">
+                            <div>
+                                <label class="block font-bold text-gray-700">1. Favourite Sport:</label>
+                                ${textInput('listening', 'l_q6', 'Type sport name...')}
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-700">2. Teacher: Mr.</label>
+                                ${textInput('listening', 'l_q7', 'Type teacher name...')}
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-700">3. Address: 3 ________ Street</label>
+                                ${textInput('listening', 'l_q8', 'Type street name...')}
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-700">4. Things to bring: water, sweater and ________</label>
+                                ${textInput('listening', 'l_q9', 'Type thing to bring...')}
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-700">5. Things to bring: ________</label>
+                                ${textInput('listening', 'l_q10', 'Type thing to bring...')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 3 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 3 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Lily did some homework about the places her family and friends like. Listen and select a letter (A-H) for each person.</p>
+                <div class="mb-6">
+                    <img src="https://i.ibb.co/MYNvh8F/a1-q3.png" alt="A1 Movers Listening Part 3" class="w-full rounded shadow-sm border" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800">1. Lily's sister:</p>
+                        ${selectInput('listening', 'l_q11', ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800">2. Lily's brother:</p>
+                        ${selectInput('listening', 'l_q12', ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800">3. Lily's dad:</p>
+                        ${selectInput('listening', 'l_q13', ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800">4. Lily's cousin:</p>
+                        ${selectInput('listening', 'l_q14', ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800">5. Charlie:</p>
+                        ${selectInput('listening', 'l_q15', ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'])}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 4 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 4 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Listen and tick (A, B, or C) for each question.</p>
+                <div class="space-y-8">
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">1. How does Jack go to school?</p>
+                        <img src="https://i.ibb.co/QvYmWLkt/a1-q4.png" alt="Part 4 Q1" class="w-full max-w-xl mb-3 rounded border" />
+                        <div class="flex space-x-8 font-bold">
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q16', 'A', 'mr-1')} A</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q16', 'B', 'mr-1')} B</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q16', 'C', 'mr-1')} C</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">2. What did Sally do at the weekend?</p>
+                        <img src="https://i.ibb.co/N2PcQzwY/a1-q5.png" alt="Part 4 Q2" class="w-full max-w-xl mb-3 rounded border" />
+                        <div class="flex space-x-8 font-bold">
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q17', 'A', 'mr-1')} A</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q17', 'B', 'mr-1')} B</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q17', 'C', 'mr-1')} C</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">3. Which book does Mary want to find?</p>
+                        <img src="https://i.ibb.co/0pwL3sb5/a1-q6.png" alt="Part 4 Q3" class="w-full max-w-xl mb-3 rounded border" />
+                        <div class="flex space-x-8 font-bold">
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q18', 'A', 'mr-1')} A</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q18', 'B', 'mr-1')} B</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q18', 'C', 'mr-1')} C</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">4. What can Peter see from his window?</p>
+                        <img src="https://i.ibb.co/W4FjxQn2/a1-q7.png" alt="Part 4 Q4" class="w-full max-w-xl mb-3 rounded border" />
+                        <div class="flex space-x-8 font-bold">
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q19', 'A', 'mr-1')} A</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q19', 'B', 'mr-1')} B</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q19', 'C', 'mr-1')} C</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">5. Where does Jane want to go?</p>
+                        <img src="https://i.ibb.co/VpjY4KHL/a1-q8.png" alt="Part 4 Q5" class="w-full max-w-xl mb-3 rounded border" />
+                        <div class="flex space-x-8 font-bold">
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q20', 'A', 'mr-1')} A</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q20', 'B', 'mr-1')} B</label>
+                            <label class="cursor-pointer hover:text-[#003366]">${radioInput('listening', 'l_q20', 'C', 'mr-1')} C</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 5 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 5 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Listen and colour / write according to instructions.</p>
+                <div class="mb-6 text-center">
+                    <img src="https://i.ibb.co/vC5VFpTM/a1-q9.png" alt="A1 Movers Listening Part 5" class="max-w-full mx-auto rounded shadow-sm border" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">1. Colour of baby giraffe's head:</label>
+                        ${selectInput('listening', 'l_q21', ['orange', 'blue', 'red', 'green', 'yellow', 'purple'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">2. Colour of fish above water:</label>
+                        ${selectInput('listening', 'l_q22', ['orange', 'blue', 'red', 'green', 'yellow', 'purple'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">3. Write word under rainbow: The ________</label>
+                        ${textInput('listening', 'l_q23', 'Type word (e.g. island)...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">4. Colour of woman's hat:</label>
+                        ${selectInput('listening', 'l_q24', ['orange', 'blue', 'red', 'green', 'yellow', 'purple'])}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">5. Colour of small dolphin:</label>
+                        ${selectInput('listening', 'l_q25', ['orange', 'blue', 'red', 'green', 'yellow', 'purple'])}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReadingWritingContent() {
+    return `
+    <div class="skill-content" id="content-reading-writing">
+        <div class="exam-column custom-scrollbar">
+            <!-- PART 1 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 1 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Look and read. Choose the correct words and write them on the lines.</p>
+                <div class="mb-6 text-center">
+                    <img src="https://i.ibb.co/Y4p4jTzF/a1-q10.png" alt="A1 Movers Reading Part 1" class="max-w-full mx-auto rounded shadow-sm border" />
+                </div>
+                <div class="space-y-4">
+                    <p class="p-2 bg-gray-100 rounded"><em>Example: You can put water or juice in this. -> <strong>a bottle</strong></em></p>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">1. You see these above you in the sky at night.</label>
+                        ${textInput('reading_writing', 'rw_q1', 'Choose from picture...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">2. You can have soup or fruit in this.</label>
+                        ${textInput('reading_writing', 'rw_q2', 'Choose from picture...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">3. These animals live in cold places on the ice and they eat fish.</label>
+                        ${textInput('reading_writing', 'rw_q3', 'Choose from picture...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">4. When you want to clean your teeth, you put this on a toothbrush.</label>
+                        ${textInput('reading_writing', 'rw_q4', 'Choose from picture...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">5. These animals move very slowly, they have shells on their backs and they eat leaves.</label>
+                        ${textInput('reading_writing', 'rw_q5', 'Choose from picture...')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 2 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 2 (6 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Read the text and choose the best answer.</p>
+                <div class="mb-6 text-center">
+                    <img src="https://i.ibb.co/LhJGdD1G/a1-q11.png" alt="A1 Movers Reading Part 2" class="max-w-md mx-auto rounded shadow-sm border" />
+                </div>
+                <div class="space-y-6">
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">1. Julia: Where did you find them?</p>
+                        <div class="space-y-1 font-semibold">
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q6', 'A', 'mr-2')} A. Yes, in town.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q6', 'B', 'mr-2')} B. Last week.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q6', 'C', 'mr-2')} C. In a shop in town.</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">2. Julia: Was it a good shop?</p>
+                        <div class="space-y-1 font-semibold">
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q7', 'A', 'mr-2')} A. Yes, well.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q7', 'B', 'mr-2')} B. Yes, very.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q7', 'C', 'mr-2')} C. Yes, good.</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">3. Julia: Do you go shopping a lot?</p>
+                        <div class="space-y-1 font-semibold">
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q8', 'A', 'mr-2')} A. Every weekend!</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q8', 'B', 'mr-2')} B. All weekends!</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q8', 'C', 'mr-2')} C. Last weekend!</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">4. Julia: And what do you buy?</p>
+                        <div class="space-y-1 font-semibold">
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q9', 'A', 'mr-2')} A. I like buying clothes.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q9', 'B', 'mr-2')} B. I'd like to buy clothes.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q9', 'C', 'mr-2')} C. I liked buying clothes.</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">5. Julia: Would you like to go shopping this weekend?</p>
+                        <div class="space-y-1 font-semibold">
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q10', 'A', 'mr-2')} A. I like to.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q10', 'B', 'mr-2')} B. I'd love to.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q10', 'C', 'mr-2')} C. I'd want to.</label>
+                        </div>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <p class="font-bold text-gray-800 mb-2">6. Julia: Where shall I see you?</p>
+                        <div class="space-y-1 font-semibold">
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q11', 'A', 'mr-2')} A. At the station.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q11', 'B', 'mr-2')} B. On the station.</label>
+                            <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q11', 'C', 'mr-2')} C. To the station.</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 3 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 3 (6 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Read the story. Choose a word from the box. Write the correct word next to numbers 1-5.</p>
+                <div class="mb-6 text-center">
+                    <img src="https://i.ibb.co/hFzqkVVd/a1-q12.png" alt="A1 Movers Reading Part 3" class="max-w-full mx-auto rounded shadow-sm border" />
+                </div>
+                <div class="p-6 bg-amber-50/40 border rounded-xl space-y-4 text-base leading-relaxed mb-6">
+                    <p>Last week our class went to a farm in the <strong class="underline text-blue-800">countryside</strong>. It was a beautiful (1) <span class="w-32 inline-block">${textInput('reading_writing', 'rw_q12', 'word 1...')}</span> day and everyone talked and (2) <span class="w-32 inline-block">${textInput('reading_writing', 'rw_q13', 'word 2...')}</span> on the bus.</p>
+                    <p>When we got there, we saw lots of chickens in a field near the farm house. Our first job was to feed them. Then the farmer took us around the farm. He had a dog called Sam. Sam was so clever. He looked for the sheep and found lots! My classmates had a ride on a really (3) <span class="w-32 inline-block">${textInput('reading_writing', 'rw_q14', 'word 3...')}</span> horse, but I didn't. It was too dangerous!</p>
+                    <p>In the afternoon we went around the fields on a huge tractor! The farmer grows (4) <span class="w-32 inline-block">${textInput('reading_writing', 'rw_q15', 'word 4...')}</span> and sells them at the market, so we all helped him to water them. It was a brilliant day!</p>
+                    <p>Today at school our teacher told us to (5) <span class="w-32 inline-block">${textInput('reading_writing', 'rw_q16', 'word 5...')}</span> stories about our day on the farm. This is mine.</p>
+                </div>
+                <div class="p-4 border rounded-lg bg-gray-50">
+                    <p class="font-bold text-gray-800 mb-2">(6) Now choose the best name for the story. Tick one box:</p>
+                    <div class="space-y-2 font-semibold">
+                        <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q17', 'The farmer\'s day', 'mr-2')} The farmer's day</label>
+                        <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q17', 'How animals live', 'mr-2')} How animals live</label>
+                        <label class="block cursor-pointer">${radioInput('reading_writing', 'rw_q17', 'Going to the farm', 'mr-2')} Going to the farm</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 4 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 4 (5 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Read the text. Choose the right words and write them on the lines.</p>
+                <div class="p-6 bg-blue-50/40 border rounded-xl space-y-4 text-base leading-relaxed mb-6">
+                    <h5 class="text-center font-bold text-lg text-[#003366]">The Library</h5>
+                    <p>One of the best buildings in town to go to <strong class="underline text-blue-800">on</strong> a wet day is the library.</p>
+                    <p>When you want to know (1) <span class="w-36 inline-block">${textInput('reading_writing', 'rw_q18', 'something/nothing...')}</span> about the world you live in, there are lots of books to read. Books can teach you many things too: how to build model trains, or how to fix your bike.</p>
+                    <p>Many people think that reading real books is better than reading e-books, and you can (2) <span class="w-36 inline-block">${textInput('reading_writing', 'rw_q19', 'take/took/taking...')}</span> books home with you. The library is a great place to do your homework (3) <span class="w-36 inline-block">${textInput('reading_writing', 'rw_q20', 'so/or/because...')}</span> you can use the computers. It's also quiet, so try (4) <span class="w-36 inline-block">${textInput('reading_writing', 'rw_q21', 'not/no/now...')}</span> to talk loudly when you are there.</p>
+                    <p>Some libraries have a shop where you can buy things (5) <span class="w-36 inline-block">${textInput('reading_writing', 'rw_q22', 'like/of/on...')}</span> pens and maps.</p>
+                </div>
+            </div>
+
+            <!-- PART 5 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 5 (7 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Look at the pictures and read the story. Write some words to complete the sentences (1, 2 or 3 words).</p>
+                <div class="space-y-8">
+                    <div class="border p-4 rounded-lg bg-gray-50">
+                        <img src="https://i.ibb.co/vvTcZwFn/a1-q13.png" alt="Part 5 Story 1" class="w-full max-w-lg mx-auto mb-4 rounded border" />
+                        <p class="font-bold text-[#003366] mb-2">Jim's birthday</p>
+                        <p class="text-sm leading-relaxed mb-4">My name's Jim and yesterday it was my birthday. I was nine and I got lots of nice presents from my family. Mum took pictures when I opened them. From Mum and Dad, I got a red bike. It's new and better than my old one. They also got me a helmet. Mum says I have to wear that when I go riding. And my grandparents bought me a laptop. I love it!</p>
+                        <div class="space-y-3 font-medium">
+                            <div>1. Jim's parents bought him a ________ and a new bike. ${textInput('reading_writing', 'rw_q23', 'Type word(s)...')}</div>
+                            <div>2. He also got ________ from his grandparents. ${textInput('reading_writing', 'rw_q24', 'Type word(s)...')}</div>
+                        </div>
+                    </div>
+
+                    <div class="border p-4 rounded-lg bg-gray-50">
+                        <img src="https://i.ibb.co/35gvcThT/a1-q14.png" alt="Part 5 Story 2" class="w-full max-w-lg mx-auto mb-4 rounded border" />
+                        <p class="text-sm leading-relaxed mb-4">So after school I went to the swimming pool with three friends. When we got there we didn't want to swim at first because the water was very cold, but when we did we had great fun. Then Mum shouted, 'Time to go home!' so we had a shower and got dressed quickly.</p>
+                        <div class="space-y-3 font-medium">
+                            <div>3. After school Tom went to the swimming pool with ________. ${textInput('reading_writing', 'rw_q25', 'Type word(s)...')}</div>
+                            <div>4. At first the water was cold so they ________ to swim. ${textInput('reading_writing', 'rw_q26', 'Type word(s)...')}</div>
+                            <div>5. When they got out of the pool they went for a ________ before they got dressed. ${textInput('reading_writing', 'rw_q27', 'Type word(s)...')}</div>
+                        </div>
+                    </div>
+
+                    <div class="border p-4 rounded-lg bg-gray-50">
+                        <img src="https://i.ibb.co/bjP1n6dv/a1-q15.png" alt="Part 5 Story 3" class="w-full max-w-lg mx-auto mb-4 rounded border" />
+                        <p class="text-sm leading-relaxed mb-4">When we got home, we played board games in my bedroom. Then Mum called us and we went into the kitchen and had pancakes and strawberry milkshakes. Then at nine o'clock, my friends all said goodbye. It was a great birthday, but next year I really want a huge party because I'd like to invite all the kids in my class!</p>
+                        <div class="space-y-3 font-medium">
+                            <div>6. After playing board games, Jim and his friends ate some ________. ${textInput('reading_writing', 'rw_q28', 'Type word(s)...')}</div>
+                            <div>7. For his next birthday, Jim would like to have ________ with his classmates. ${textInput('reading_writing', 'rw_q29', 'Type word(s)...')}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 6 -->
+            <div class="mb-10 p-6 bg-white border rounded-xl shadow-sm">
+                <h4 class="text-xl font-bold text-[#003366] border-b pb-2 mb-2">Part 6 (6 questions)</h4>
+                <p class="text-sm italic text-gray-600 mb-4">Look and read and write.</p>
+                <div class="mb-6 text-center">
+                    <img src="https://i.ibb.co/ZR2xDKBg/a1-q16.png" alt="A1 Movers Reading Part 6" class="max-w-full mx-auto rounded shadow-sm border" />
+                </div>
+                <div class="space-y-4">
+                    <p class="p-2 bg-gray-100 rounded"><em>Examples: The boy is playing with a toy <strong>car</strong>. How many dogs are there? <strong>three</strong></em></p>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">1. The girl who's playing with a boat is standing in the ________</label>
+                        ${textInput('reading_writing', 'rw_q30', 'Type answer...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">2. The girl with the purple coat is holding a ________</label>
+                        ${textInput('reading_writing', 'rw_q31', 'Type answer...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">3. Where is the cat?</label>
+                        ${textInput('reading_writing', 'rw_q32', 'Type answer...')}
+                    </div>
+                    <div class="p-3 border rounded-lg bg-gray-50">
+                        <label class="block font-bold text-gray-700 mb-1">4. What colour are the leaves?</label>
+                        ${textInput('reading_writing', 'rw_q33', 'Type answer...')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ HEADER / TABS ============================ */
+function renderHeader() {
+    const remainingTime = getTotalRemainingSeconds();
+    const isTimeLow = remainingTime <= 300 && remainingTime > 0;
+    const answeredCount = getAnsweredCount();
+    const completed = isTestCompleted();
+
+    return `
+    <header class="header flex justify-between items-center px-4 md:px-8" id="app-header">
+        <div class="flex items-center space-x-4">
+            <span class="text-xl font-bold">CAMBRIDGE A1 MOVERS MOCK TEST</span>
+            <span class="hidden md:block text-sm font-medium opacity-80">${candidate.code} | ${candidate.name}</span>
+            ${candidate.violations ? `<span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">Thoát FS: ${candidate.violations} lần</span>` : ''}
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="text-right">
+                <span class="block text-xs opacity-70">PROGRESS</span>
+                <span class="text-sm font-bold ${completed ? 'text-green-400' : 'text-yellow-400'}" id="progress-text">${answeredCount}/${TOTAL_QUESTIONS} Answered</span>
+            </div>
+            <div class="text-right">
+                <span class="block text-xs opacity-70">TOTAL TIMER</span>
+                <span class="text-2xl font-extrabold ${isTimeLow ? 'text-red-500 animate-pulse' : 'text-[#f97316]'}" id="time-display">
+                    ${formatTime(remainingTime)}
+                </span>
+            </div>
+            <button class="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onclick="handleToggleTimer()" ${remainingTime <= 0 ? 'disabled' : ''}>
+                ${candidate.timerRunning ? 'Pause' : 'Continue'}
+            </button>
+            <button id="end-test-btn" 
+                class="action-button bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-semibold transition-all duration-200" 
+                onclick="showEndTestModal()">
+                Submit Test
+            </button>
+        </div>
+    </header>`;
+}
+
+function updateHeaderOnly() {
+    const timeDisplay = document.getElementById('time-display');
+    if (timeDisplay) {
+        const remainingTime = getTotalRemainingSeconds();
+        const isTimeLow = remainingTime <= 300 && remainingTime > 0;
+        timeDisplay.textContent = formatTime(remainingTime);
+        timeDisplay.className = `text-2xl font-extrabold ${isTimeLow ? 'text-red-500 animate-pulse' : 'text-[#f97316]'}`;
+    }
+
+    const progressText = document.getElementById('progress-text');
+    const completed = isTestCompleted();
+    if (progressText) {
+        progressText.textContent = `${getAnsweredCount()}/${TOTAL_QUESTIONS} Answered`;
+        progressText.className = `text-sm font-bold ${completed ? 'text-green-400' : 'text-yellow-400'}`;
+    }
+}
+
+function renderSkillTabs() {
+    return `
+    <div class="skill-tabs flex">
+        <button class="tab-button ${candidate.currentSkill === 'listening' ? 'active' : ''}" onclick="handleSwitchSkill('listening')">
+            1. LISTENING
+        </button>
+        <button class="tab-button ${candidate.currentSkill === 'reading_writing' ? 'active' : ''}" onclick="handleSwitchSkill('reading_writing')">
+            2. READING & WRITING
+        </button>
+    </div>`;
+}
+
+/* ============================ MODALS ============================ */
+function renderFullscreenWarningModal() {
+    if (!isFullscreenWarningOpen) return '';
+    return `
+    <div class="fixed inset-0 bg-red-950 bg-opacity-90 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center border-4 border-red-600">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-2xl font-extrabold text-red-600 mb-2">CẢNH BÁO VI PHẠM PHÒNG THI</h3>
+            <p class="text-gray-700 font-medium mb-4">Bạn vừa thoát khỏi chế độ toàn màn hình (Fullscreen). Hành vi này đã được ghi nhận trên hệ thống!</p>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-200 mb-6">
+                <p class="text-sm text-red-700 font-bold">Số lần vi phạm: <span class="text-xl">${candidate.violations || 1}</span></p>
+            </div>
+            <button onclick="requestFullscreenMode()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors">
+                QUAY LẠI TOÀN MÀN HÌNH ĐỂ TIẾP TỤC
+            </button>
+        </div>
+    </div>`;
+}
+
+function renderEndTestModal() {
+    if (!isEndModalOpen) return '';
+    const answered = getAnsweredCount();
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4">Xác nhận nộp bài thi</h3>
+            <p class="mb-4 text-gray-700">Bạn đã làm được <strong>${answered}/${TOTAL_QUESTIONS}</strong> câu hỏi.</p>
+            ${answered < TOTAL_QUESTIONS ? '<p class="text-amber-600 font-semibold mb-6">⚠️ Bạn vẫn còn câu hỏi chưa trả lời. Bạn có chắc chắn muốn nộp bài ngay?</p>' : '<p class="text-green-600 font-semibold mb-6">🎉 Bạn đã hoàn thành tất cả câu hỏi!</p>'}
+            <div class="flex justify-end space-x-4">
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeEndTestModal()">Tiếp tục làm bài</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onclick="showReportModal()">Nộp Bài & Gửi Kết Quả</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderReportModal() {
+    if (!isReportModalOpen) return '';
+
+    const lAns = candidate.answers.listening || {};
+    const rwAns = candidate.answers.reading_writing || {};
+    let score = 0;
+
+    const cards = Object.keys(CORRECT_ANSWERS).map(qId => {
+        const isL = qId.startsWith('l_');
+        const userVal = isL ? lAns[qId] : rwAns[qId];
+        const isCorrect = checkAnswer(qId, userVal);
+        if (isCorrect) score++;
+
+        return `
+            <div class="p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                <p class="font-bold text-[#003366]">${qId.toUpperCase()}</p>
+                <p><strong>Your Answer:</strong> ${userVal || '-'}</p>
+                <p><strong>Key Answer:</strong> ${CORRECT_ANSWERS[qId]}</p>
+                <p class="font-semibold mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                    ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                </p>
+            </div>`;
+    }).join('');
+
+    return `
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">KẾT QUẢ BÀI THI MOCK TEST A1 MOVERS</h3>
+            <div class="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="p-4 bg-gray-50 rounded-lg border flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <p><strong>Candidate Code:</strong> ${candidate.code}</p>
+                        <p><strong>Full Name:</strong> ${candidate.name}</p>
+                        <p><strong>Violations (FS Exit):</strong> ${candidate.violations || 0} time(s)</p>
+                        <p class="text-xs font-bold text-green-600 mt-1">✓ Đã tự động đồng bộ kết quả lên tab "A1-A2" trên Google Sheet.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-black text-[#003366]">${score} / ${TOTAL_QUESTIONS}</p>
+                        <p class="text-xs text-gray-500 font-bold uppercase">Total Score</p>
+                    </div>
+                </div>
+
+                <h4 class="text-xl font-bold text-[#003366] mt-4 mb-2">CHI TIẾT CÁC CÂU HỎI</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-2 bg-gray-50 rounded-lg border">
+                    ${cards}
+                </div>
+            </div>
+            <div class="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                <button class="py-2 px-4 rounded-md font-semibold bg-blue-500 hover:bg-blue-600 text-white" onclick="handleCopyReport()">Sao Chép Báo Cáo</button>
+                <button class="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="handleReset()">Hoàn Thành & Đóng</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============================ SETUP SCREEN ============================ */
+let setupError = '';
+
+function renderSetupScreen() {
+    return `
+    <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+            <h2 class="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+            <h1 class="text-2xl font-bold text-center text-[#003366] mb-6">CAMBRIDGE A1 MOVERS MOCK TEST</h1>
+            <p class="text-center text-gray-600 mb-6">Nhập thông tin thí sinh để bắt đầu làm bài thi ảo.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-sm font-medium text-gray-700">SBD / Mã Thí Sinh</label>
+                    <input type="text" id="candidate-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., APLUS-A1-001" />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-sm font-medium text-gray-700">Họ và Tên Thí Sinh</label>
+                    <input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" placeholder="e.g., Phan Ngoc Huy" />
+                </div>
+            </div>
+            ${setupError ? `<p class="text-red-500 text-center mt-4">${setupError}</p>` : ''}
+            <button onclick="handleSetupSubmit()" class="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg">
+                BẮT ĐẦU BÀI THI (60 PHÚT)
+            </button>
+            <button class="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block" onclick="handleReset()">
+                Xóa Dữ Liệu Cũ & Khởi Động Lại
+            </button>
+        </div>
+    </div>`;
+}
+
+function handleSetupSubmit() {
+    const code = document.getElementById('candidate-code').value;
+    const name = document.getElementById('full-name').value;
+    if (!code.trim() || !name.trim()) {
+        setupError = 'Vui lòng nhập đầy đủ Mã Thí Sinh và Họ Tên!';
+        render();
+        return;
+    }
+    setupError = '';
+    handleStartTest(code, name);
+}
+
+/* ============================ MAIN RENDER ============================ */
+function render() {
+    if (appState === 'setup') {
+        root.innerHTML = renderSetupScreen();
+        return;
+    }
+
+    const currentContent = candidate.currentSkill === 'listening' ? renderListeningContent() : renderReadingWritingContent();
+
+    root.innerHTML = `
+        <div class="app-container">
+            ${renderHeader()}
+            ${renderSkillTabs()}
+            <main class="main-content">
+                ${currentContent}
+            </main>
+        </div>
+        ${renderFullscreenWarningModal()}
+        ${renderEndTestModal()}
+        ${renderReportModal()}
+    `;
+}
+
+/* ============================ INIT ============================ */
+loadState();
+render();
+</script>
+</body>
+</html>
