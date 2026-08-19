@@ -512,132 +512,134 @@
     </script>
 
     <!-- AI ASSISTANT WIDGET APLUS -->
-    <div id="ai-assistant-root" style="position: fixed; bottom: 20px; right: 25px; z-index: 9999; font-family: 'Nunito', sans-serif;">
-        <!-- Speech / Chat Bubble -->
-        <div id="ai-chat-bubble" style="
-            display: none;
+<div id="ai-assistant-root" style="position: fixed; bottom: 20px; right: 25px; z-index: 9999; font-family: 'Nunito', sans-serif;">
+    
+    <!-- Speech / Chat Bubble (Đã nâng độ cao bottom: 215px) -->
+    <div id="ai-chat-bubble" style="
+        display: none;
+        position: absolute;
+        bottom: 215px;
+        right: 0;
+        width: 340px;
+        max-width: 88vw;
+        background: rgba(15, 23, 42, 0.95);
+        border: 2px solid #10b981;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.3);
+        backdrop-filter: blur(12px);
+        padding: 16px;
+        color: #ffffff;
+        flex-direction: column;
+        gap: 12px;
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    ">
+        <!-- Tail Arrow -->
+        <div style="
             position: absolute;
-            bottom: 155px;
-            right: 0;
-            width: 340px;
-            max-width: 88vw;
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid #10b981;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.3);
-            backdrop-filter: blur(12px);
-            padding: 16px;
-            color: #ffffff;
+            bottom: -10px;
+            right: 65px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #10b981;
+        "></div>
+
+        <!-- Header Bubble -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></div>
+                <span style="font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 14px; color: #a7f3d0;">Trợ Lý Áo APLUS</span>
+            </div>
+            <button onclick="toggleAiChat()" style="background: none; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 2px 6px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="ai-messages" style="
+            max-height: 260px;
+            overflow-y: auto;
+            display: flex;
             flex-direction: column;
-            gap: 12px;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            gap: 10px;
+            padding-right: 4px;
+            font-size: 13.5px;
+            line-height: 1.5;
         ">
-            <!-- Tail Arrow -->
-            <div style="
-                position: absolute;
-                bottom: -10px;
-                right: 45px;
-                width: 0;
-                height: 0;
-                border-left: 10px solid transparent;
-                border-right: 10px solid transparent;
-                border-top: 10px solid #10b981;
-            "></div>
-
-            <!-- Header Bubble -->
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></div>
-                    <span style="font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 14px; color: #a7f3d0;">Trợ Lý Áo APLUS</span>
-                </div>
-                <button onclick="toggleAiChat()" style="background: none; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 2px 6px;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 12px; border-radius: 12px; border-top-left-radius: 2px; color: #e2e8f0;">
+                Xin chào! 👋 Tôi là Trợ lý ảo của **Trung tâm Ngoại ngữ Aplus**.<br><br>
+                Bạn cần hỗ trợ tư vấn các khóa học tiếng Anh hay hướng dẫn làm bài tập trên hệ thống Phòng Học Ảo? Hãy đặt câu hỏi cho tôi nhé!
             </div>
-
-            <!-- Messages Area -->
-            <div id="ai-messages" style="
-                max-height: 260px;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                padding-right: 4px;
-                font-size: 13.5px;
-                line-height: 1.5;
-            ">
-                <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 12px; border-radius: 12px; border-top-left-radius: 2px; color: #e2e8f0;">
-                    Xin chào! 👋 Tôi là Trợ lý ảo của **Trung tâm Ngoại ngữ Aplus**.<br><br>
-                    Bạn cần hỗ trợ tư vấn các khóa học tiếng Anh hay hướng dẫn làm bài tập trên hệ thống Phòng Học Ảo? Hãy đặt câu hỏi cho tôi nhé!
-                </div>
-            </div>
-
-            <!-- Input Area -->
-            <form onsubmit="handleAiSubmit(event)" style="display: flex; gap: 8px; margin-top: 4px;">
-                <input type="text" id="ai-input" placeholder="Nhập câu hỏi của bạn..." style="
-                    flex: 1;
-                    background: rgba(255, 255, 255, 0.08);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    border-radius: 12px;
-                    padding: 8px 12px;
-                    color: #fff;
-                    font-size: 13px;
-                    outline: none;
-                    font-family: 'Nunito', sans-serif;
-                " onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'">
-                <button type="submit" style="
-                    background: linear-gradient(135deg, #10b981, #059669);
-                    border: none;
-                    color: white;
-                    padding: 8px 14px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 700;
-                    transition: transform 0.2s ease;
-                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </form>
         </div>
 
-        <!-- Teacher Avatar Avatar Button -->
-        <div id="ai-avatar-btn" onclick="toggleAiChat()" style="
-            position: relative;
-            width: 110px;
-            height: 140px;
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
-        " onmouseover="this.style.transform='scale(1.08) translateY(-5px)'" onmouseout="this.style.transform='scale(1) translateY(0)'">
-            <!-- Badge Promo -->
-            <div style="
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                background: linear-gradient(135deg, #10b981, #059669);
-                color: #fff;
-                font-size: 10px;
-                font-weight: 800;
-                padding: 3px 8px;
+        <!-- Input Area -->
+        <form onsubmit="handleAiSubmit(event)" style="display: flex; gap: 8px; margin-top: 4px;">
+            <input type="text" id="ai-input" placeholder="Nhập câu hỏi của bạn..." style="
+                flex: 1;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 border-radius: 12px;
-                white-space: nowrap;
-                box-shadow: 0 2px 10px rgba(16, 185, 129, 0.5);
-                border: 1px solid rgba(255,255,255,0.4);
-                z-index: 2;
-            ">
-                <i class="fa-solid fa-comments"></i> Tư vấn AI
-            </div>
-            
-            <!-- Avatar Image -->
-            <img src="images/teacher_1.png" alt="Giáo Viên APLUS" style="
-                width: 100%;
-                height: 100%;
-                object-fit: contain;
-                object-position: bottom;
-            ">
-        </div>
+                padding: 8px 12px;
+                color: #fff;
+                font-size: 13px;
+                outline: none;
+                font-family: 'Nunito', sans-serif;
+            " onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.2)'">
+            <button type="submit" style="
+                background: linear-gradient(135deg, #10b981, #059669);
+                border: none;
+                color: white;
+                padding: 8px 14px;
+                border-radius: 12px;
+                cursor: pointer;
+                font-weight: 700;
+                transition: transform 0.2s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
     </div>
+
+    <!-- Teacher Avatar Container (Đã tăng kích thước lên 160x200px) -->
+    <div id="ai-avatar-btn" onclick="toggleAiChat()" style="
+        position: relative;
+        width: 160px;
+        height: 200px;
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    " onmouseover="this.style.transform='scale(1.06) translateY(-5px)'" onmouseout="this.style.transform='scale(1) translateY(0)'">
+        
+        <!-- Badge Promo (Đã nâng vị trí lên top: -18px trên đầu tóc) -->
+        <div style="
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 14px;
+            white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.6);
+            border: 1px solid rgba(255,255,255,0.4);
+            z-index: 2;
+        ">
+            <i class="fa-solid fa-comments"></i> Tư vấn AI
+        </div>
+        
+        <!-- Avatar Image -->
+        <img src="images/teacher_1.png" alt="Giáo Viên APLUS" style="
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: bottom;
+        ">
+    </div>
+</div>
 
     <style>
         @keyframes popIn {
