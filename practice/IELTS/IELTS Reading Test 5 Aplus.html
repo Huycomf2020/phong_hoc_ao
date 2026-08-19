@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS READING MOCK TEST 5</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Chống bôi đen văn bản */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* IELTS IDP Dark Green Header */
+        .aplus-brand {
+            color: #0f5132;
+            font-weight: 900;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-top {
+            height: 52px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .part-header-banner {
+            background-color: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        /* Split Screen Area */
+        .main-workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .passage-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .divider-handle {
+            width: 14px;
+            background: #e8ecef;
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: col-resize;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .questions-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+        }
+
+        /* Footer Test Navigation */
+        .test-footer {
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            z-index: 20;
+        }
+
+        .nav-part-btn {
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav-part-btn.active {
+            color: #0f5132;
+            background-color: #e8f5e9;
+        }
+
+        .q-square {
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            margin: 0 1px;
+        }
+
+        .q-square.answered {
+            background-color: #e5e7eb;
+            font-weight: 700;
+            border-color: #9ca3af;
+        }
+
+        /* Custom Scrollbars */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* Radio option styling like IDP */
+        .idp-radio-label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .idp-radio-label:hover {
+            background-color: #f3f4f6;
+        }
+        .idp-radio-label input[type="radio"] {
+            margin-right: 12px;
+            accent-color: #0f5132;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // Đáp án chuẩn 40 câu từ file TEST 3.pdf
+        const READING_CORRECT_ANSWERS = {
+            'r_q1': 'FALSE',
+            'r_q2': 'NOT GIVEN',
+            'r_q3': 'FALSE',
+            'r_q4': 'TRUE',
+            'r_q5': 'FALSE',
+            'r_q6': 'TRUE',
+            'r_q7': 'pain',
+            'r_q8': 'liquid',
+            'r_q9': 'poison',
+            'r_q10': 'teeth',
+            'r_q11': 'wardrobes',
+            'r_q12': 'recipes',
+            'r_q13': 'pockets',
+            'r_q14': 'I',
+            'r_q15': 'F',
+            'r_q16': 'G',
+            'r_q17': 'D',
+            'r_q18': 'C',
+            'r_q19': 'H',
+            'r_q20': 'C',
+            'r_q21': 'D',
+            'r_q22': 'B',
+            'r_q23': 'one-sixth',
+            'r_q24': '16th century',
+            'r_q25': 'Mercator',
+            'r_q26': 'John Gould',
+            'r_q27': 'F',
+            'r_q28': 'B',
+            'r_q29': 'E',
+            'r_q30': 'D',
+            'r_q31': 'A',
+            'r_q32': 'C',
+            'r_q33': 'mantis shrimp',
+            'r_q34': 'panoramic camera',
+            'r_q35': 'the Sahara desert',
+            'r_q36': 'polarised light',
+            'r_q37': 'D',
+            'r_q38': 'A',
+            'r_q39': 'F',
+            'r_q40': 'C'
+        };
+
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 33) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 27) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 19) return "5.5";
+            if (correct >= 15) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const checkAnswer = (qId, value) => {
+            const correct = READING_CORRECT_ANSWERS[qId];
+            if (!correct) return false;
+            const cleanVal = String(value || '').trim().toLowerCase();
+            const cleanCorr = String(correct).trim().toLowerCase();
+            if (qId === 'r_q23' && (cleanVal === '1/6' || cleanVal === 'one-sixth' || cleanVal === 'one sixth')) return true;
+            if (qId === 'r_q35' && (cleanVal === 'sahara desert' || cleanVal === 'the sahara desert' || cleanVal === 'sahara')) return true;
+            if (qId === 'r_q36' && (cleanVal === 'polarized light' || cleanVal === 'polarised light')) return true;
+            return cleanVal === cleanCorr;
+        };
+
+        // Form Đăng nhập
+        const SetupScreen = ({ onStartTest }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã thí sinh/Lớp và Họ tên.');
+                    return;
+                }
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-[#0f5132]">
+                        <h2 className="text-xl font-bold text-center text-[#0f5132] mb-1">APLUS LANGUAGE CENTER</h2>
+                        <h1 className="text-2xl font-black text-center text-gray-800 mb-4">IELTS READING MOCK TEST 5</h1>
+                        <p className="text-xs text-red-600 mb-6 text-center font-medium">
+                            ⚠️ Chế độ thi tự động bật Toàn màn hình, khóa chuột phải và chống copy. Vi phạm chuyển tab sẽ bị ghi nhận!
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: 12A1 / APLUS105"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-xs mt-3 text-center">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-6 w-full bg-[#0f5132] text-white py-3 rounded-md font-bold hover:bg-[#0b3d26] transition-colors shadow-md"
+                        >
+                            BẮT ĐẦU BÀI THI (FULLSCREEN)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // App Chính
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState({ code: '', name: '' });
+            const [answers, setAnswers] = useState({});
+            const [currentPart, setCurrentPart] = useState(1);
+            const [timeLeft, setTimeLeft] = useState(60 * 60);
+            const [warningCount, setWarningCount] = useState(0);
+            const [isSubmitted, setIsSubmitted] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+
+            // Chống chuột phải & Bôi đen
+            useEffect(() => {
+                const handleContextMenu = (e) => e.preventDefault();
+                const handleSelectStart = (e) => e.preventDefault();
+                const handleCopy = (e) => e.preventDefault();
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('selectstart', handleSelectStart);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('selectstart', handleSelectStart);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            // Cảnh báo vi phạm
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn vừa chuyển tab hoặc rời khỏi bài thi!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn đã thoát khỏi chế độ Toàn màn hình!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState, isSubmitted]);
+
+            // Timer
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            handleSubmitTest();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [appState, isSubmitted]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate({ code, name });
+                setAppState('testing');
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                }
+            };
+
+            const handleAnswerChange = (qId, val) => {
+                setAnswers(prev => ({ ...prev, [qId]: val }));
+            };
+
+            const countPartAnswered = (start, end) => {
+                let cnt = 0;
+                for (let i = start; i <= end; i++) {
+                    if (answers[`r_q${i}`] && String(answers[`r_q${i}`]).trim() !== '') {
+                        cnt++;
+                    }
+                }
+                return cnt;
+            };
+
+            const handleSubmitTest = async () => {
+                const totalAnswered = Object.keys(answers).filter(k => String(answers[k]).trim() !== '').length;
+                if (totalAnswered < 40 && !confirm(`Bạn mới làm ${totalAnswered}/40 câu. Bạn có chắc chắn muốn nộp bài?`)) {
+                    return;
+                }
+
+                setIsSubmitted(true);
+                setIsSubmitting(true);
+
+                let correctCount = 0;
+                Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                    if (checkAnswer(qId, answers[qId])) correctCount++;
+                });
+
+                const bandScore = calculateIELTSBand(correctCount);
+
+                const payload = {
+                    sheetName: "IELTS TESTS",
+                    testType: "IELTS TESTS - MOCK TEST 5",
+                    candidateCode: candidate.code,
+                    candidateName: candidate.name,
+                    correctCount: `${correctCount}/40`,
+                    score: bandScore,
+                    warningCount: warningCount
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên Google Sheets!');
+                } catch (err) {
+                    setSubmitStatus('❌ Lỗi gửi dữ liệu. Vui lòng chụp màn hình báo cho giáo viên!');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} />;
+            }
+
+            return (
+                <div className="h-screen flex flex-col">
+                    {/* Header IDP Style */}
+                    <header className="header-top">
+                        <div className="flex items-center space-x-6">
+                            <div className="aplus-brand">APLUS</div>
+                            <div className="text-xs text-gray-600">
+                                Test taker ID: <span className="font-semibold text-gray-800">{candidate.code} ({candidate.name})</span>
+                            </div>
+                        </div>
+
+                        <div className="font-semibold text-sm text-gray-700">
+                            {Math.floor(timeLeft / 60)} minutes left
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                            {warningCount > 0 && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold border border-red-300">
+                                    Cảnh báo: {warningCount}
+                                </span>
+                            )}
+                            <button 
+                                onClick={handleSubmitTest}
+                                className="bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs font-bold px-4 py-2 rounded shadow-sm transition-colors"
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Part Banner Header */}
+                    <div className="part-header-banner font-medium">
+                        Reading Part {currentPart}
+                        <span className="text-xs text-gray-500 ml-2">Read the passage and answer questions {currentPart === 1 ? '1–13' : currentPart === 2 ? '14–26' : '27–40'}.</span>
+                    </div>
+
+                    {/* Split Workspace */}
+                    <div className="main-workspace">
+                        {/* Cột trái: Passage */}
+                        <div className="passage-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-4 text-center">A Brief Introduction to Pepper</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p>Pepper, the spice, comes from the berries of a plant that is a woody climbing vine. In the botanical world, pepper belongs to a genus of plants called Piper. This genus was created in 1753 by Carl Linnaeus, the Swedish botanist whose system for classifying plants is still in use today. He placed seventeen species in the piper genus and probably used the ancient Greek name for black pepper, Peperi, as the basis for the group.</p>
+                                        <p>Pepper isn't a fast-maturing plant. It takes several years for the branching woody vines to mature, and during their growth the vines can reach up to thirty feet. The pepper berries- which grow in clusters and dangle from the vines-are picked by hand when they are ready for harvesting, which usually begins two or three years after the vine is first planted. Black pepper is picked when the berries are still green, while white pepper is picked later, when the berries have turned from green to red. Preparing the berries for sale involves a lengthy process of drying, cleaning and sorting. Once the berries have been dried, they are then referred to as peppercorns, and these are what are used in food preparation around the world.</p>
+                                        <p>The pepper plant loves the warm, humid, rainy tropics, in a narrow band around the equator. Pepper also requires well-drained soils, and its preferred habitat is forests. Unshaded plants which are exposed too long to the sun will not yield many berries. The colourful mixes of whole peppercorns seen in many markets today contain green and black peppercorns. Although there are pink peppercorns, the ripest berries, these are more fragile and are therefore more costly than other kinds. This is why there are few of them in a peppercorn mix.</p>
+                                        <p>No one knows when the first human bit into a peppercorn and decided it would taste good on a piece of meat or in a vegetable stew, but in the West it was the ancient Romans who apparently first made pepper an essential part of their meals. Food was only part of the reason for pepper's popularity; health played an equally important role. In the Roman Empire, pepper was employed to relieve the pain that was a common consequence of numerous medical conditions and complaints. If you showed signs of a fever, it was common practice to be given a liquid that had some pepper in it.</p>
+                                        <p>The Romans were not the first to embrace pepper as a medicine. Belief in the spice's considerable usefulness is reflected in India's ancient Ayurvedic system of medicine, which is more than three thousand years old. In Sanskrit (a language of ancient India), black pepper is known as maricha or marica, meaning an ability to get rid of poison, which suggests it was used in patients for this purpose. Pepper was also believed by the Indians to have other qualities as well. For example, physicians would frequently apply pepper-based lotions to reduce the effects of decay in teeth, which made it an extremely popular remedy.</p>
+                                        <p>In the Middle Ages (5th-15th centuries) black pepper's renown made it a must-have item for the European wealthy, who loved the spice. At that time, pepper was guarded by servants in royal households and kept in the private wardrobes of the rich. It was considered a privilege to cook with pepper and many of the recipes from the period called for substantial quantities of pepper, which might be considered very unappetising today. But for most people, pepper was too expensive. In the year 1439, a pound of pepper was roughly equal to more than two days' pay in England. Meanwhile, pepper could be exchanged for gold, and also became a form of payment for people's work. In some of the larger cities, it was even possible to use pepper as rent in some kinds of accommodation. Employees in the pepper industry were not allowed to have pockets in their jackets or trousers so that this valuable commodity would not be stolen.</p>
+                                        <p>The huge demand for pepper and the money it could bring encouraged people to risk adventure on foreign oceans and in foreign lands, and it is within this context that the story of pepper really begins.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-4 text-center">Australian parrots and their adaptation to habitat change</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p><strong>Paragraph A:</strong> Parrots are found across the tropics and in all southern hemisphere continents except Antarctica, but nowhere do they display such a richness of diversity and form as in Australia. One-sixth of the world's 345 parrot species are found there, and Australia has long been renowned for the number and variety of its parrots.</p>
+                                        <p><strong>Paragraph B:</strong> In the 16th century, the German cartographer Mercator made a world map that included a place, somewhere near present-day Australia, that he named Terra Psittacorum - the Land of Parrots - and the first European settlers in Australia often referred to the country as Parrot Land. In 1865, the celebrated British naturalist and wildlife artist John Gould said: "No group of birds gives Australia so tropical and benign an air as the numerous species of this great family by which it is tenanted."</p>
+                                        <p><strong>Paragraph C:</strong> Parrots are descendants of an ancient line. Due to their great diversity, and since most species inhabit Africa, Australia and South America, it seems almost certain that parrots originated millions of years ago on the ancient southern continent of Gondwana, before it broke up into the separate southern hemisphere continents we know today. Much of Gondwana comprised vast rainforests intersected by huge slow-flowing rivers and expansive lakes, but by eight million years ago, great changes were underway. The centre of the continent of Australia had begun to dry out, and the rainforests that once covered it gradually contracted to the continental margins, where, to a limited extent, they still exist today.</p>
+                                        <p><strong>Paragraph D:</strong> The creatures that remained in those shrinking rainforests had to adapt to the drier conditions or face extinction. Reacting to these desperate circumstances, the parrot family, typically found in jungles in other parts of the world, has populated some of Australia's harshest environments. The parrots spread from ancestral forests through eucalypt woodlands to colonise the central deserts of Australia, and as a consequence they diversified into a wide range of species with adaptations that reflect the many changes animals and plants had to make to survive in these areas.</p>
+                                        <p><strong>Paragraph E:</strong> These evolutionary pressures helped mould keratin, the substance from which beaks are made, into a range of tools capable of gathering the new food types favoured by various species of parrot. The size of a parrot's short, blunt beak and the length of that beak's down-curved upper section are related to the type of food each species eats. Some have comparatively long beaks that are perfect for extracting seeds from fruit; others have broader and stronger beaks that are designed for cracking hard seeds.</p>
+                                        <p><strong>Paragraph F:</strong> Differently shaped beaks are not the only adaptations that have been made during the developing relationship between parrots and their food plants. Like all of Australia's many honey-eating birds, the rainbow-coloured lorikeets and the flowers on which they feed have long co-evolved with features such as the shape and colour of the flowers adapted to the bird's particular needs. For example, red is the most attractive colour to birds, and thus flowers which depend on birds for pollination are more often red, and lorikeets' tongues have bristles which help them to collect as much pollen as possible.</p>
+                                        <p><strong>Paragraph G:</strong> Today, most of Australia's parrots inhabit woodland and open forest, and their numbers decline towards both deserts and wetter areas. The majority are nomadic to some degree, moving around to take advantage of feeding and breeding places. Two of the dry country parrots, the pink and grey galah and the pink, white and yellow corella have expanded their ranges in recent years. They are among the species that have adapted well to the changes brought about by European settlement; forest felling created grasslands where galahs and corellas thrive.</p>
+                                        <p><strong>Paragraph H:</strong> But other parrot species did not fare so well when their environments were altered. The clearing of large areas of rainforest is probably responsible for the disappearance of the double-eyed fig parrot, and numbers of ground parrots declined when a great part of their habitat was destroyed by the draining of coastal swamps. Even some parrot species that benefited from forest clearing at first are now confronted by a shortage of nesting sites due to further man-made changes.</p>
+                                        <p><strong>Paragraph I:</strong> New conditions also sometimes favour an incoming species over one that originally inhabited the area. For example, after farmers cleared large areas of forest on Kangaroo Island off the coast of South Australia, the island was colonised by galahs. They were soon going down holes and destroying black cockatoo eggs in order to take the hole for their own use. Their success precipitated a partial collapse in the black cockatoo population when the latter lost the struggle for scarce nesting hollows.</p>
+                                        <p><strong>Paragraph J:</strong> There may be no final answer to ensuring an equitable balance between parrot species. Nest box programmes help ease the shortage of nesting sites in some places, but there are not enough, they are expensive and they are not an adequate substitute for large, old trees, such as the habitat they represent and nectar, pollen and seeds they provide. Competition between parrots for nest sites is a result of the changes we humans have made to the Earth. We are the most widespread and dangerous competitors that parrots have ever had to face, but we also have the knowledge and skill to maintain the wonderfully rich diversity of Australia's parrots. All we need is the will to do so.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">Insect-inspired robots</h1>
+                                    <p className="italic text-sm text-gray-600 mb-4 text-center">A recent conference reports on developments in biorobotics</p>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p><strong>Section A:</strong> A tiny insect navigates its way across featureless salt-pans. A cockroach successfully works out how to scramble over an obstacle. The mantis shrimp scans its aquatic world through hyperspectral eyes. Using the most basic of equipment and brains tinier than a pinhead, insects constantly solve complex problems of movement, vision and navigation processing data that would challenge a supercomputer. How they do it is driving one of the most exciting new fields of technology: biomimetics and biorobotics, the imitation of insect systems to control man-made machines. Delegates at a recent conference presented some outcomes of their work in this area.</p>
+                                        <p><strong>Section B:</strong> Dr Alex Zelinsky suggested that the method by which wasps use landmarks to find their way back to the nest may one day be part of a system for navigating cars that 'know' where to go. A research team led by Dr Zelinsky has shown that a robot can navigate its way among 50 different landmarks by recognising them individually using a panoramic camera. 'The inspiration came from biology, where wasps use a practice called "turn back and look" to orient themselves as they emerge from the nest. By flying to and fro, they lock in images of the nest from different angles and perspectives, so they can recognise it again,' he explained. The robot's panoramic camera logs the surrounding area and its key landmarks, which are then sorted in its computer according to how reliable they are as navigational aids. The landmarks are then scaled, from small to large, so that the robot can recognise whether it is getting closer to or further away from them. Their location is built into a map in its 'mind', which operates at different scales and instructs the robot whether to turn left or right at a particular mark. The technology provides a general way for a machine to navigate an unknown landscape.</p>
+                                        <p><strong>Section C:</strong> For three decades, Professor Ruediger Wehner has journeyed from Switzerland to the Sahara desert where Cataglyphis, a tiny ant with a brain weighing just 0.1 mg, performs acts of navigational genius when it leaves its nest, forages for food and returns successfully. Cataglyphis uses polarised light, caused when air molecules scatter light, to orient and steer itself. Wehner's team found the ant has a set of specialised photoreceptors along the upper rim of its eyes that detect polarised light, while other receptors perform different navigational tasks. As the sun moves, the ant notes its direction each time it leaves the nest and updates its internal compass. Using other eye receptors it stores a 'snapshot' image of landmarks close to the nest entrance in its eyes and compares this with what it sees as it returns. The ant also has a way of measuring distance travelled, while a 'path integrator' periodically informs the ant of its current position relative to its point of departure. Rather than integrate all the information it receives in its brain, the ant actually performs a number of complex calculations in different organs. Like a supercomputer, the ant has many separate subroutines going on simultaneously. Using the ant's ability to steer by polarised light and to store and reuse landscape images, Wehner and colleagues have built 'Sahabot', a small vehicle that uses polarisers and a digital CCD camera to store 360° images of its surroundings. It navigates by using polarised sunlight and comparing the current images of landmarks to the ones in its memory.</p>
+                                        <p><strong>Section D:</strong> Professor Robert Michelson had a different desert challenge: to design a flying robot that can not only navigate but also stay aloft and hover in the thin atmosphere of Mars. Drawing inspiration from insect flight, he has gone beyond nature to devise a completely new concept for a flying machine. The 'Entomopter' is a sort of double-ended dragonfly whose wings beat reciprocally. Michelson says that the flapping-wing design gives the craft unusually high lift compared with a fixed-wing flyer, enabling it to fly slowly or hover in the thin Martian air whereas a fixed-wing craft would have to move at more than 400 km/h and could not stop to explore.</p>
+                                        <p><strong>Section E:</strong> Engineer Roger Quinn and entomologist Professor Roy Ritzmann are taking their inspiration from cockroaches. According to Quinn and Ritzmann, the ability of cockroaches to run very fast over rough terrain may one day give rise to a completely new all-terrain vehicle with six legs, or maybe even wheel-like legs called 'whegs'. The key to the cockroach's remarkable cross-country performance lies partly in the fact that its legs do a lot of the 'thinking' without having to consult the brain. Quinn and Ritzmann are drawing on cockroach skills to create robotic walkers and control strategies that capture the remarkable capacity of these insects to traverse complex terrain and navigate safely toward goals while avoiding obstacles. The team has already designed a series of robots that run on six legs or on whegs, enabling them to handle surprisingly rugged terrain.</p>
+                                        <p><strong>Section F:</strong> International experts believe there are tremendous opportunities in biorobotics. However, delegates at the conference had differing visions for the future of the science. While some were concerned that the initial applications of biorobotics may be military, others, such as Dr Barbara Webb, predicted swarms of tiny, cheap, insect-like robots as society's cleaners and collectors. Sonja Kleinlogel hoped the study of the hyperspectral eyes of the mantis shrimp might yield remote sensors that keep watch over the environmental health of our oceans. Several delegates were concerned about the ethical implications of biorobotics, and urged that close attention be paid to this as the science and technologies develop.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Divider */}
+                        <div className="divider-handle">↔</div>
+
+                        {/* Cột phải: Questions */}
+                        <div className="questions-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 1 – 6</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose TRUE, FALSE or NOT GIVEN based on Reading Passage 1.</p>
+                                    <div className="space-y-4 mb-8">
+                                        {[
+                                            "1. Carl Linnaeus' method for categorising plants has been replaced by a better one.",
+                                            "2. The ancient Greeks originally took the word for pepper from another language.",
+                                            "3. Machines are used to harvest pepper berries.",
+                                            "4. White pepper berries are riper than black pepper berries when they are picked.",
+                                            "5. Pepper vines need a lot of sunlight to produce a large harvest of berries.",
+                                            "6. Pink peppercorns are more expensive to buy than other varieties."
+                                        ].map((text, i) => (
+                                            <div key={i} className="border-b pb-3">
+                                                <p className="text-sm font-medium mb-2">{text}</p>
+                                                <div className="space-y-1">
+                                                    {["TRUE", "FALSE", "NOT GIVEN"].map(opt => (
+                                                        <label key={opt} className="idp-radio-label text-sm text-gray-700">
+                                                            <input type="radio" name={`r_q${i + 1}`} value={opt} checked={answers[`r_q${i + 1}`] === opt} onChange={() => handleAnswerChange(`r_q${i + 1}`, opt)} />
+                                                            {opt}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 7 – 13</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the notes below. Choose ONE WORD ONLY from the passage for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm space-y-3">
+                                        <p className="font-bold text-[#0f5132]">The Many Uses of Pepper</p>
+                                        <p className="font-bold text-gray-700">Ancient Rome</p>
+                                        <p>• the Romans used pepper to reduce 7 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q7'] || ''} onChange={e => handleAnswerChange('r_q7', e.target.value)} /> caused by many health issues</p>
+                                        <p>• 8 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q8'] || ''} onChange={e => handleAnswerChange('r_q8', e.target.value)} /> containing pepper was used as medicine to bring down high temperatures</p>
+                                        <p className="font-bold text-gray-700 mt-2">India</p>
+                                        <p>• pepper has been used in Ayurvedic medicine for thousands of years</p>
+                                        <p>• pepper was thought to be able to extract 9 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q9'] || ''} onChange={e => handleAnswerChange('r_q9', e.target.value)} /> from people, as indicated by its name in Sanskrit</p>
+                                        <p>• pepper was used to treat problems with people's 10 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q10'] || ''} onChange={e => handleAnswerChange('r_q10', e.target.value)} /></p>
+                                        <p className="font-bold text-gray-700 mt-2">Uses in Europe in the Middle Ages</p>
+                                        <p>• in wealthy households, pepper was stored in 11 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q11'] || ''} onChange={e => handleAnswerChange('r_q11', e.target.value)} /></p>
+                                        <p>• 12 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q12'] || ''} onChange={e => handleAnswerChange('r_q12', e.target.value)} /> written at that time required large amounts of pepper</p>
+                                        <p>• rent could be paid in the form of pepper in city areas</p>
+                                        <p>• people who worked with pepper had to wear clothes without 13 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q13'] || ''} onChange={e => handleAnswerChange('r_q13', e.target.value)} /> to discourage theft</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 14 – 19</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Which paragraph contains the following information? Write A–J.</p>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "14. An example of how one parrot species may survive at the expense of another",
+                                            "15. A description of how plants may adapt to attract birds",
+                                            "16. Example of two parrot species which benefited from changes to the environment",
+                                            "17. How the varied Australian landscape resulted in a great variety of parrot species",
+                                            "18. A reason why most parrot species are native to the southern hemisphere",
+                                            "19. An example of a parrot species which did not survive changes to its habitat"
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${14 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${14 + i}`, e.target.value)} placeholder="A-J" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 20 – 22</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose the correct letter, A, B, C or D.</p>
+                                    <div className="space-y-6 mb-8">
+                                        {[
+                                            {
+                                                q: "20. The writer believes that most parrot species",
+                                                opts: ["A. Move from Africa and South America to Australia", "B. Had ancestors in either Africa, Australia or South America", "C. Had ancestors in a continent which later split up", "D. Came from a continent now covered by water"]
+                                            },
+                                            {
+                                                q: "21. What does the writer say about parrots' beaks?",
+                                                opts: ["A. They are longer than those of other birds", "B. They are made of a unique material", "C. They are used more efficiently than those of other species", "D. They are specially adapted to suit the diet"]
+                                            },
+                                            {
+                                                q: "22. Which of the following is NOT mentioned by the writer as a disadvantage of nesting boxes?",
+                                                opts: ["A. They cost too much", "B. They need to be maintained", "C. They provide only shelter, not food", "D. There are too few of them"]
+                                            }
+                                        ].map((item, idx) => (
+                                            <div key={idx} className="border-b pb-4">
+                                                <p className="text-sm font-medium mb-2">{item.q}</p>
+                                                <div className="space-y-1">
+                                                    {item.opts.map((opt, oIdx) => {
+                                                        const letter = String.fromCharCode(65 + oIdx);
+                                                        return (
+                                                            <label key={letter} className="idp-radio-label text-sm text-gray-700">
+                                                                <input type="radio" name={`r_q${20 + idx}`} value={letter} checked={answers[`r_q${20 + idx}`] === letter} onChange={() => handleAnswerChange(`r_q${20 + idx}`, letter)} />
+                                                                {opt}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 23 – 26</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the summary below. Choose NO MORE THAN TWO WORDS AND/OR A NUMBER from the passage.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm leading-loose">
+                                        <p className="font-bold text-gray-800 mb-2">Parrots in Australia</p>
+                                        There are 345 varieties of parrot in existence and, of these, 23 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q23'] || ''} onChange={e => handleAnswerChange('r_q23', e.target.value)} /> live in Australia. As early as the 24 <input type="text" className="border rounded px-2 py-1 w-32 mx-1 border-gray-400" value={answers['r_q24'] || ''} onChange={e => handleAnswerChange('r_q24', e.target.value)} />, the mapmaker 25 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q25'] || ''} onChange={e => handleAnswerChange('r_q25', e.target.value)} /> recognized that parrots lived in that part of the world. 26 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q26'] || ''} onChange={e => handleAnswerChange('r_q26', e.target.value)} />, the famous painter of animals and birds, commented on the size and beauty of the Australian parrot family.
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 27 – 32</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Which section contains the following information? Write A–F.</p>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "27. positive and negative possibilities for the use of insect-inspired robots",
+                                            "28. how perceived size is used as an aid to navigation",
+                                            "29. an example of decision-making taking place in the limbs",
+                                            "30. a description of a potential aid in space exploration",
+                                            "31. the range of skills that have inspired biorobotics",
+                                            "32. how a variety of navigational methods operate at the same time"
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${27 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${27 + i}`, e.target.value)} placeholder="A-F" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 33 – 36</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Answer the questions below. Choose NO MORE THAN THREE WORDS from the passage.</p>
+                                    <div className="space-y-3 bg-gray-50 p-4 rounded border text-sm mb-8">
+                                        <p>33. Which creature sees particularly well under water? <input type="text" className="border rounded px-2 py-1 w-36 mx-1 border-gray-400" value={answers['r_q33'] || ''} onChange={e => handleAnswerChange('r_q33', e.target.value)} /></p>
+                                        <p>34. In addition to a computer, what technical equipment is fitted in Dr Zelinsky's robot? <input type="text" className="border rounded px-2 py-1 w-40 mx-1 border-gray-400" value={answers['r_q34'] || ''} onChange={e => handleAnswerChange('r_q34', e.target.value)} /></p>
+                                        <p>35. Where is the Cataglyphis ant found? <input type="text" className="border rounded px-2 py-1 w-36 mx-1 border-gray-400" value={answers['r_q35'] || ''} onChange={e => handleAnswerChange('r_q35', e.target.value)} /></p>
+                                        <p>36. What atmospheric effect helps the Cataglyphis ant to know its direction? <input type="text" className="border rounded px-2 py-1 w-36 mx-1 border-gray-400" value={answers['r_q36'] || ''} onChange={e => handleAnswerChange('r_q36', e.target.value)} /></p>
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 37 – 40</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Match each person or people with the correct robot (A–G).</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>A.</strong> a robot that makes use of light as well as stored images for navigational purposes</p>
+                                        <p><strong>B.</strong> a robot that can contribute to environmental health</p>
+                                        <p><strong>C.</strong> a robot that can move over difficult surfaces</p>
+                                        <p><strong>D.</strong> a robot that categorises information from the environment according to its usefulness</p>
+                                        <p><strong>E.</strong> a robot that can be used to clean surfaces and collect rubbish</p>
+                                        <p><strong>F.</strong> a robot that has improved on the ability of the insect on which it is based</p>
+                                        <p><strong>G.</strong> a robot that can replace soldiers in war</p>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {[
+                                            "37. Dr Alex Zelinsky",
+                                            "38. Professor Ruediger Wehner",
+                                            "39. Professor Robert Michelson",
+                                            "40. Roger Quinn and Professor Roy Ritzmann"
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${37 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${37 + i}`, e.target.value)} placeholder="A-G" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer Nav Bar */}
+                    <footer className="test-footer">
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(1)}
+                                className={`nav-part-btn ${currentPart === 1 ? 'active' : ''}`}
+                            >
+                                Part 1 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(1, 13)}/13</span>
+                            </button>
+
+                            <div className="flex items-center">
+                                {[1,2,3,4,5,6,7,8,9,10,11,12,13].map(q => (
+                                    <span 
+                                        key={q} 
+                                        className={`q-square ${answers[`r_q${q}`] ? 'answered' : ''}`}
+                                        onClick={() => setCurrentPart(1)}
+                                    >
+                                        {q}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(2)}
+                                className={`nav-part-btn ${currentPart === 2 ? 'active' : ''}`}
+                            >
+                                Part 2 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(14, 26)}/13</span>
+                            </button>
+
+                            <button 
+                                onClick={() => setCurrentPart(3)}
+                                className={`nav-part-btn ${currentPart === 3 ? 'active' : ''}`}
+                            >
+                                Part 3 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(27, 40)}/14</span>
+                            </button>
+
+                            <div className="flex items-center space-x-1">
+                                <button onClick={() => setCurrentPart(prev => Math.max(1, prev - 1))} className="p-1 border rounded bg-gray-50 hover:bg-gray-200">←</button>
+                                <button onClick={() => setCurrentPart(prev => Math.min(3, prev + 1))} className="p-1 border rounded bg-gray-50 hover:bg-gray-200">→</button>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* Modal Báo kết quả */}
+                    {isSubmitted && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                <h2 className="text-2xl font-bold text-[#0f5132] border-b pb-2 mb-4">KẾT QUẢ BÀI THI IELTS READING MOCK TEST 5</h2>
+                                
+                                {isSubmitting && (
+                                    <div className="p-3 bg-blue-50 text-blue-700 rounded mb-4 text-center font-medium animate-pulse">
+                                        🔄 Đang ghi điểm lên Google Sheets...
+                                    </div>
+                                )}
+                                {submitStatus && (
+                                    <div className="p-3 bg-green-50 text-green-800 rounded mb-4 text-center font-bold">
+                                        {submitStatus}
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    let correct = 0;
+                                    Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                                        if (checkAnswer(qId, answers[qId])) correct++;
+                                    });
+                                    const band = calculateIELTSBand(correct);
+
+                                    return (
+                                        <div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg text-center mb-6">
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.code}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">HỌ TÊN</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.name}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                                    <span className="font-bold text-xl text-green-600">{correct} / 40</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">BAND SCORE</span>
+                                                    <span className="font-black text-2xl text-[#0f5132]">{band}</span>
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-bold text-base text-gray-800 mb-3">Chi Tiết Đáp Án:</h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                                {Object.keys(READING_CORRECT_ANSWERS).map((qId, idx) => {
+                                                    const isCorr = checkAnswer(qId, answers[qId]);
+                                                    return (
+                                                        <div key={qId} className={`p-2 border rounded ${isCorr ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                                                            <span className="font-bold">Câu {idx + 1}:</span> {answers[qId] || '-'}
+                                                            <br/>
+                                                            <span className="text-gray-500">Đ.Án: {READING_CORRECT_ANSWERS[qId]}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-6 w-full bg-gray-800 text-white py-2.5 rounded font-bold hover:bg-black"
+                                >
+                                    Đóng & Làm Bài Mới
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

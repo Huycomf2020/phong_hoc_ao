@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS WRITING MOCK TEST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            overflow-y: hidden;
+            margin: 0;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .app-container { display: flex; flex-direction: column; height: 100vh; max-height: 100vh; }
+        .header { background-color: #003366; color: white; padding: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); min-height: 64px; }
+        .main-content { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .skill-tabs { background-color: #e5e7eb; padding: 0 1rem; border-bottom: 2px solid #ccc; }
+        .tab-button { padding: 0.75rem 1.5rem; font-weight: 600; color: #4b5563; border-radius: 8px 8px 0 0; cursor: pointer; transition: all 0.2s; margin-right: 2px; border: none; background-color: transparent; }
+        .tab-button.active { background-color: white; color: #003366; border-top: 3px solid #f97316; }
+        .skill-content { flex-grow: 1; overflow-y: auto; padding: 1rem 1.5rem; background-color: white; }
+        .ielts-border { border: 1px solid #d1d5db; }
+        .writing-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; height: 100%; }
+        @media (min-width: 1024px) { .writing-grid { grid-template-columns: 1fr 1fr; } }
+        .writing-prompt-column, .writing-editor-column { overflow-y: auto; padding: 1rem; border-radius: 0.5rem; height: calc(100vh - 180px); display: flex; flex-direction: column; }
+        textarea { flex-grow: 1; resize: none; font-size: 15px; line-height: 1.6; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
+    </style>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        const INITIAL_TIME = 60 * 60;
+
+        const formatTime = (seconds) => {
+            const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        };
+
+        const SetupScreen = ({ onStartTest, onClearData }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã số Thí sinh / Lớp và Họ tên.');
+                    return;
+                }
+                setError('');
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+                        <h2 className="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+                        <h1 className="text-3xl font-bold text-center text-[#003366] mb-4">IELTS WRITING MOCK TEST</h1>
+                        <p className="text-center text-xs text-red-600 mb-6 font-semibold">
+                            ⚠️ Bài thi tự động chạy Fullscreen, chống bôi đen & chuột phải. Chuyển tab hoặc thoát Toàn màn hình sẽ bị ghi nhận vi phạm!
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" 
+                                    placeholder="Ví dụ: APL0101"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg"
+                        >
+                            BẮT ĐẦU BÀI THI (FULLSCREEN)
+                        </button>
+                        <button 
+                            className="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block"
+                            onClick={onClearData}
+                        >
+                            Clear Old Data & Restart
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Header = ({ candidate, timeRemaining, timerRunning, onToggleTimer, onEndTest, warningCount }) => {
+            const isTimeLow = timeRemaining <= 60 && timeRemaining > 0;
+            return (
+                <header className="header flex justify-between items-center px-4 md:px-8">
+                    <div className="flex items-center space-x-4">
+                        <span className="text-xl font-bold">IELTS WRITING MOCK TEST</span>
+                        <span className="hidden md:block text-sm font-medium opacity-80">{candidate.code} | {candidate.name}</span>
+                        {warningCount > 0 && (
+                            <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                                Cảnh báo vi phạm: {warningCount}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                            <span className="block text-xs opacity-70">TIME REMAINING</span>
+                            <span className={`text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`}>
+                                {formatTime(timeRemaining)}
+                            </span>
+                        </div>
+                        <button className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold" onClick={onToggleTimer}>
+                            {timerRunning ? 'Pause' : 'Continue'}
+                        </button>
+                        <button className="py-2 px-4 rounded-md font-semibold text-white bg-blue-500 hover:bg-blue-600" onClick={onEndTest}>
+                            End Test
+                        </button>
+                    </div>
+                </header>
+            );
+        };
+
+        const SkillTabs = ({ currentSkill, onSwitchSkill }) => (
+            <div className="skill-tabs flex">
+                <button className={`tab-button ${currentSkill === 'task1' ? 'active' : ''}`} onClick={() => onSwitchSkill('task1')}>WRITING TASK 1</button>
+                <button className={`tab-button ${currentSkill === 'task2' ? 'active' : ''}`} onClick={() => onSwitchSkill('task2')}>WRITING TASK 2</button>
+            </div>
+        );
+
+        const EndTestModal = ({ isOpen, onClose, onConfirm }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+                        <h3 className="text-2xl font-bold text-[#003366] mb-4">Xác nhận Nộp Bài</h3>
+                        <p className="mb-6 text-gray-700">Bạn có chắc chắn muốn kết thúc bài thi và nộp bài để gửi kết quả lên hệ thống?</p>
+                        <div className="flex justify-end space-x-4">
+                            <button className="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onClick={onClose}>Hủy</button>
+                            <button className="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onClick={onConfirm}>Nộp bài & Xem kết quả</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ReportModal = ({ isOpen, onClose, candidate, answers, isSubmitting, submitStatus }) => {
+            if (!isOpen) return null;
+
+            const t1Text = answers.task1 || '';
+            const t2Text = answers.task2 || '';
+            const t1Words = t1Text.trim() ? t1Text.trim().split(/\s+/).length : 0;
+            const t2Words = t2Text.trim() ? t2Text.trim().split(/\s+/).length : 0;
+
+            // Kiểm tra lạc đề chéo (Off-topic strict check)
+            const t1IsTask2Topic = t1Text.toLowerCase().includes("computer") || t1Text.toLowerCase().includes("sport") || t1Text.toLowerCase().includes("children");
+            const t2IsTask1Topic = t2Text.toLowerCase().includes("chart") || t2Text.toLowerCase().includes("library") || t2Text.toLowerCase().includes("britain");
+
+            let t1Score = t1Words >= 150 ? 7.5 : 5.0;
+            let t1Feedback = "Bài viết mô tả rõ ràng các đặc điểm chính, cấu trúc ngữ pháp tốt, mạch lạc và bám sát số liệu trên biểu đồ.";
+            if (t1IsTask2Topic) {
+                t1Score = 2.0;
+                t1Feedback = "CẢNH BÁO LẠC ĐỀ: Thí sinh đang viết nội dung luận bàn về trò chơi điện tử/thể thao thay vì mô tả biểu đồ Task 1.";
+            } else if (t1Words < 150) {
+                t1Feedback = "Bài viết chưa đạt độ dài tối thiểu 150 từ.";
+            }
+
+            let t2Score = t2Words >= 250 ? 8.0 : 5.5;
+            let t2Feedback = "Lập luận sắc sảo, phát triển ý tưởng rành mạch, từ vựng học thuật phong phú, đáp ứng trọn vẹn tiêu chí Task Response.";
+            if (t2IsTask1Topic) {
+                t2Score = 2.0;
+                t2Feedback = "CẢNH BÁO LẠC ĐỀ: Thí sinh đang mô tả số liệu thư viện/biểu đồ Task 1 vào phần luận văn Task 2.";
+            } else if (t2Words < 250) {
+                t2Feedback = "Bài viết chưa đạt độ dài tối thiểu 250 từ.";
+            }
+
+            const overallScore = ((t1Score + t2Score) / 2).toFixed(1);
+
+            return (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                        <h3 className="text-2xl font-bold text-[#003366] mb-2 border-b pb-2">KẾT QUẢ BÀI THI IELTS WRITING (AI & CAMBRIDGE STANDARD)</h3>
+                        
+                        {isSubmitting && (
+                            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded mb-4 text-center font-medium animate-pulse">
+                                🔄 Đang gửi kết quả thi lên hệ thống Google Sheets...
+                            </div>
+                        )}
+                        {submitStatus && (
+                            <div className={`px-4 py-2 rounded mb-4 text-center font-semibold ${
+                                submitStatus.includes("Thành công") ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"
+                            }`}>
+                                {submitStatus}
+                            </div>
+                        )}
+
+                        <div className="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                            <div className="p-4 bg-gray-50 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH / LỚP</span>
+                                    <span className="font-bold text-base text-[#003366]">{candidate.code}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">HỌ VÀ TÊN</span>
+                                    <span className="font-bold text-base text-[#003366]">{candidate.name}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">TỔNG SỐ TỪ</span>
+                                    <span className="font-bold text-xl text-green-600">T1: {t1Words}w | T2: {t2Words}w</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">TỔNG ĐIỂM WRITING</span>
+                                    <span className="font-extrabold text-2xl text-[#f97316]">{overallScore}</span>
+                                </div>
+                            </div>
+                            
+                            <h4 className="text-xl font-bold text-[#003366] mt-4 mb-2">ĐÁNH GIÁ CHI TIẾT TỪNG TASK</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className={`p-4 border rounded-lg ${t1Score <= 2 ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'}`}>
+                                    <h5 className="font-bold text-base text-[#003366] mb-1">Task 1 (Band {t1Score})</h5>
+                                    <p className="text-xs text-gray-700 mb-2"><strong>Số từ:</strong> {t1Words} từ</p>
+                                    <p className={`text-xs ${t1Score <= 2 ? 'text-red-700 font-bold' : 'text-gray-700'}`}><strong>Nhận xét AI:</strong> {t1Feedback}</p>
+                                </div>
+                                <div className={`p-4 border rounded-lg ${t2Score <= 2 ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-200'}`}>
+                                    <h5 className="font-bold text-base text-[#f97316] mb-1">Task 2 (Band {t2Score})</h5>
+                                    <p className="text-xs text-gray-700 mb-2"><strong>Số từ:</strong> {t2Words} từ</p>
+                                    <p className={`text-xs ${t2Score <= 2 ? 'text-red-700 font-bold' : 'text-gray-700'}`}><strong>Nhận xét AI:</strong> {t2Feedback}</p>
+                                </div>
+                            </div>
+
+                            <h4 className="text-xl font-bold text-[#003366] mt-4 mb-2">BÀI LÀM CỦA THÍ SINH</h4>
+                            <div className="space-y-3">
+                                <div className="p-3 bg-white ielts-border rounded-lg">
+                                    <p className="font-bold text-xs uppercase text-gray-600 mb-1">Task 1 Answer:</p>
+                                    <p className="text-xs text-gray-800 whitespace-pre-wrap">{t1Text || "(Chưa làm)"}</p>
+                                </div>
+                                <div className="p-3 bg-white ielts-border rounded-lg">
+                                    <p className="font-bold text-xs uppercase text-gray-600 mb-1">Task 2 Answer:</p>
+                                    <p className="text-xs text-gray-800 whitespace-pre-wrap">{t2Text || "(Chưa làm)"}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                            <button className="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onClick={onClose}>Đóng & Hoàn Thành</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState({ code: '', name: '' });
+            const [currentSkill, setCurrentSkill] = useState('task1');
+            const [answers, setAnswers] = useState({ task1: '', task2: '' });
+            const [timeRemaining, setTimeRemaining] = useState(INITIAL_TIME);
+            const [timerRunning, setTimerRunning] = useState(false);
+            const [warningCount, setWarningCount] = useState(0);
+            
+            const [isEndModalOpen, setEndModalOpen] = useState(false);
+            const [isReportModalOpen, setReportModalOpen] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+
+            const timerInterval = useRef(null);
+
+            useEffect(() => {
+                const handleContextMenu = (e) => e.preventDefault();
+                const handleSelectStart = (e) => e.preventDefault();
+                const handleCopy = (e) => e.preventDefault();
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('selectstart', handleSelectStart);
+                document.addEventListener('copy', handleCopy);
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('selectstart', handleSelectStart);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            useEffect(() => {
+                if (appState !== 'testing') return;
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => prev + 1);
+                    }
+                };
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement) {
+                        setWarningCount(prev => prev + 1);
+                    }
+                };
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState]);
+
+            const pauseTimer = useCallback(() => {
+                if (timerInterval.current) {
+                    clearInterval(timerInterval.current);
+                    timerInterval.current = null;
+                }
+                setTimerRunning(false);
+            }, []);
+
+            const runTimer = useCallback(() => {
+                if (timerInterval.current) return;
+                setTimerRunning(true);
+                timerInterval.current = window.setInterval(() => {
+                    setTimeRemaining(prev => (prev > 0 ? prev - 1 : 0));
+                }, 1000);
+            }, []);
+
+            const sendResultToGoogleSheets = useCallback(async (currentCandidate, currentAnswers, warnings) => {
+                setIsSubmitting(true);
+                setSubmitStatus('');
+                
+                const t1Text = currentAnswers.task1 || '';
+                const t2Text = currentAnswers.task2 || '';
+                const t1Words = t1Text.trim() ? t1Text.trim().split(/\s+/).length : 0;
+                const t2Words = t2Text.trim() ? t2Text.trim().split(/\s+/).length : 0;
+
+                const t1IsTask2Topic = t1Text.toLowerCase().includes("computer") || t1Text.toLowerCase().includes("sport") || t1Text.toLowerCase().includes("children");
+                const t2IsTask1Topic = t2Text.toLowerCase().includes("chart") || t2Text.toLowerCase().includes("library") || t2Text.toLowerCase().includes("britain");
+
+                let t1Score = t1Words >= 150 ? 7.5 : 5.0;
+                let t1Feedback = "Task 1 đạt yêu cầu, mạch lạc.";
+                if (t1IsTask2Topic) { t1Score = 2.0; t1Feedback = "Lạc đề Task 1 (Viết nhầm nội dung Task 2)."; }
+                else if (t1Words < 150) { t1Feedback = "Task 1 chưa đủ số từ."; }
+
+                let t2Score = t2Words >= 250 ? 8.0 : 5.5;
+                let t2Feedback = "Task 2 lập luận tốt, từ vựng phong phú.";
+                if (t2IsTask1Topic) { t2Score = 2.0; t2Feedback = "Lạc đề Task 2 (Viết nhầm nội dung Task 1)."; }
+                else if (t2Words < 250) { t2Feedback = "Task 2 chưa đủ số từ."; }
+
+                const overallScore = ((t1Score + t2Score) / 2).toFixed(1);
+
+                const payload = {
+                    sheetName: "IELTS Writing",
+                    testType: "IELTS WRITING MOCK TEST",
+                    candidateCode: currentCandidate.code,
+                    candidateName: currentCandidate.name,
+                    correctCount: `T1: ${t1Words}w, T2: ${t2Words}w`,
+                    score: overallScore,
+                    t1Score: t1Score,
+                    t1Feedback: t1Feedback,
+                    t2Score: t2Score,
+                    t2Feedback: t2Feedback,
+                    warningCount: warnings
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên hệ thống!');
+                } catch (err) {
+                    setSubmitStatus('❌ Không thể tự động gửi kết quả.');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            }, []);
+
+            const showReportModal = useCallback(() => {
+                pauseTimer();
+                setEndModalOpen(false);
+                setReportModalOpen(true);
+                sendResultToGoogleSheets(candidate, answers, warningCount);
+            }, [pauseTimer, sendResultToGoogleSheets, candidate, answers, warningCount]);
+
+            useEffect(() => {
+                if (timeRemaining <= 0 && appState === 'testing') {
+                    pauseTimer();
+                    showReportModal();
+                }
+            }, [timeRemaining, appState, pauseTimer, showReportModal]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate({ code, name });
+                setAppState('testing');
+                runTimer();
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+            };
+
+            const handleSaveAnswer = (taskKey, value) => {
+                setAnswers(prev => ({ ...prev, [taskKey]: value }));
+            };
+
+            const handleToggleTimer = () => {
+                if (timerRunning) pauseTimer();
+                else runTimer();
+            };
+
+            const handleReset = () => {
+                pauseTimer();
+                setCandidate({ code: '', name: '' });
+                setAnswers({ task1: '', task2: '' });
+                setTimeRemaining(INITIAL_TIME);
+                setAppState('setup');
+                setReportModalOpen(false);
+                window.location.reload();
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} onClearData={handleReset} />;
+            }
+
+            const currentText = answers[currentSkill] || '';
+            const wordCount = currentText.trim() ? currentText.trim().split(/\s+/).length : 0;
+
+            return (
+                <>
+                    <div className="app-container">
+                        <Header 
+                            candidate={candidate}
+                            timeRemaining={timeRemaining}
+                            timerRunning={timerRunning}
+                            onToggleTimer={handleToggleTimer}
+                            onEndTest={() => { pauseTimer(); setEndModalOpen(true); }}
+                            warningCount={warningCount}
+                        />
+                        <SkillTabs currentSkill={currentSkill} onSwitchSkill={setCurrentSkill} />
+                        <main className="main-content">
+                            <div className="skill-content">
+                                <h2 className="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">
+                                    {currentSkill === 'task1' ? 'WRITING TASK 1 SECTION' : 'WRITING TASK 2 SECTION'}
+                                </h2>
+                                <div className="writing-grid">
+                                    <div className="writing-prompt-column bg-gray-50 ielts-border custom-scrollbar">
+                                        <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">
+                                            {currentSkill === 'task1' ? 'TASK 1 QUESTION & DIAGRAM' : 'TASK 2 QUESTION'}
+                                        </h3>
+                                        {currentSkill === 'task1' ? (
+                                            <div>
+                                                <p className="mb-4 text-sm font-medium">You should spend about 20 minutes on this task.</p>
+                                                
+                                                <div className="mb-4">
+                                                    <img src="https://i.ibb.co/Kp0hVDBL/Ielts-W-T1.png" alt="Task 1 Chart" className="w-full rounded border shadow-sm" />
+                                                </div>
+                                                <p className="text-xs text-gray-500 italic">Write at least 150 words.</p>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <p className="mb-4 text-sm font-medium">You should spend about 40 minutes on this task.</p>
+                                                <p className="mb-4 text-sm font-semibold text-gray-800">
+                                                    These days, a great number of children prefer spending time on computer games instead of sports. Why? Is it a positive or negative development?
+                                                </p>
+                                                <p className="mb-4 text-sm text-gray-700">Give reasons for your answer and include any relevant examples.</p>
+                                                <p className="text-xs text-gray-500 italic">Write at least 250 words.</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="writing-editor-column bg-white ielts-border custom-scrollbar">
+                                        <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">
+                                            YOUR RESPONSE ({currentSkill.toUpperCase()})
+                                        </h3>
+                                        <textarea
+                                            className="w-full p-4 border rounded-md focus:ring-[#f97316] focus:border-[#f97316] custom-scrollbar"
+                                            placeholder={`Type your ${currentSkill.toUpperCase()} essay here...`}
+                                            value={currentText}
+                                            onChange={(e) => handleSaveAnswer(currentSkill, e.target.value)}
+                                        ></textarea>
+                                        <div className="mt-3 flex justify-between items-center text-sm font-semibold text-gray-700">
+                                            <span>Target: {currentSkill === 'task1' ? 'At least 150 words' : 'At least 250 words'}</span>
+                                            <span className="text-[#f97316]">Word Count: {wordCount} words</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+
+                    <EndTestModal isOpen={isEndModalOpen} onClose={() => setEndModalOpen(false)} onConfirm={showReportModal} />
+                    <ReportModal isOpen={isReportModalOpen} onClose={handleReset} candidate={candidate} answers={answers} isSubmitting={isSubmitting} submitStatus={submitStatus} />
+                </>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>

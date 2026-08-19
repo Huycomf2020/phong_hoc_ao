@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS READING MOCK TEST 10</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Cho phép bôi đen văn bản ở cả 2 cột để Highlight & Note */
+        .passage-pane, .questions-pane {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .aplus-brand {
+            color: #0f5132;
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-top {
+            height: 56px;
+            background: #ffffff;
+            border-bottom: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .part-header-banner {
+            background-color: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .main-workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .passage-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2.5rem;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .divider-handle {
+            width: 14px;
+            background: #e8ecef;
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: col-resize;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .questions-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2.5rem;
+            background: #ffffff;
+            position: relative;
+        }
+
+        /* Highlight style chuẩn IDP */
+        .ielts-highlight {
+            background-color: #70384a;
+            color: #ffffff;
+            padding: 0 2px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        /* Popup Context Menu IDP Style */
+        .idp-popover {
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            padding: 4px;
+        }
+
+        .idp-popover-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            color: #4b5563;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .idp-popover-btn:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        /* Footer Test Navigation */
+        .test-footer {
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .nav-part-btn {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-part-btn.active {
+            color: #0f5132;
+            background-color: #e8f5e9;
+        }
+
+        .q-square {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #9ca3af;
+            border-radius: 3px;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            margin: 0 2px;
+        }
+
+        .q-square.answered {
+            background-color: #e5e7eb;
+            font-weight: 700;
+            border-color: #6b7280;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .idp-radio-label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .idp-radio-label:hover {
+            background-color: #f3f4f6;
+        }
+        .idp-radio-label input[type="radio"] {
+            margin-right: 12px;
+            accent-color: #0f5132;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        const READING_CORRECT_ANSWERS = {
+            'r_q1': 'FALSE',
+            'r_q2': 'TRUE',
+            'r_q3': 'NOT GIVEN',
+            'r_q4': 'FALSE',
+            'r_q5': 'NOT GIVEN',
+            'r_q6': 'TRUE',
+            'r_q7': 'surfaces',
+            'r_q8': 'net',
+            'r_q9': 'rubber',
+            'r_q10': 'rules',
+            'r_q11': 'equipment',
+            'r_q12': 'shape',
+            'r_q13': 'tournament',
+            'r_q14': 'v',
+            'r_q15': 'iii',
+            'r_q16': 'ix',
+            'r_q17': 'iv',
+            'r_q18': 'i',
+            'r_q19': 'viii',
+            'r_q20': 'vii',
+            'r_q21': 'revolution',
+            'r_q22': 'science',
+            'r_q23': 'illness',
+            'r_q24': 'students',
+            'r_q25': 'C,D',
+            'r_q26': 'C,D',
+            'r_q27': 'A',
+            'r_q28': 'H',
+            'r_q29': 'E',
+            'r_q30': 'C',
+            'r_q31': 'D',
+            'r_q32': 'letters and numbers',
+            'r_q33': 'glass tubes',
+            'r_q34': '800 km',
+            'r_q35': 'frictional electricity',
+            'r_q36': 'G',
+            'r_q37': 'E',
+            'r_q38': 'C',
+            'r_q39': 'A',
+            'r_q40': 'F'
+        };
+
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 33) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 27) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 19) return "5.5";
+            if (correct >= 15) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const checkAnswer = (qId, value, allAnswers = {}) => {
+            const correct = READING_CORRECT_ANSWERS[qId];
+            if (!correct) return false;
+
+            if (qId === 'r_q25' || qId === 'r_q26') {
+                const val25 = String(allAnswers['r_q25'] || '').trim().toUpperCase();
+                const val26 = String(allAnswers['r_q26'] || '').trim().toUpperCase();
+                if (qId === 'r_q25') return (val25 === 'C' || val25 === 'D');
+                if (qId === 'r_q26') return (val26 === 'C' || val26 === 'D') && (val26 !== val25);
+            }
+
+            const cleanVal = String(value || '').trim().toLowerCase();
+            const cleanCorr = String(correct).trim().toLowerCase();
+
+            if (qId === 'r_q34') {
+                return cleanVal === '800 km' || cleanVal === 'some 800 km' || cleanVal === '800km' || cleanVal === 'some 800km';
+            }
+
+            return cleanVal === cleanCorr;
+        };
+
+        const SetupScreen = ({ onStartTest }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã thí sinh/Lớp và Họ tên.');
+                    return;
+                }
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-[#0f5132]">
+                        <h2 className="text-xl font-bold text-center text-[#0f5132] mb-1">APLUS LANGUAGE CENTER</h2>
+                        <h1 className="text-2xl font-black text-center text-gray-800 mb-4">IELTS READING MOCK TEST 10</h1>
+                        <p className="text-xs text-red-600 mb-6 text-center font-medium">
+                            ⚠️ Khóa chuột phải & Chống Copy. Tự động khôi phục Fullscreen khi đóng cảnh báo vi phạm.
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: 12A1 / APLUS110"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-xs mt-3 text-center">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-6 w-full bg-[#0f5132] text-white py-3 rounded-md font-bold hover:bg-[#0b3d26] transition-colors shadow-md"
+                        >
+                            START TEST (FULLSCREEN)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState({ code: '', name: '' });
+            const [answers, setAnswers] = useState({});
+            const [currentPart, setCurrentPart] = useState(1);
+            const [timeLeft, setTimeLeft] = useState(60 * 60);
+            const [warningCount, setWarningCount] = useState(0);
+            const [showWarningModal, setShowWarningModal] = useState(false);
+            const [isSubmitted, setIsSubmitted] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+            const [isNotesOpen, setIsNotesOpen] = useState(false);
+            const [notesText, setNotesText] = useState('');
+
+            // Highlight & Popover state
+            const [popover, setPopover] = useState({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+
+            const reEnterFullscreen = () => {
+                const elem = document.documentElement;
+                if (!document.fullscreenElement && elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                }
+            };
+
+            // Khóa triệt để chuột phải & Chống Copy trên toàn trang
+            useEffect(() => {
+                const handleContextMenu = (e) => {
+                    e.preventDefault();
+                    return false;
+                };
+
+                const handleCopy = (e) => {
+                    e.preventDefault();
+                    return false;
+                };
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            // Bắt sự kiện Bôi đen bằng chuột trái hoặc Click vào Highlight để hiện Popover IDP
+            const handleMouseUp = (e) => {
+                const target = e.target;
+
+                if (target.classList.contains('ielts-highlight')) {
+                    const rect = target.getBoundingClientRect();
+                    setPopover({
+                        visible: true,
+                        x: rect.left + window.scrollX + (rect.width / 2) - 40,
+                        y: rect.top + window.scrollY - 55,
+                        mode: 'delete',
+                        node: target,
+                        text: ''
+                    });
+                    return;
+                }
+
+                const selection = window.getSelection();
+                if (selection && selection.toString().trim().length > 0) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+
+                    setPopover({
+                        visible: true,
+                        x: rect.left + window.scrollX + (rect.width / 2) - 60,
+                        y: rect.top + window.scrollY - 55,
+                        mode: 'create',
+                        node: null,
+                        text: selection.toString().trim()
+                    });
+                } else if (!e.target.closest('.idp-popover')) {
+                    setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+                }
+            };
+
+            const applyHighlight = () => {
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = 'ielts-highlight';
+                span.appendChild(range.extractContents());
+                range.insertNode(span);
+
+                selection.removeAllRanges();
+                setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+            };
+
+            const removeHighlight = () => {
+                if (popover.node) {
+                    const parent = popover.node.parentNode;
+                    while (popover.node.firstChild) {
+                        parent.insertBefore(popover.node.firstChild, popover.node);
+                    }
+                    parent.removeChild(popover.node);
+                }
+                setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+            };
+
+            const handleCreateNote = () => {
+                setIsNotesOpen(true);
+                if (popover.text) {
+                    setNotesText(prev => prev ? `${prev}\n- ${popover.text}` : `- ${popover.text}`);
+                }
+                setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+            };
+
+            // Quản lý Vi phạm & Tự động bật lại Fullscreen sau khi bấm đóng Modal
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+
+                const triggerWarning = () => {
+                    setWarningCount(prev => prev + 1);
+                    setShowWarningModal(true);
+                };
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) triggerWarning();
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement && !isSubmitted) triggerWarning();
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState, isSubmitted]);
+
+            const handleDismissWarning = () => {
+                setShowWarningModal(false);
+                reEnterFullscreen();
+            };
+
+            // Timer đếm ngược 60 phút
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            handleSubmitTest();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [appState, isSubmitted]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate({ code, name });
+                setAppState('testing');
+                reEnterFullscreen();
+            };
+
+            const handleAnswerChange = (qId, val) => {
+                setAnswers(prev => ({ ...prev, [qId]: val }));
+            };
+
+            const countPartAnswered = (start, end) => {
+                let cnt = 0;
+                for (let i = start; i <= end; i++) {
+                    if (answers[`r_q${i}`] && String(answers[`r_q${i}`]).trim() !== '') {
+                        cnt++;
+                    }
+                }
+                return cnt;
+            };
+
+            const handleSubmitTest = async () => {
+                const totalAnswered = Object.keys(answers).filter(k => String(answers[k]).trim() !== '').length;
+                if (totalAnswered < 40 && !confirm(`Bạn mới làm ${totalAnswered}/40 câu. Bạn có chắc chắn muốn nộp bài?`)) {
+                    return;
+                }
+
+                setIsSubmitted(true);
+                setIsSubmitting(true);
+
+                let correctCount = 0;
+                Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                    if (checkAnswer(qId, answers[qId], answers)) correctCount++;
+                });
+
+                const bandScore = calculateIELTSBand(correctCount);
+
+                const payload = {
+                    sheetName: "IELTS TESTS",
+                    testType: "IELTS TESTS - MOCK TEST 10",
+                    candidateCode: candidate.code,
+                    candidateName: candidate.name,
+                    correctCount: `${correctCount}/40`,
+                    score: bandScore,
+                    warningCount: warningCount
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên Google Sheets!');
+                } catch (err) {
+                    setSubmitStatus('❌ Lỗi gửi dữ liệu. Vui lòng chụp màn hình báo cho giáo viên!');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const formatMinutesLeft = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m}:${s < 10 ? '0' : ''}${s} minutes left`;
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} />;
+            }
+
+            return (
+                <div className="h-screen flex flex-col" onMouseUp={handleMouseUp}>
+                    {/* IDP Context Menu Popover khi Bôi đen hoặc Click Highlight */}
+                    {popover.visible && (
+                        <div 
+                            className="idp-popover" 
+                            style={{ top: `${popover.y}px`, left: `${popover.x}px` }}
+                        >
+                            {popover.mode === 'create' ? (
+                                <>
+                                    <button onClick={handleCreateNote} className="idp-popover-btn border-r">
+                                        <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                                        Note
+                                    </button>
+                                    <button onClick={applyHighlight} className="idp-popover-btn">
+                                        <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        Highlight
+                                    </button>
+                                </>
+                            ) : (
+                                <button onClick={removeHighlight} className="idp-popover-btn text-red-600">
+                                    <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Delete Highlight
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Header chuẩn IDP */}
+                    <header className="header-top">
+                        <div className="flex items-center space-x-6">
+                            <div className="aplus-brand">APLUS</div>
+                            <div className="text-xs text-gray-700 font-medium">
+                                Test taker ID: <span className="font-bold text-gray-900">{candidate.code} ({candidate.name})</span>
+                            </div>
+                        </div>
+
+                        <div className="font-bold text-sm text-[#f97316]">
+                            {formatMinutesLeft(timeLeft)}
+                        </div>
+
+                        <div className="flex items-center space-x-5 text-gray-600">
+                            {warningCount > 0 && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-bold border border-red-300">
+                                    Cảnh báo: {warningCount}
+                                </span>
+                            )}
+                            <svg className="w-5 h-5 cursor-pointer hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path></svg>
+                            <svg className="w-5 h-5 cursor-pointer hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            <svg className="w-5 h-5 cursor-pointer hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            <svg 
+                                className={`w-5 h-5 cursor-pointer ${isNotesOpen ? 'text-[#0f5132]' : 'hover:text-gray-900'}`} 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                                onClick={() => setIsNotesOpen(!isNotesOpen)}
+                                title="Notes"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </div>
+                    </header>
+
+                    {/* Part Banner Header */}
+                    <div className="part-header-banner">
+                        <span>Reading Part {currentPart}</span>
+                        <span className="text-xs text-gray-500 ml-2">Read the passage and answer questions {currentPart === 1 ? '1–13' : currentPart === 2 ? '14–26' : '27–40'}.</span>
+                    </div>
+
+                    {/* Split Workspace */}
+                    <div className="main-workspace">
+                        {/* Cột trái: Passage */}
+                        <div className="passage-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">The origins of tennis</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p>The game of tennis has a very long history. It is officially still known as 'lawn tennis,' partly because it was originally only played on grass, and also to distinguish it from the older game known as 'real tennis,' from which the modern game developed.</p>
+                                        <p>Some people believe that the ancient Egyptians, Greeks, and Romans played various versions of tennis. No drawings or descriptions of any tennis-like games have been discovered, but a couple of Arabic words dating from ancient Egyptian times are cited as evidence. The theory goes that the name 'tennis' is derived from the Egyptian town of Tennis alongside the Nile, and the word 'racquet' evolved from the Arabic word for the palm of the hand, rahat.</p>
+                                        <p>Aside from these two Arabic words, there is no other evidence for any form of tennis prior to the year 1000. Most historians believe the origins of the game date back to 11th- and 12th-century France. It's thought that French monks were the first to play a basic game of handball against their monastery buildings, or over a rope strung across a courtyard. Those who dispute more ancient origins argue that the name 'tennis' is derived from the French tenez, which meant something to the effect of 'take this,' said as one player would serve to the other.</p>
+                                        <p>This game took on the name jeu de paume, which means "game of the hand or palm." But as they found playing with bare hands quite uncomfortable, players began using a simple glove, and later either a glove with webbing between the fingers or a solid paddle, similar to the ones used in table tennis today. Wooden racquets were not invented until much later.</p>
+                                        <p>The French nobility learned the game from the monks, and some accounts report as many as 1,800 tennis courts in France by the 13th century. The game, which remained exclusive to the upper classes, gained more popularity over the 14th and 15th centuries. As it became increasingly fashionable, outdoor courtyards were modified into indoor courts. The game became such a widespread diversion among the aristocracy that both the pope and the French king tried to ban it.</p>
+                                        <p>By the 16th century, the game had spread to England, where it became known as 'tennis.' Both kings Henry VII and Henry VIII were avid players who promoted the building of courts, and it also became a very fashionable game among the English upper classes.</p>
+                                        <p>An example of one of these early 'real tennis' courts can be seen at the royal palace of Hampton Court near London. It was built in 1525 and is still used today. Only a handful of such courts remain. It is a tall, narrow indoor court, bearing more resemblance to a squash court than the type of tennis courts we are familiar with today. 'Real tennis' is a remarkably fast and difficult game as the ball can be bounced off any of the surfaces, some of which are slanted at odd angles. The net is just over 1.5 metres high at each end, but drops to just under a metre in the middle.</p>
+                                        <p>Until the 19th century, the ball was either constructed from a wad of hair, wool, or cork wrapped in string and cloth or leather. Then a major development took place when Charles Goodyear invented vulcanisation, a process that allows rubber to withstand heat and cold. This led to the development of rubber tennis balls. During the 1850s, players began to experiment with these new balls, which bounced easily on outdoor grass courts.</p>
+                                        <p>In 1874 a Welshman, Major Walter C. Wingfield, known as 'the father of lawn tennis,' had the idea of devising rules, which he published. He also introduced standardised equipment, including racquets, balls, posts, and a net, which he patented and sold in sets. The game quickly became a very popular and sociable open-air pursuit for the English middle classes. People also started playing tennis in countries such as the United States, Russia, India, Canada, and China.</p>
+                                        <p>However, not all of Wingfield's ideas ultimately survived. Inspired by his knowledge of Greek, he called his version of tennis Sphairistike a name which never caught on. Interestingly, his original court had the shape of an hourglass, with the net across its narrowest section.</p>
+                                        <p>A major tennis tournament took place for the first time in Wimbledon, London in 1877, and its organising committee came up with a rectangular court and a modified set of rules that are essentially the same as for the game we know today. The net was still high at the sides, a carryover from the game's indoor ancestor. But by 1882, the specifications for the size of the court, the equipment, and the rules had evolved to their current form.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">John Ray and the Study of Plants</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p><strong>Paragraph 14:</strong> The 17th-century English scholar and botanist John Ray was well aware that he lived through, and participated in, a profound revolution in the way people interacted with nature. In the preface to his Synopsis of British Plants, published in 1690, he gave thanks that he had been born at a time when traditional dependence on the teaching of the Greek philosopher Aristotle (384-322 BCE) had given way to a new philosophy, based on experiment and observation of the real world, that we now call science.</p>
+                                        <p><strong>Paragraph 15:</strong> Ray was born in 1627. His father was a village blacksmith, and his mother was also a respected member of the community, a healer who was an expert in folk medicine and the use of herbs to treat ailments. Ray must have stood out as an unusually bright boy among his schoolmates, and his talents were recognised by a church official, Samuel Covell, who had graduated from Cambridge University in 1600, and maintained his links with his university. Through his influence, Ray was admitted to Cambridge University in 1644 at the age of seventeen a huge step for a village blacksmith's son. There he made a solid start, and quickly gained a reputation as a brilliant student. He studied the classics (Greek, Latin and Hebrew) and mathematics, but there was nothing yet we would now call science in the curriculum. After graduating in 1648, he became a minor member of staff at Trinity College, Cambridge. He was appointed Lecturer in Greek in 1651, Lecturer in Mathematics in 1653, and Lecturer in Humanities in 1655.</p>
+                                        <p><strong>Paragraph 16:</strong> Almost immediately after graduating, Ray also seems to have developed the interest to which he would devote the rest of his life: the study of the natural world. He explains this conversion into a naturalist - in particular into a botanist - in the preface to his first book, the Cambridge Catalogue of English Plants. Here Ray tells us that he suffered an illness in his early twenties, and was advised to take long walks and ride in the fresh air while recovering. While doing this, he became interested in the local flora, and finding nobody able to teach him, Ray investigated it for himself. He then went on to pass on the knowledge he acquired to others.</p>
+                                        <p><strong>Paragraph 17:</strong> By the mid-1650s, even the first-year students at Trinity College were able to identify the plants and flowers around Cambridge, as they were being taught (unofficially none of this was part of their formal education) by Ray. Many of them were the sons of landowners, and so had a natural, if amateurish, interest in country matters. But a few of them took his efforts to understand the natural world much more seriously. One of these, Francis Willughby, later played an important part in Ray's life.</p>
+                                        <p><strong>Paragraph 18:</strong> Having himself had no authority on the subject of plants on which to draw, Ray also started work on what would become his Cambridge Catalogue of English Plants. The work was not published until 1660 because, as Ray explained in the preface, he had to start from scratch: "I had first to become familiar with the literature, to compare the plants that I found with the pictures, and when there seemed to be a resemblance, to go fully into any unknown descriptions. Gaining skill by experience, I acquired at last the ability to recognise to what tribe and family similars or could be assigned; this taught me to search for similarities and saved a vast deal of labour, which others would have spent in their difficulties. I was eager to make the most of this and was fortunate to share my enthusiasm with my friends..."</p>
+                                        <p><strong>Paragraph 19:</strong> Ray's Cambridge Catalogue of English Plants was much more than a simple list of species. It gave the names of plants found in the area around Cambridge and included information about where they grew and how common they were. In doing this, Ray was producing something that would be of practical use to students and other readers interested in the local natural world. At the same time, the book showed his determination to describe plants accurately, on the basis of direct examination rather than reliance on old authorities. In this respect, it reflected the spirit of the new learning that Ray admired.</p>
+                                        <p><strong>Paragraph 20:</strong> Ray's studies of plants were only the beginning of a much larger ambition. With the support of Francis Willughby, he began to imagine a more comprehensive investigation of nature, one that would attempt to classify living things according to careful observation of their shared characteristics. This was an ambitious undertaking, especially at a time when many aspects of the natural world remained poorly described. Yet Ray believed that by collecting evidence systematically and comparing related forms, it would be possible to build a more reliable understanding of nature than scholars had possessed before.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-1 text-center">Sir Francis Ronalds 1788-1873</h1>
+                                    <p className="italic text-sm text-gray-600 mb-4 text-center">An early pioneer in the story of long-distance communication</p>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p><strong>Paragraph A:</strong> Francis Ronalds was born in London in 1788, the second of eleven children. When he was nineteen his father died, and as the eldest son, the young Ronalds had to assume the responsibility of running the family's cheese business. He combined this occupation with his passions for chemical experiments and for meteorology, the study of the Earth's atmosphere and its changes. This brought him into contact with the elderly Swiss meteorologist Jean Andre de Luc, who was also an inspired inventor in the field of electricity. In 1814, de Luc encouraged Ronalds to start work on this new discipline.</p>
+                                        <p><strong>Paragraph B:</strong> For the next few years, Ronalds experimented enthusiastically with various kinds of electrostatic clockwork devices. He was particularly interested in the idea of electric telegraphy: transmitting messages over distance, using electrical impulses carried along metal wires. In the best traditions of nineteenth-century scientists, these investigations were carried out at home. In early 1816, Ronalds gutted the family home in Hammersmith, West London, and covered its rooms, halls, and staircases with electric wire. This experiment involved the use of current to produce movement in small corks at the ends of circuits.</p>
+                                        <p><strong>Paragraph C:</strong> Some months later, Ronalds built two large wooden frames accommodating 8 miles (12.9 km) of electrically charged iron wire in his back garden. At either end of the wire was a revolving disc, on which letters and numbers were engraved. These dials were kept revolving by means of a clockwork mechanism. When somebody wanted to send a message, he would wait until the dial at his end was showing the desired number or letter, and then interrupt the charge on the wire. This would cause two balls suspended on the wire to fall together. The person at the opposite end would then note down what was indicated by the dial at his end at the moment when the balls made contact. Ronalds soon developed a modified version of his invention in which the wire was encased in glass tubes and buried in the ground. The system was slow and depended on the two dials staying in step, but it worked.</p>
+                                        <p><strong>Paragraph D:</strong> Ronalds immediately contacted the Admiralty, the department of the British government which had control over the nation's naval affairs. He was not the first to propose a system of this nature to them. Some ten years earlier, in 1806, the inventor Ralph Wedgwood had offered the Admiralty a similar type of telegraph based on frictional electricity, which it had rejected. The Admiralty had its home in London, whereas its naval fleets were based over 130 km away in Portsmouth. With communication between these two cities in mind, Ronalds wrote to Lord Melville, the then First Lord of the Admiralty, to offer him his telegraphic system.</p>
+                                        <p><strong>Paragraph E:</strong> Ronalds believed that his invention was capable of carrying messages some 800 km, and in his letter to Lord Melville written on 11 July 1816 he spoke of the 'mode of conveying telegraphic intelligence with great rapidity, accuracy, and certainty, in all states of the atmosphere, either at night or in the day, and at small expense.' In 1816, the Admiralty had at its disposal only the late eighteenth-century telegraphic system of semaphore, whereby a mechanical device was used to control a mast with two arms. The disadvantage of this system was that it was only usable in daylight and in clear weather conditions. Nevertheless, John Barrow, Secretary to the Admiralty, wrote back to Ronalds on 5 August, saying that 'telegraphs of any kind are wholly unnecessary, and NO other than the one now in use will be adopted.'</p>
+                                        <p><strong>Paragraph F:</strong> Ronalds did not pursue the matter further or attempt to patent his telegraph. However, in a small pamphlet published in 1823, he described his invention and listed some of its potential uses: 'Why should not government govern at Portsmouth almost as promptly as in Downing Street? Why should our defaulters escape by default of our foggy climate? Let us have Electrical Conversazione offices communicating with each other all over the kingdom if we can.' Although Ronalds lived long enough to see his prophecies come to fruition, he made NO further contribution to the progress of telegraphic communication. In 1843, he was appointed the first Honorary Director and Superintendent of the Observatory at Kew, where he devised an accurate, automatic system for registering meteorological data using photography. A similar system was developed independently by Charles Brooke, but the British Association of Meteorologists confirmed Ronalds's priority. His system remained in use for many decades.</p>
+                                        <p><strong>Paragraph G:</strong> Meanwhile, the people who benefited most directly from Ronalds's telegraphic work were the physicist Charles Wheatstone and his business partner William Cooke. They saw the potential of a rapid communication system for the growing number of private railway companies, and in 1837 they developed the Wheatstone-Cooke five-needle telegraph. The pair patented their design in the same year, the first of its kind to be officially registered, and reaped considerable financial gain as a result. Ronalds himself retired in 1852 and devoted his later years to collecting and cataloguing a vast library of published material on electricity and magnetism. In 1870, three years before he died, he was knighted by Queen Victoria, a belated honour in recognition of his 'early and remarkable labours in telegraphic investigations.'</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Divider */}
+                        <div className="divider-handle">↔</div>
+
+                        {/* Cột phải: Questions */}
+                        <div className="questions-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 1 – 6</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose TRUE, FALSE or NOT GIVEN based on Reading Passage 1.</p>
+                                    <div className="space-y-4 mb-8">
+                                        {[
+                                            "1. There are a few surviving documents which show that a game similar to tennis was played in the ancient world.",
+                                            "2. An early form of tennis involved players hitting a ball with just their hand.",
+                                            "3. The game of table tennis developed around the same time as tennis.",
+                                            "4. Tennis became popular with all sections of French society in the 14th and 15th centuries.",
+                                            "5. The indoor courts created in the 14th and 15th centuries were larger than the outdoor courtyards.",
+                                            "6. There were attempts to prevent French aristocrats from playing tennis."
+                                        ].map((text, i) => (
+                                            <div key={i} className="border-b pb-3">
+                                                <p className="text-sm font-medium mb-2">{text}</p>
+                                                <div className="space-y-1">
+                                                    {["TRUE", "FALSE", "NOT GIVEN"].map(opt => (
+                                                        <label key={opt} className="idp-radio-label text-sm text-gray-700">
+                                                            <input type="radio" name={`r_q${i + 1}`} value={opt} checked={answers[`r_q${i + 1}`] === opt} onChange={() => handleAnswerChange(`r_q${i + 1}`, opt)} />
+                                                            {opt}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 7 – 13</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the notes below. Choose ONE WORD ONLY from the passage for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm space-y-4">
+                                        <p className="font-bold text-[#0f5132]">The development of tennis in England</p>
+                                        <div>
+                                            <p className="font-semibold text-gray-800">'Real tennis' court at Hampton Court</p>
+                                            <p className="ml-3 mt-1">• The ball may be hit against the 7 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q7'] || ''} onChange={e => handleAnswerChange('r_q7', e.target.value)} /> around the court</p>
+                                            <p className="ml-3 mt-1">• The 8 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q8'] || ''} onChange={e => handleAnswerChange('r_q8', e.target.value)} /> is lower in the centre</p>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-800">1850s</p>
+                                            <p className="ml-3 mt-1">• Balls made out of 9 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q9'] || ''} onChange={e => handleAnswerChange('r_q9', e.target.value)} /> started to be used</p>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-800">1874</p>
+                                            <p className="ml-3 mt-1">• Major Walter C. Wingfield published written 10 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q10'] || ''} onChange={e => handleAnswerChange('r_q10', e.target.value)} /> for the game</p>
+                                            <p className="ml-3 mt-1">• Produced complete sets of tennis 11 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q11'] || ''} onChange={e => handleAnswerChange('r_q11', e.target.value)} /> for sale</p>
+                                            <p className="ml-3 mt-1">• Introduced a name for the game which was never adopted</p>
+                                            <p className="ml-3 mt-1">• Designed an unusual 12 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q12'] || ''} onChange={e => handleAnswerChange('r_q12', e.target.value)} /> for the court</p>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-800">1877</p>
+                                            <p className="ml-3 mt-1">• The first large 13 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q13'] || ''} onChange={e => handleAnswerChange('r_q13', e.target.value)} /> was held</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 14 – 20</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Choose the correct heading for each paragraph (14–20) from the list below (i–ix).</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>i.</strong> Ray's account of his working methods</p>
+                                        <p><strong>ii.</strong> The botanical expert who inspired Ray</p>
+                                        <p><strong>iii.</strong> A succession of academic achievements</p>
+                                        <p><strong>iv.</strong> Ray's informal tuition</p>
+                                        <p><strong>v.</strong> Ray's appreciation of his contemporary academic culture</p>
+                                        <p><strong>vi.</strong> A childhood interest in plant</p>
+                                        <p><strong>vii.</strong> Plans for a bold new project</p>
+                                        <p><strong>viii.</strong> A description of the content of Ray's first book</p>
+                                        <p><strong>ix.</strong> A change of direction for Ray</p>
+                                    </div>
+                                    <div className="space-y-3 mb-8">
+                                        {["Paragraph 14", "Paragraph 15", "Paragraph 16", "Paragraph 17", "Paragraph 18", "Paragraph 19", "Paragraph 20"].map((p, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="font-bold text-sm w-28">{p}:</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 bg-white lowercase" value={answers[`r_q${14 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${14 + i}`, e.target.value)} placeholder="i-ix" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 21 – 24</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the summary below. Choose ONE WORD ONLY from the passage for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm leading-loose mb-8">
+                                        <p className="font-bold text-gray-800 mb-2">A New Approach to Knowledge</p>
+                                        John Ray was a scholar and self-taught botanist, whose work reflected the 21 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q21'] || ''} onChange={e => handleAnswerChange('r_q21', e.target.value)} /> that was taking place during the 17th century in people's way of thinking about the natural world. This new approach is the basis of the modern field of 22 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q22'] || ''} onChange={e => handleAnswerChange('r_q22', e.target.value)} />. It represented a complete break from the ideas of Aristotle, which had dominated thinking up until that time.
+                                        <br/><br/>
+                                        As Ray himself explained, his interest in plants was aroused after graduating, when he had to spend time outdoors after a period of 23 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q23'] || ''} onChange={e => handleAnswerChange('r_q23', e.target.value)} />. He taught himself, in addition to many Cambridge 24 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400 bg-white" value={answers['r_q24'] || ''} onChange={e => handleAnswerChange('r_q24', e.target.value)} />, and began compiling his catalogue of plants, which was published in 1660.
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 25 – 26</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Choose TWO correct answers (A–E) for Ray's early life.</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>A.</strong> His teacher recommended that he should go to university.</p>
+                                        <p><strong>B.</strong> His school record was not exceptional in any way.</p>
+                                        <p><strong>C.</strong> He was helped by a former student of Cambridge University.</p>
+                                        <p><strong>D.</strong> His parents were both valued by the people in their local area.</p>
+                                        <p><strong>E.</strong> He originally planned to take up his father's occupation.</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-sm font-bold w-20">25:</span>
+                                            <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 bg-white uppercase" value={answers['r_q25'] || ''} onChange={e => handleAnswerChange('r_q25', e.target.value)} placeholder="A-E" />
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-sm font-bold w-20">26:</span>
+                                            <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 bg-white uppercase" value={answers['r_q26'] || ''} onChange={e => handleAnswerChange('r_q26', e.target.value)} placeholder="A-E" />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 27 – 31</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Match each event with the correct date (A–H).</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 flex flex-wrap gap-3 font-semibold">
+                                        <span>A. 1806</span>
+                                        <span>B. 1814</span>
+                                        <span>C. 1816</span>
+                                        <span>D. 1823</span>
+                                        <span>E. 1837</span>
+                                        <span>F. 1843</span>
+                                        <span>G. 1852</span>
+                                        <span>H. 1870</span>
+                                    </div>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "27. The first electric telegraph system was submitted to the Admiralty.",
+                                            "28. Ronalds received official recognition of his contribution to telegraphy.",
+                                            "29. The first electric telegraph was patented.",
+                                            "30. Ronalds began to experiment with electricity.",
+                                            "31. Ronalds informed the public about the possible uses of his telegraph."
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 bg-white uppercase" value={answers[`r_q${27 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${27 + i}`, e.target.value)} placeholder="A-H" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 32 – 35</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Answer the questions below. Write NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.</p>
+                                    <div className="space-y-3 bg-gray-50 p-4 rounded border text-sm mb-8">
+                                        <p>32. What was marked on the dials on Ronalds's garden telegraph? <br/><input type="text" className="border rounded px-2 py-1 w-full mt-1 border-gray-400 bg-white" value={answers['r_q32'] || ''} onChange={e => handleAnswerChange('r_q32', e.target.value)} /></p>
+                                        <p>33. What did Ronalds use to enclose the wires on his later version of the garden telegraph? <br/><input type="text" className="border rounded px-2 py-1 w-full mt-1 border-gray-400 bg-white" value={answers['r_q33'] || ''} onChange={e => handleAnswerChange('r_q33', e.target.value)} /></p>
+                                        <p>34. How far did Ronalds believe his telegraph could transmit information? <br/><input type="text" className="border rounded px-2 py-1 w-full mt-1 border-gray-400 bg-white" value={answers['r_q34'] || ''} onChange={e => handleAnswerChange('r_q34', e.target.value)} /></p>
+                                        <p>35. What did the communication system invented by Ralph Wedgwood use? <br/><input type="text" className="border rounded px-2 py-1 w-full mt-1 border-gray-400 bg-white" value={answers['r_q35'] || ''} onChange={e => handleAnswerChange('r_q35', e.target.value)} /></p>
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 36 – 40</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Which paragraph contains the following information? Choose letters A–G.</p>
+                                    <div className="space-y-3">
+                                        {[
+                                            "36. a description of a commercial application for the electric telegraph",
+                                            "37. a rejection of Ronalds's invention",
+                                            "38. a drawback of Ronalds's invention",
+                                            "39. reference to the positive influence on Ronald of a fellow scientist",
+                                            "40. reference to the adoption of one of Ronalds's procedures in preference to that of another scientist"
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="font-bold text-sm w-8">{36 + i}.</span>
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 bg-white uppercase" value={answers[`r_q${36 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${36 + i}`, e.target.value)} placeholder="A-G" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Notes Side Panel */}
+                        {isNotesOpen && (
+                            <div className="w-80 bg-gray-100 border-l border-gray-300 flex flex-col z-30 shadow-lg">
+                                <div className="p-3 bg-white border-b flex justify-between items-center font-bold text-gray-800">
+                                    <span>Notes</span>
+                                    <button onClick={() => setIsNotesOpen(false)} className="text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+                                </div>
+                                <div className="p-3 flex-1 flex flex-col">
+                                    <p className="text-xs text-gray-500 mb-2">Your private notes will show here.</p>
+                                    <textarea 
+                                        className="w-full flex-1 p-3 border border-gray-300 rounded resize-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0f5132] bg-yellow-50 select-text"
+                                        placeholder="Type your notes here..."
+                                        value={notesText}
+                                        onChange={(e) => setNotesText(e.target.value)}
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer Navigation Bar IDP Standard */}
+                    <footer className="test-footer">
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(1)}
+                                className={`nav-part-btn ${currentPart === 1 ? 'active' : ''}`}
+                            >
+                                Part 1 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(1, 13)} of 13</span>
+                            </button>
+
+                            <div className="hidden md:flex items-center">
+                                {[1,2,3,4,5,6,7,8,9,10,11,12,13].map(q => (
+                                    <span 
+                                        key={q} 
+                                        className={`q-square ${answers[`r_q${q}`] ? 'answered' : ''}`}
+                                        onClick={() => setCurrentPart(1)}
+                                    >
+                                        {q}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(2)}
+                                className={`nav-part-btn ${currentPart === 2 ? 'active' : ''}`}
+                            >
+                                Part 2 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(14, 26)} of 13</span>
+                            </button>
+
+                            <button 
+                                onClick={() => setCurrentPart(3)}
+                                className={`nav-part-btn ${currentPart === 3 ? 'active' : ''}`}
+                            >
+                                Part 3 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(27, 40)} of 14</span>
+                            </button>
+
+                            <div className="flex items-center space-x-1 ml-4">
+                                <button 
+                                    onClick={() => setCurrentPart(prev => Math.max(1, prev - 1))}
+                                    className="p-1.5 border rounded bg-white hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={currentPart === 1}
+                                >
+                                    ←
+                                </button>
+                                <button 
+                                    onClick={() => setCurrentPart(prev => Math.min(3, prev + 1))}
+                                    className="p-1.5 border rounded bg-white hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={currentPart === 3}
+                                >
+                                    →
+                                </button>
+                            </div>
+
+                            <button 
+                                onClick={handleSubmitTest}
+                                className="ml-4 bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs font-bold px-5 py-2.5 rounded shadow transition-colors flex items-center"
+                            >
+                                ✓ Submit
+                            </button>
+                        </div>
+                    </footer>
+
+                    {/* Modal Cảnh báo Vi Phạm & Fullscreen Auto Recovery */}
+                    {showWarningModal && (
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 animate-fade-in">
+                            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border-t-8 border-red-600 text-center">
+                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
+                                    ⚠️
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">CẢNH BÁO VI PHẠM BAN GIÁM THI</h3>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Hệ thống phát hiện bạn vừa thoát chế độ <strong>Toàn màn hình (Fullscreen)</strong> hoặc chuyển tab làm bài thi!
+                                </p>
+                                <div className="bg-red-50 border border-red-200 rounded p-3 text-red-800 text-xs font-bold mb-6">
+                                    Số lần vi phạm đã ghi nhận: {warningCount}
+                                </div>
+                                <button 
+                                    onClick={handleDismissWarning}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-md transition-all text-sm"
+                                >
+                                    XÁC NHẬN & QUAY LẠI BÀI THI (FULLSCREEN)
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Report Modal sau khi Nộp bài */}
+                    {isSubmitted && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                <h2 className="text-2xl font-bold text-[#0f5132] border-b pb-2 mb-4">KẾT QUẢ BÀI THI IELTS READING MOCK TEST 10</h2>
+                                
+                                {isSubmitting && (
+                                    <div className="p-3 bg-blue-50 text-blue-700 rounded mb-4 text-center font-medium animate-pulse">
+                                        🔄 Đang ghi điểm lên Google Sheets...
+                                    </div>
+                                )}
+                                {submitStatus && (
+                                    <div className="p-3 bg-green-50 text-green-800 rounded mb-4 text-center font-bold">
+                                        {submitStatus}
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    let correct = 0;
+                                    Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                                        if (checkAnswer(qId, answers[qId], answers)) correct++;
+                                    });
+                                    const band = calculateIELTSBand(correct);
+
+                                    return (
+                                        <div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg text-center mb-6">
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.code}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">HỌ TÊN</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.name}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                                    <span className="font-bold text-xl text-green-600">{correct} / 40</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">BAND SCORE</span>
+                                                    <span className="font-black text-2xl text-[#0f5132]">{band}</span>
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-bold text-base text-gray-800 mb-3">Chi Tiết Đáp Án:</h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                                {Object.keys(READING_CORRECT_ANSWERS).map((qId, idx) => {
+                                                    const isCorr = checkAnswer(qId, answers[qId], answers);
+                                                    return (
+                                                        <div key={qId} className={`p-2 border rounded ${isCorr ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                                                            <span className="font-bold">Câu {idx + 1}:</span> {answers[qId] || '-'}
+                                                            <br/>
+                                                            <span className="text-gray-500">Đ.Án: {READING_CORRECT_ANSWERS[qId]}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-6 w-full bg-gray-800 text-white py-2.5 rounded font-bold hover:bg-black"
+                                >
+                                    Đóng & Làm Bài Mới
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

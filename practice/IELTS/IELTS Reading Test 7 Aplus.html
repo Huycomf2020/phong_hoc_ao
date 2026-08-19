@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS READING MOCK TEST 7</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Chống bôi đen văn bản */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* IELTS IDP Dark Green Header */
+        .aplus-brand {
+            color: #0f5132;
+            font-weight: 900;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-top {
+            height: 52px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .part-header-banner {
+            background-color: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        /* Split Screen Area */
+        .main-workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .passage-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .divider-handle {
+            width: 14px;
+            background: #e8ecef;
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: col-resize;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .questions-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+        }
+
+        /* Footer Test Navigation */
+        .test-footer {
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            z-index: 20;
+        }
+
+        .nav-part-btn {
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav-part-btn.active {
+            color: #0f5132;
+            background-color: #e8f5e9;
+        }
+
+        .q-square {
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            margin: 0 1px;
+        }
+
+        .q-square.answered {
+            background-color: #e5e7eb;
+            font-weight: 700;
+            border-color: #9ca3af;
+        }
+
+        /* Custom Scrollbars */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* Radio option styling like IDP */
+        .idp-radio-label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .idp-radio-label:hover {
+            background-color: #f3f4f6;
+        }
+        .idp-radio-label input[type="radio"] {
+            margin-right: 12px;
+            accent-color: #0f5132;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // Đáp án chuẩn 40 câu từ file [VOL 9] Reading Test 2.pdf
+        const READING_CORRECT_ANSWERS = {
+            'r_q1': 'father',
+            'r_q2': 'music',
+            'r_q3': 'secretary',
+            'r_q4': 'steel',
+            'r_q5': 'prices',
+            'r_q6': 'banks',
+            'r_q7': 'projects',
+            'r_q8': 'TRUE',
+            'r_q9': 'TRUE',
+            'r_q10': 'FALSE',
+            'r_q11': 'NOT GIVEN',
+            'r_q12': 'FALSE',
+            'r_q13': 'FALSE',
+            'r_q14': 'E',
+            'r_q15': 'H',
+            'r_q16': 'semantic equivalence',
+            'r_q17': 'purpose',
+            'r_q18': 'stylistic',
+            'r_q19': 'content',
+            'r_q20': 'E',
+            'r_q21': 'B',
+            'r_q22': 'D',
+            'r_q23': 'C',
+            'r_q24': 'B',
+            'r_q25': 'D',
+            'r_q26': 'F',
+            'r_q27': 'D',
+            'r_q28': 'C',
+            'r_q29': 'A',
+            'r_q30': 'B',
+            'r_q31': 'NO',
+            'r_q32': 'NOT GIVEN',
+            'r_q33': 'NOT GIVEN',
+            'r_q34': 'NO',
+            'r_q35': 'YES',
+            'r_q36': 'C',
+            'r_q37': 'B',
+            'r_q38': 'A',
+            'r_q39': 'A',
+            'r_q40': 'B'
+        };
+
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 33) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 27) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 19) return "5.5";
+            if (correct >= 15) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const checkAnswer = (qId, value) => {
+            const correct = READING_CORRECT_ANSWERS[qId];
+            if (!correct) return false;
+            const cleanVal = String(value || '').trim().toLowerCase();
+            const cleanCorr = String(correct).trim().toLowerCase();
+
+            // Xử lý linh hoạt cho các câu chọn 3 đáp án (Questions 24-26)
+            if (qId === 'r_q24' || qId === 'r_q25' || qId === 'r_q26') {
+                return ['b', 'd', 'f'].includes(cleanVal);
+            }
+
+            return cleanVal === cleanCorr;
+        };
+
+        // Form Đăng nhập Thí sinh
+        const SetupScreen = ({ onStartTest }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã thí sinh/Lớp và Họ tên.');
+                    return;
+                }
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-[#0f5132]">
+                        <h2 className="text-xl font-bold text-center text-[#0f5132] mb-1">APLUS LANGUAGE CENTER</h2>
+                        <h1 className="text-2xl font-black text-center text-gray-800 mb-4">IELTS READING MOCK TEST 7</h1>
+                        <p className="text-xs text-red-600 mb-6 text-center font-medium">
+                            ⚠️ Chế độ thi tự động bật Toàn màn hình, khóa chuột phải và chống copy. Vi phạm chuyển tab sẽ bị ghi nhận!
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: 12A1 / APLUS107"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-xs mt-3 text-center">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-6 w-full bg-[#0f5132] text-white py-3 rounded-md font-bold hover:bg-[#0b3d26] transition-colors shadow-md"
+                        >
+                            BẮT ĐẦU BÀI THI (FULLSCREEN)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // App Chính
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState({ code: '', name: '' });
+            const [answers, setAnswers] = useState({});
+            const [currentPart, setCurrentPart] = useState(1);
+            const [timeLeft, setTimeLeft] = useState(60 * 60);
+            const [warningCount, setWarningCount] = useState(0);
+            const [isSubmitted, setIsSubmitted] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+
+            // Khóa chuột phải & chống sao chép văn bản
+            useEffect(() => {
+                const handleContextMenu = (e) => e.preventDefault();
+                const handleSelectStart = (e) => e.preventDefault();
+                const handleCopy = (e) => e.preventDefault();
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('selectstart', handleSelectStart);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('selectstart', handleSelectStart);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            // Theo dõi vi phạm chuyển tab / rời Toàn màn hình
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn vừa chuyển tab hoặc rời khỏi bài thi!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn đã thoát khỏi chế độ Toàn màn hình!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState, isSubmitted]);
+
+            // Timer đếm ngược 60 phút
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            handleSubmitTest();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [appState, isSubmitted]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate({ code, name });
+                setAppState('testing');
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                }
+            };
+
+            const handleAnswerChange = (qId, val) => {
+                setAnswers(prev => ({ ...prev, [qId]: val }));
+            };
+
+            const countPartAnswered = (start, end) => {
+                let cnt = 0;
+                for (let i = start; i <= end; i++) {
+                    if (answers[`r_q${i}`] && String(answers[`r_q${i}`]).trim() !== '') {
+                        cnt++;
+                    }
+                }
+                return cnt;
+            };
+
+            const handleSubmitTest = async () => {
+                const totalAnswered = Object.keys(answers).filter(k => String(answers[k]).trim() !== '').length;
+                if (totalAnswered < 40 && !confirm(`Bạn mới làm ${totalAnswered}/40 câu. Bạn có chắc chắn muốn nộp bài?`)) {
+                    return;
+                }
+
+                setIsSubmitted(true);
+                setIsSubmitting(true);
+
+                let correctCount = 0;
+                Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                    if (checkAnswer(qId, answers[qId])) correctCount++;
+                });
+
+                const bandScore = calculateIELTSBand(correctCount);
+
+                const payload = {
+                    sheetName: "IELTS TESTS",
+                    testType: "IELTS TESTS - MOCK TEST 7",
+                    candidateCode: candidate.code,
+                    candidateName: candidate.name,
+                    correctCount: `${correctCount}/40`,
+                    score: bandScore,
+                    warningCount: warningCount
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên Google Sheets!');
+                } catch (err) {
+                    setSubmitStatus('❌ Lỗi gửi dữ liệu. Vui lòng chụp màn hình báo cho giáo viên!');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} />;
+            }
+
+            return (
+                <div className="h-screen flex flex-col">
+                    {/* Header IDP Style */}
+                    <header className="header-top">
+                        <div className="flex items-center space-x-6">
+                            <div className="aplus-brand">APLUS</div>
+                            <div className="text-xs text-gray-600">
+                                Test taker ID: <span className="font-semibold text-gray-800">{candidate.code} ({candidate.name})</span>
+                            </div>
+                        </div>
+
+                        <div className="font-semibold text-sm text-gray-700">
+                            {Math.floor(timeLeft / 60)} minutes left
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                            {warningCount > 0 && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold border border-red-300">
+                                    Cảnh báo: {warningCount}
+                                </span>
+                            )}
+                            <button 
+                                onClick={handleSubmitTest}
+                                className="bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs font-bold px-4 py-2 rounded shadow-sm transition-colors"
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Part Banner Header */}
+                    <div className="part-header-banner font-medium">
+                        Reading Part {currentPart}
+                        <span className="text-xs text-gray-500 ml-2">Read the passage and answer questions {currentPart === 1 ? '1–13' : currentPart === 2 ? '14–26' : '27–40'}.</span>
+                    </div>
+
+                    {/* Split Workspace */}
+                    <div className="main-workspace">
+                        {/* Cột trái: Passage */}
+                        <div className="passage-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">Andrew Carnegie: industrialist and philanthropist</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p>The Scottish-born American industrialist and philanthropist Andrew Carnegie, who was the leader of the American steel industry from 1873 to 1901, donated large sums of his fortune to educational, cultural, and scientific institutions. He was born in 1835 in Scotland, the son of William Carnegie, a weaver, and Margaret Morrison Carnegie.</p>
+                                        <p>With the invention of weaving machines, William Carnegie's job disappeared, and eventually the family was forced into poverty. In 1848 the family left Scotland and settled in Pittsburgh, Pennsylvania, in the USA. William found a job in a cotton factory, but he soon quit to return to his home handloom, making linens and trying to sell them door-to-door. Andrew Carnegie also worked in the cotton factory, but after his father died in 1855, his strong desire to help take care of the family pushed him to educate himself. He became an avid reader, a theatergoer, and a lover of music.</p>
+                                        <p>Andrew Carnegie became a messenger boy in a telegraph office and later became a telegraph operator. Thomas A. Scott, superintendent of the western division of the Pennsylvania Railroad, made the eighteen-year-old his secretary. Carnegie was soon earning enough to buy a house for his mother. During the Civil War in the United States (1861-65), he helped organize the military telegraph system, but soon returned to Pittsburgh to take Scott's old job with the railroad.</p>
+                                        <p>Between 1865 and 1870 Carnegie made money through investments in several small iron mills and factories. He also traveled throughout England, selling the bonds of small United States railroads and bridge companies. Carnegie began to see that steel was eventually going to replace iron for the manufacture of rails, structural shapes, pipe, and wire. In 1873 he organized a steel rail company and continued building by cutting prices, driving out competitors, shaking off weak partners, and putting earnings back into the company. He never went public (sold shares of his company in order to raise money). Instead he obtained capital from profit, and when necessary from banks, and he kept on growing, making heavy steel alone.</p>
+                                        <p>In the 1880s Carnegie's purchases included a majority stake in the H C Frick Company in Pennsylvania that had vast coal interests, and also the Homestead mills business. Frick became his partner and eventually chairman of the Carnegie Company. Carnegie had moved to New York City in 1867 to be close to the marketing centers for steel products, while Frick stayed in Pennsylvania as the general manager. They made a good team. Behind the scenes, Carnegie planned new projects and the improvement of existing plants; Frick was the working director who watched over the mass-production programs that helped keep price down.</p>
+                                        <p>Carnegie spent his leisure time traveling. He also wrote several books, including <i>Triumphant Democracy</i> (1886), which pointed out what he thought were the advantages of life in the United States over the unequal societies of Britain and other European countries. To Carnegie, access to education was the key to America's political stability and industrial accomplishments. In 1889 he published an article, 'Wealth', stating his belief that the rich had a duty to use their money to improve the welfare of the community. Carnegie remained a bachelor until his mother died in 1886. A year later he married Louise Whitfield and they had one child together. The couple began to spend six months each year in Scotland, though Carnegie kept an eye on business developments and problems.</p>
+                                        <p>Carnegie's absence from the United States was a factor in the Homestead mills strike of 1892. After acquiring Homestead, Carnegie had invested in new plants and equipment, increased production, and automated many of the mill's operations, cutting down the number of workers that were needed. Carnegie believed that workers had a right to join unions and to bargain with management through their unions. He also recognized the right to strike, as long as the action was conducted peacefully. He viewed strikes as trials of strength, with peaceful discussion resolving the conflict. In contract talks during 1892, Frick wanted to lower the minimum wage because of the need for fewer workers. The union representing his workers would not accept this and organized a strike.</p>
+                                        <p>Following a violent confrontation that resulted in the death of eight workers, soldiers were sent in to restore order and Carnegie was criticized for his lack of action. In the 1890s Carnegie also began to meet with tougher competition from newer, bigger companies who were interested in controlled prices and sharing the market. Companies that he had sold to for years threatened to cut down their purchases unless he agreed to cooperate. These threats made him decide to fight back. He refused to enter into any agreements with other companies. Moreover, he decided to invade their territories by making similar products and by expanding his sales activities into the west of the country. Eventually, though, he decided to sell his company to the newly formed U.S. Steel Corporation in 1901 for almost $500 million. Carnegie's personal share was $225 million.</p>
+                                        <p>In retirement, Carnegie began to set up trust funds 'for the improvement of mankind'. He built some three thousand public libraries all over the English-speaking world and funded galleries, museums and concert halls in the US. He also built a group of technical schools, a research institute, and a foundation providing pensions for university professors. When Carnegie died in 1919, the continuation of his broad interests was put under the general charge of the Carnegie Corporation, with a donation of $125 million.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">Translating: a key to international understanding?</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p><strong>Paragraph A:</strong> The term 'translation' is used for all cases where the meaning of expressions in one language (the 'source' language) is turned into the meaning in another (the 'target' language), whether the medium is spoken, written, or signed. In specific professional contexts, however, a distinction is drawn between work with the spoken or signed language (interpreting), and work with the written language (translating), although certain tasks blur this distinction.</p>
+                                        <p><strong>Paragraph B:</strong> It is sometimes said that there is no task more complex than translation - a claim that can be readily believed when all the variables involved are taken into account. Translators not only need to know their source language well; they must also have a thorough understanding in the field of knowledge covered by the source text, and of any social, cultural, or emotional connotations that need to be specified in the target language if the intended effect is to be conveyed. The same special awareness needs to be present for the target language, so that points of special phrasing, contemporary fashions in expression, local expectations, and so on, can all be taken into account. On the whole, translators work into their mother tongue (or language of habitual use), to ensure a result that sounds as natural as possible - though some translators have argued that, for certain types of text (e.g., scientific material) where translation accuracy is more crucial than naturalness, it makes more sense for the translators to be more fluent in the source language.</p>
+                                        <p><strong>Paragraph C:</strong> The aim of translation is to provide semantic equivalence between source and target language. This is what makes translation different from other linguistic activities, such as adapting, precis writing, and abstracting. However, there are many problems hidden within this apparently simple statement, all to do with what standards of 'equivalence' should be expected and accepted.</p>
+                                        <p><strong>Paragraph D:</strong> Exact equivalence is of course impossible: no translator could provide a translation that was a perfect parallel to the source text, in such respects as rhythm, puns and cultural allusions. Such a parallel is not even possible when paraphrasing within a single language: there is always some loss of information.</p>
+                                        <p><strong>Paragraph E:</strong> On the other hand, there are many kinds of inexact equivalence, any of which can be successful at a certain level of practical functioning. It therefore follows that there is no such thing as a best translation. The success of translation depends on the purpose for which it was made, which in turn reflects the needs of the people for whom it was made. A rough-and-ready translation of a letter can suffice to inform a firm of the nature of an enquiry. A translation of a scientific article requires careful attention to meaning but little attention to stylistic features. The provision of a dubbed film script will warrant scrupulous care over the synchronisation of lip movements, often at the expense of content. Literary work requires a sensitive consideration of form as well as content, and may prompt several translations, each of which emphasises a different aspect of the original. It is easy to see what might be 'best' for one set of circumstances may be entirely unsuitable for another.</p>
+                                        <p><strong>Paragraph F:</strong> Several different kinds of translation have been proposed to allow for this range of possibilities. A pragmatic translation emphasises accuracy and knowledge of the subject, required for instruction manuals and much scientific research. In an aesthetic translation, important for literary material, the focus is on preserving the emotional as well as the cognitive content of the work, and on maintaining some level of stylistic equivalence. Ethnographic or sociolinguistic translations aim to pay full attention to the cultural backgrounds of the authors and the recipients, and take into account differences between source and target language, and the ways of life in which they are embedded. And there are various kinds of linguistic translation, where the aim is to convey the structural flavour of the original text, often in quite a literal manner, emphasising such features as archaisms, dialecticisms, and levels of formality. Most translations, of course, are mixtures of these theoretical types, reflecting the complex reality of language in use.</p>
+                                        <p><strong>Paragraph G:</strong> At another level, in a word-for-word translation each word in the source language is translated by a word in the target language. The result often makes no sense, especially when idiomatic constructions are used. In a literal translation the linguistic structure of the source text is followed, but is normalised according to the rules of the target language. In a free translation the linguistic structure of the source language is ignored, and an equivalent is found based on the meaning it conveys.</p>
+                                        <p><strong>Paragraph H:</strong> Translators aim to produce a text that is as faithful to the original as circumstances require or permit, and yet that reads as if it were written originally in the target language. They aim to be "invisible people" - transferring content without drawing attention to the considerable artistic and technical skills involved in the process. The complexity of the task is apparent, but its importance is often underestimated, and its practitioners' social status and legal rights undervalued. Some countries view translation as a menial, clerical task, and pay their translators accordingly, while others regard it as a major intellectual discipline in its own right. The question of status is currently much debated, particularly in Europe, where demand for translators is rocketing, especially in relation to the European Union.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">The mystery of Easter Island</h1>
+                                    <p className="italic text-sm text-gray-600 mb-4 text-center">What could possibly explain the lack of vegetation on Easter Island?</p>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p>The giant stone statues of Easter Island in the Pacific Ocean have perplexed archaeologists ever since European explorers first witnessed them three centuries ago. Jacob Roggeveen, the Dutch seaman who gave the island its name in 1722, was amazed by the statues, each of which clearly weighed several tonnes. But as there were no forests on the island, he could not comprehend how people devoid of heavy timber could build and erect something that size. It was also remarkable considering the absence of metal objects for carving and cutting, and the reliance on mere human strength as no draught animals could be seen either. Roggeveen was equally amazed as to how the islanders could have come to colonise such a remote place. Their canoes were leaky and frail, not the sort of ocean-going craft that could survive a three-week sea journey. At the time of his visit, it seemed evident the islanders were living in extremely poor conditions and that there was no cultivation of crops.</p>
+                                        <p>What was the mystery behind the statues? In the 1970s, the author Erich von Däniken suggested the statues were the work of extraterrestrial beings. It was hard to believe the stones were the work of humans who were more than 2,000 miles from the nearest mainland, so for a short period of time his theory appealed to those fascinated with space travel. But for serious academics, the puzzle of the statues has caused a deep divide. Some archaeologists see Easter Island as an example of what can happen when the lust for material splendour - ever bigger stone carvings in this case - is satisfied at the expense of the environment. Others, meanwhile, take a different view. The island, these scholars argue, suffered at the hands of introduced diseases, notably smallpox, and a slave trade that stole a huge proportion of its indigenous population. At the heart of the debate is the issue of the island's deforestation. There is no doubt that the island was once covered in palm trees. There is also no doubt that something happened that caused the island to become completely denuded over a short period of time. But was it the islanders who triggered this environmental degradation or another event beyond their control, such as the introduction of rats? It is an indisputable fact that rats found their way to the island, although exactly how is a matter of debate.</p>
+                                        <p>In 2005, the anthropologist Jared Diamond claimed the islanders started building ceremonial statues in an atmosphere of rivalry between the many clans. To move the statues from the island's quarry in the south-east, they needed to cut large logs for the construction of long 'canoe ladders' to carry them to the coast. For its transport alone, each statue would have required several trees to be cut down. As a result of the deforestation, Diamond believes food production fell dramatically. Consequently the population collapsed from perhaps as many as 15,000 to the few thousand that were eking out a living by the time Roggeveen arrived. Smallpox and slavery killed off those who remained, but the islanders were on the way to total collapse even without any European contact, says Diamond.</p>
+                                        <p>But not everyone is convinced. Professor Terry Hunt, an anthropologist at the University of Hawaii, says: 'There is no evidence that a population collapse occurred before European contact.' He is supported by Professor Carl Lipo of California State University. They argue that Easter Island was colonised by the first Polynesian seafarers nowhere near as early as supposed. They say the first people to arrive came around AD1200, about 400 years later than other scientists have suggested from radio-carbon dating. This makes it implausible for the population to have reached the 15,000 figure that would have caused such a fast ecocide. They also believe the deforestation occurred over a longer period as a result of climate change, and rats probably also played a part. The islanders did not go through a population collapse until after the arrival of Europeans, they say.</p>
+                                        <p>Hunt has examined new data from the Hawaiian and other Pacific islands that shows that by early historic times the deforestation of Easter Island was already complete, or nearly so. A dense forest of palm trees and shrubs had mostly disappeared and as a result, as many as six land bird species had also become extinct. Crucially, much of the forest damage appears to have been done before evidence of fires on the island. However, almost all of the palm seed shells discovered on the island were found to have been gnawed by rats which would have made them unable to germinate. Evidence from other Pacific islands also confirms how destructive rats can be.</p>
+                                        <p>However, John Flenley of New Zealand's Massey University, who carried out much of the radio-carbon work on Easter Island, says there is ample evidence for a much earlier arrival of Polynesian settlers. He refutes the arguments of the sceptics: whilst admitting that the Europeans did bring certain disasters, he maintains that Hunt and Lipo are ignoring archaeological, botanical and sedimentological evidence proving the island was transformed from a subtropical rainforest to a treeless landscape. The radio-carbon dating points to an initial colonisation before AD900, Flenley argues. This was ample time for the rapid deforestation, environmental collapse and a population crash, he insists.</p>
+                                        <p>Why all this is important today is not, of course, lost in the age of globalisation, climate change and a rapidly growing world population in the billions. As Diamond says: 'The parallels between Easter Island and the whole of the modern world are chillingly obvious.'</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Divider */}
+                        <div className="divider-handle">↔</div>
+
+                        {/* Cột phải: Questions */}
+                        <div className="questions-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 1 – 7</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the notes below. Choose ONE WORD ONLY from the passage for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm space-y-3 mb-8">
+                                        <p className="font-bold text-[#0f5132]">Carnegie's Life</p>
+                                        <p className="font-bold text-gray-700">1835-1855</p>
+                                        <p>• found employment in the same workplace as his 1 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q1'] || ''} onChange={e => handleAnswerChange('r_q1', e.target.value)} /></p>
+                                        <p>• educated himself through books, theatrical performances and 2 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q2'] || ''} onChange={e => handleAnswerChange('r_q2', e.target.value)} /></p>
+                                        <p className="font-bold text-gray-700 mt-2">1855-1865</p>
+                                        <p>• worked in a telegraph office</p>
+                                        <p>• became 3 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q3'] || ''} onChange={e => handleAnswerChange('r_q3', e.target.value)} /> to Thomas A Scott at Pennsylvania Railroad</p>
+                                        <p className="font-bold text-gray-700 mt-2">1865-1870</p>
+                                        <p>• made investments in the US and England</p>
+                                        <p>• realised that changing engineering needs would require a greater demand for 4 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q4'] || ''} onChange={e => handleAnswerChange('r_q4', e.target.value)} /></p>
+                                        <p className="font-bold text-gray-700 mt-2">1873</p>
+                                        <p>• managed a rail manufacturing business by:</p>
+                                        <p>&nbsp;&nbsp;+ reducing 5 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q5'] || ''} onChange={e => handleAnswerChange('r_q5', e.target.value)} /></p>
+                                        <p>&nbsp;&nbsp;+ restructuring</p>
+                                        <p>&nbsp;&nbsp;+ reinvesting profit and sometimes borrowing money from 6 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q6'] || ''} onChange={e => handleAnswerChange('r_q6', e.target.value)} /></p>
+                                        <p className="font-bold text-gray-700 mt-2">1880s</p>
+                                        <p>• Frick and Carnegie became partners</p>
+                                        <p>• Frick's responsibilities: Production</p>
+                                        <p>• Carnegie's responsibilities: arranging future 7 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q7'] || ''} onChange={e => handleAnswerChange('r_q7', e.target.value)} /> and innovations for factories</p>
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 8 – 13</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose TRUE, FALSE or NOT GIVEN based on Reading Passage 1.</p>
+                                    <div className="space-y-4">
+                                        {[
+                                            "8. Carnegie believed that the USA offered more opportunities than European countries did.",
+                                            "9. A smaller workforce was required at the Homestead factory after Carnegie took control.",
+                                            "10. Carnegie prevented his workers from joining unions.",
+                                            "11. Carnegie blamed Frick for the violent workers strike in 1892.",
+                                            "12. In the 1890s Carnegie negotiated with his competitors.",
+                                            "13. Carnegie's provision of funds for libraries was limited to those in the United States."
+                                        ].map((text, i) => (
+                                            <div key={i} className="border-b pb-3">
+                                                <p className="text-sm font-medium mb-2">{text}</p>
+                                                <div className="space-y-1">
+                                                    {["TRUE", "FALSE", "NOT GIVEN"].map(opt => (
+                                                        <label key={opt} className="idp-radio-label text-sm text-gray-700">
+                                                            <input type="radio" name={`r_q${i + 8}`} value={opt} checked={answers[`r_q${i + 8}`] === opt} onChange={() => handleAnswerChange(`r_q${i + 8}`, opt)} />
+                                                            {opt}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 14 – 15</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Which paragraph contains the following information? Choose letters A–H.</p>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "14. the effect that a client's requirements have on the nature of a translation.",
+                                            "15. contrasting attitudes towards translators."
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="font-bold text-sm w-8">{14 + i}.</span>
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${14 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${14 + i}`, e.target.value)} placeholder="A-H" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 16 – 19</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the summary below. Choose NO MORE THAN TWO WORDS from paragraphs C, D and E for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm leading-loose mb-8">
+                                        <p className="font-bold text-gray-800 mb-2">The goal of translation</p>
+                                        Translation is an attempt to create a text in the target language which displays 16 <input type="text" className="border rounded px-2 py-1 w-40 mx-1 border-gray-400" value={answers['r_q16'] || ''} onChange={e => handleAnswerChange('r_q16', e.target.value)} /> with a source text. It is inevitable that not all information can be conveyed, however, so translations are best judged according to their 17 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q17'] || ''} onChange={e => handleAnswerChange('r_q17', e.target.value)} />; for example, the translator of a business letter or scientific text does not need to consider its 18 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q18'] || ''} onChange={e => handleAnswerChange('r_q18', e.target.value)} /> aspects while someone dubbing a film may give a relatively low value to 19 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q19'] || ''} onChange={e => handleAnswerChange('r_q19', e.target.value)} />.
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 20 – 23</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Match each feature with the correct type of translation (A–F).</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>A.</strong> aesthetic</p>
+                                        <p><strong>B.</strong> ethnographic</p>
+                                        <p><strong>C.</strong> free</p>
+                                        <p><strong>D.</strong> literal</p>
+                                        <p><strong>E.</strong> pragmatic</p>
+                                        <p><strong>F.</strong> word-for-word</p>
+                                    </div>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "20. focuses on reproducing the content accurately.",
+                                            "21. looks at important cultural aspects of language use.",
+                                            "22. follows the original grammatical structures as required by the target language.",
+                                            "23. focuses on meaning without necessarily using the original grammatical structures."
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${20 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${20 + i}`, e.target.value)} placeholder="A-F" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 24 – 26</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Which THREE of the following points are mentioned by the writer of the passage? Choose THREE letters A–F.</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>A.</strong> The objectives of translating are always clearly different from those of interpreting.</p>
+                                        <p><strong>B.</strong> A translator may need to consider the culture of the target language.</p>
+                                        <p><strong>C.</strong> Translation is an activity which requires professional training.</p>
+                                        <p><strong>D.</strong> It is difficult to specify what constitutes a very good translation.</p>
+                                        <p><strong>E.</strong> The skill required for translation is increasingly gaining recognition.</p>
+                                        <p><strong>F.</strong> A translation should give the impression of being an original work.</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {["24", "25", "26"].map((qNum, i) => (
+                                            <div key={qNum} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="font-bold text-sm w-12">Question {qNum}:</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${24 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${24 + i}`, e.target.value)} placeholder="A-F" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 27 – 30</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Complete the summary using the list of words and phrases, A–D, below.</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 flex space-x-4">
+                                        <span><strong>A.</strong> poverty</span>
+                                        <span><strong>B.</strong> agriculture</span>
+                                        <span><strong>C.</strong> boats</span>
+                                        <span><strong>D.</strong> wood</span>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm leading-loose mb-8">
+                                        <p className="font-bold text-gray-800 mb-2">Early European reaction to the discovery of Easter Island</p>
+                                        When Dutchman Jacob Roggeveen sailed to Easter Island in 1722, he was amazed by the stone statues he saw for a number of reasons. Firstly, it was clear that they were immensely heavy, and there was no 27 <input type="text" className="border rounded px-2 py-1 w-16 mx-1 border-gray-400 uppercase text-center" value={answers['r_q27'] || ''} onChange={e => handleAnswerChange('r_q27', e.target.value)} /> around, which would have helped with their construction. Roggeveen did not think the inhabitants had any metal tools, or animals for heavy labour either. Another mystery was the poor quality of the local inhabitants' 28 <input type="text" className="border rounded px-2 py-1 w-16 mx-1 border-gray-400 uppercase text-center" value={answers['r_q28'] || ''} onChange={e => handleAnswerChange('r_q28', e.target.value)} />; Roggeveen wondered how the people had managed to survive long trips. At the time of Roggeveen's visit, he observed that the people were living in 29 <input type="text" className="border rounded px-2 py-1 w-16 mx-1 border-gray-400 uppercase text-center" value={answers['r_q29'] || ''} onChange={e => handleAnswerChange('r_q29', e.target.value)} /> and there was no evidence of successful 30 <input type="text" className="border rounded px-2 py-1 w-16 mx-1 border-gray-400 uppercase text-center" value={answers['r_q30'] || ''} onChange={e => handleAnswerChange('r_q30', e.target.value)} /> on the island.
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 31 – 35</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose YES, NO or NOT GIVEN based on Reading Passage 3.</p>
+                                    <div className="space-y-4 mb-8">
+                                        {[
+                                            "31. Erich von Däniken's claims were briefly accepted by some sections of society.",
+                                            "32. Archaeologists removed valuable artefacts from the island.",
+                                            "33. Smallpox continued to affect Easter Island's inhabitants for centuries.",
+                                            "34. It remains open to question whether Easter Island was once covered in forest.",
+                                            "35. The way that rats arrived on Easter Island is still to be established."
+                                        ].map((text, i) => (
+                                            <div key={i} className="border-b pb-3">
+                                                <p className="text-sm font-medium mb-2">{text}</p>
+                                                <div className="space-y-1">
+                                                    {["YES", "NO", "NOT GIVEN"].map(opt => (
+                                                        <label key={opt} className="idp-radio-label text-sm text-gray-700">
+                                                            <input type="radio" name={`r_q${i + 31}`} value={opt} checked={answers[`r_q${i + 31}`] === opt} onChange={() => handleAnswerChange(`r_q${i + 31}`, opt)} />
+                                                            {opt}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 36 – 40</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose the correct answer, A, B, C or D.</p>
+                                    <div className="space-y-6">
+                                        {[
+                                            {
+                                                q: "36. What does Jared Diamond blame for the lack of vegetation on Easter Island?",
+                                                opts: ["A. The construction of stone statues", "B. Climate change over a long period", "C. A method of transportation", "D. The arrival of Europeans"]
+                                            },
+                                            {
+                                                q: "37. What do Hunt and Lipo suggest about the population of Easter Island?",
+                                                opts: ["A. It collapsed before European contact", "B. The first settlers arrived much later than is widely accepted", "C. It never exceeded a few thousand inhabitants", "D. It declined mainly because of disease"]
+                                            },
+                                            {
+                                                q: "38. What is suggested about rats on Easter Island in the fifth paragraph?",
+                                                opts: ["A. They were a likely cause of deforestation", "B. They arrived after the forests had disappeared", "C. They had no effect on plant regeneration", "D. They were introduced by Europeans"]
+                                            },
+                                            {
+                                                q: "39. Flenley responds to Hunt and Lipo's theory by",
+                                                opts: ["A. dismissing it", "B. partially supporting it", "C. expanding on their arguments", "D. avoiding direct criticism"]
+                                            },
+                                            {
+                                                q: "40. The writer's purpose in this article is to",
+                                                opts: ["A. argue in favour of Diamond's interpretation", "B. provide an overview of a series of arguments", "C. prove that rats were the main cause of deforestation", "D. criticise modern archaeological methods"]
+                                            }
+                                        ].map((item, idx) => (
+                                            <div key={idx} className="border-b pb-4">
+                                                <p className="text-sm font-medium mb-2">{item.q}</p>
+                                                <div className="space-y-1">
+                                                    {item.opts.map((opt, oIdx) => {
+                                                        const letter = String.fromCharCode(65 + oIdx);
+                                                        return (
+                                                            <label key={letter} className="idp-radio-label text-sm text-gray-700">
+                                                                <input type="radio" name={`r_q${36 + idx}`} value={letter} checked={answers[`r_q${36 + idx}`] === letter} onChange={() => handleAnswerChange(`r_q${36 + idx}`, letter)} />
+                                                                {opt}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer Nav Bar */}
+                    <footer className="test-footer">
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(1)}
+                                className={`nav-part-btn ${currentPart === 1 ? 'active' : ''}`}
+                            >
+                                Part 1 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(1, 13)}/13</span>
+                            </button>
+
+                            <div className="flex items-center">
+                                {[1,2,3,4,5,6,7,8,9,10,11,12,13].map(q => (
+                                    <span 
+                                        key={q} 
+                                        className={`q-square ${answers[`r_q${q}`] ? 'answered' : ''}`}
+                                        onClick={() => setCurrentPart(1)}
+                                    >
+                                        {q}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(2)}
+                                className={`nav-part-btn ${currentPart === 2 ? 'active' : ''}`}
+                            >
+                                Part 2 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(14, 26)}/13</span>
+                            </button>
+
+                            <button 
+                                onClick={() => setCurrentPart(3)}
+                                className={`nav-part-btn ${currentPart === 3 ? 'active' : ''}`}
+                            >
+                                Part 3 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(27, 40)}/14</span>
+                            </button>
+
+                            <div className="flex items-center space-x-1">
+                                <button onClick={() => setCurrentPart(prev => Math.max(1, prev - 1))} className="p-1 border rounded bg-gray-50 hover:bg-gray-200">←</button>
+                                <button onClick={() => setCurrentPart(prev => Math.min(3, prev + 1))} className="p-1 border rounded bg-gray-50 hover:bg-gray-200">→</button>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* Modal Báo kết quả */}
+                    {isSubmitted && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                <h2 className="text-2xl font-bold text-[#0f5132] border-b pb-2 mb-4">KẾT QUẢ BÀI THI IELTS READING MOCK TEST 7</h2>
+                                
+                                {isSubmitting && (
+                                    <div className="p-3 bg-blue-50 text-blue-700 rounded mb-4 text-center font-medium animate-pulse">
+                                        🔄 Đang ghi điểm lên Google Sheets...
+                                    </div>
+                                )}
+                                {submitStatus && (
+                                    <div className="p-3 bg-green-50 text-green-800 rounded mb-4 text-center font-bold">
+                                        {submitStatus}
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    let correct = 0;
+                                    Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                                        if (checkAnswer(qId, answers[qId])) correct++;
+                                    });
+                                    const band = calculateIELTSBand(correct);
+
+                                    return (
+                                        <div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg text-center mb-6">
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.code}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">HỌ TÊN</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.name}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                                    <span className="font-bold text-xl text-green-600">{correct} / 40</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">BAND SCORE</span>
+                                                    <span className="font-black text-2xl text-[#0f5132]">{band}</span>
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-bold text-base text-gray-800 mb-3">Chi Tiết Đáp Án:</h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                                {Object.keys(READING_CORRECT_ANSWERS).map((qId, idx) => {
+                                                    const isCorr = checkAnswer(qId, answers[qId]);
+                                                    return (
+                                                        <div key={qId} className={`p-2 border rounded ${isCorr ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                                                            <span className="font-bold">Câu {idx + 1}:</span> {answers[qId] || '-'}
+                                                            <br/>
+                                                            <span className="text-gray-500">Đ.Án: {READING_CORRECT_ANSWERS[qId]}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-6 w-full bg-gray-800 text-white py-2.5 rounded font-bold hover:bg-black"
+                                >
+                                    Đóng & Làm Bài Mới
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

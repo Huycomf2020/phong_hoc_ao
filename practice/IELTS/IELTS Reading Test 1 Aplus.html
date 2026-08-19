@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS READING TEST 1</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            overflow-y: hidden;
+            margin: 0;
+            /* Chống bôi đen bằng CSS */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+        }
+        .header {
+            background-color: #003366;
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 64px;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .skill-tabs {
+            background-color: #e5e7eb;
+            padding: 0 1rem;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #4b5563;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 2px;
+            border: none;
+            background-color: transparent;
+        }
+        .tab-button.active {
+            background-color: white;
+            color: #003366;
+            border-top: 3px solid #f97316;
+        }
+        .skill-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem 1.5rem;
+            background-color: white;
+        }
+        .ielts-border {
+            border: 1px solid #d1d5db;
+        }
+        .reading-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            height: 100%;
+        }
+        @media (min-width: 1024px) {
+            .reading-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .reading-passage-column, .reading-question-column {
+            overflow-y: auto;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            height: calc(100vh - 180px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+    </style>
+    <!-- React & React DOM CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel CDN -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // Đáp án chuẩn từ PDF Test 1
+        const SKILL_ORDER = ['reading'];
+        const INITIAL_TIMES = { reading: 60 * 60 };
+        const READING_CORRECT_ANSWERS = {
+            'r_q1': 'timetable',
+            'r_q2': 'surface',
+            'r_q3': 'accommodation',
+            'r_q4': 'restaurant',
+            'r_q5': 'region',
+            'r_q6': 'numbers',
+            'r_q7': 'TRUE',
+            'r_q8': 'TRUE',
+            'r_q9': 'NOT GIVEN',
+            'r_q10': 'FALSE',
+            'r_q11': 'NOT GIVEN',
+            'r_q12': 'FALSE',
+            'r_q13': 'NOT GIVEN',
+            'r_q14': 'E',
+            'r_q15': 'I',
+            'r_q16': 'A',
+            'r_q17': 'G',
+            'r_q18': 'C',
+            'r_q19': 'F',
+            'r_q20': ['A', 'E'],
+            'r_q21': ['A', 'E'],
+            'r_q22': ['B', 'D'],
+            'r_q23': ['B', 'D'],
+            'r_q24': 'sheltered',
+            'r_q25': 'penguins',
+            'r_q26': 'permit',
+            'r_q27': 'v',
+            'r_q28': 'iv',
+            'r_q29': 'vii',
+            'r_q30': 'ii',
+            'r_q31': 'viii',
+            'r_q32': 'vi',
+            'r_q33': 'iii',
+            'r_q34': 'A',
+            'r_q35': 'A',
+            'r_q36': 'C',
+            'r_q37': 'B',
+            'r_q38': 'food',
+            'r_q39': 'children',
+            'r_q40': 'edible'
+        };
+
+        // Bảng quy đổi điểm IELTS Reading chuẩn 40 câu
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 33) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 27) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 19) return "5.5";
+            if (correct >= 15) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const INITIAL_CANDIDATE_STATE = {
+            code: '',
+            name: '',
+            currentSkill: 'reading',
+            answers: { reading: {} },
+            times: { ...INITIAL_TIMES },
+            timerRunning: false,
+        };
+
+        const formatTime = (seconds) => {
+            const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        };
+
+        const checkAnswer = (qId, value) => {
+            const correct = READING_CORRECT_ANSWERS[qId];
+            if (!correct) return null;
+
+            if (Array.isArray(correct)) {
+                if (!Array.isArray(value)) return false;
+                const sortedCorrect = [...correct].sort();
+                const sortedValue = [...value].sort();
+                return sortedCorrect.length === sortedValue.length && sortedCorrect.every((val, index) => val === sortedValue[index]);
+            }
+
+            if (Array.isArray(value)) return false;
+            return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+        };
+
+        const getAnsweredCount = (answers = {}) => {
+            let count = 0;
+            Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                const val = answers[qId];
+                if (Array.isArray(val)) {
+                    if (val.length > 0) count++;
+                } else if (val && String(val).trim() !== '') {
+                    count++;
+                }
+            });
+            return count;
+        };
+
+        // Component Nhập đáp án
+        const AnswerInput = ({ type, id, name, value, className = '', placeholder, answers, onSaveAnswer }) => {
+            const qId = id || name || '';
+
+            const handleChange = (e) => {
+                if (type === 'checkbox') {
+                    const currentValues = (answers[qId] || []);
+                    const { checked, value: checkboxValue } = e.target;
+                    const newValues = checked
+                        ? [...currentValues, checkboxValue]
+                        : currentValues.filter(v => v !== checkboxValue);
+                    onSaveAnswer(qId, newValues);
+                } else {
+                    onSaveAnswer(qId, e.target.value);
+                }
+            };
+
+            const baseClassName = "ielts-border rounded-md p-2 w-full";
+
+            if (type === 'text') {
+                return (
+                    <input
+                        type="text"
+                        id={id}
+                        value={answers[qId] || ''}
+                        onChange={handleChange}
+                        className={`${baseClassName} ${className}`}
+                        placeholder={placeholder || `Answer ${id?.split('_q')[1] || ''}`}
+                    />
+                );
+            }
+
+            if (type === 'radio') {
+                return (
+                    <input
+                        type="radio"
+                        name={name}
+                        value={value}
+                        checked={answers[name] === value}
+                        onChange={handleChange}
+                        className={className}
+                    />
+                );
+            }
+
+            return null;
+        };
+
+        // Header Component
+        const Header = ({ candidate, onToggleTimer, onEndTest, warningCount }) => {
+            const remainingTime = candidate.times[candidate.currentSkill];
+            const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+            const currentAnswers = candidate.answers[candidate.currentSkill] || {};
+            const answeredCount = getAnsweredCount(currentAnswers);
+            const totalQuestions = Object.keys(READING_CORRECT_ANSWERS).length;
+            const canEndTest = answeredCount >= totalQuestions;
+
+            const handleEndClick = () => {
+                if (!canEndTest) {
+                    alert("Bạn chưa làm đủ 40 câu hỏi để mở đáp án và nộp bài!");
+                    return;
+                }
+                onEndTest();
+            };
+
+            return (
+                <header className="header flex justify-between items-center px-4 md:px-8">
+                    <div className="flex items-center space-x-4">
+                        <span className="text-xl font-bold">IELTS MOCK TEST 1</span>
+                        <span className="hidden md:block text-sm font-medium opacity-80">{candidate.code} | {candidate.name}</span>
+                        {warningCount > 0 && (
+                            <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                                Cảnh báo vi phạm: {warningCount}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                            <span className="block text-xs opacity-70">TIME REMAINING</span>
+                            <span className={`text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`}>
+                                {formatTime(remainingTime)}
+                            </span>
+                        </div>
+                        <div className="hidden lg:block text-xs bg-white/10 px-3 py-1.5 rounded text-white font-medium">
+                            Đã làm: <span className="font-bold text-[#f97316]">{answeredCount}</span>/{totalQuestions} câu
+                        </div>
+                        <button 
+                            className="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold"
+                            onClick={onToggleTimer}
+                            disabled={remainingTime <= 0}
+                        >
+                            {candidate.timerRunning ? 'Pause' : 'Continue'}
+                        </button>
+                        <button 
+                            className={`action-button py-2 px-4 rounded-md font-semibold text-white transition-colors ${
+                                canEndTest 
+                                    ? 'bg-blue-500 hover:bg-blue-600 cursor-pointer' 
+                                    : 'bg-gray-400 cursor-not-allowed opacity-75'
+                            }`}
+                            onClick={handleEndClick}
+                            title={!canEndTest ? "Bạn chưa làm đủ 40 câu hỏi" : "Nộp bài và xem kết quả"}
+                        >
+                            End Test
+                        </button>
+                    </div>
+                </header>
+            );
+        };
+
+        const SkillTabs = ({ currentSkill, onSwitchSkill }) => (
+            <div className="skill-tabs flex">
+                {SKILL_ORDER.map(skill => (
+                    <button 
+                        key={skill}
+                        className={`tab-button ${currentSkill === skill ? 'active' : ''}`}
+                        onClick={() => onSwitchSkill(skill)}
+                    >
+                        {skill.toUpperCase()}
+                    </button>
+                ))}
+            </div>
+        );
+
+        const SetupScreen = ({ onStartTest, onClearData }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã số Thí sinh / Lớp và Họ tên.');
+                    return;
+                }
+                setError('');
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+                        <h2 className="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+                        <h1 className="text-3xl font-bold text-center text-[#003366] mb-4">IELTS READING MOCK TEST 1</h1>
+                        <p className="text-center text-xs text-red-600 mb-6 font-semibold">
+                            ⚠️ Bài thi tự động chạy Fullscreen, chống bôi đen & chuột phải. Chuyển tab hoặc thoát Toàn màn hình sẽ bị ghi nhận vi phạm!
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="candidate-code" className="block text-sm font-medium text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    id="candidate-code"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" 
+                                    placeholder="Ví dụ: 11A11 / APL0101"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="full-name" className="block text-sm font-medium text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    id="full-name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg"
+                        >
+                            BẮT ĐẦU BÀI THI (FULLSCREEN)
+                        </button>
+                        <button 
+                            className="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block"
+                            onClick={onClearData}
+                        >
+                            Clear Old Data & Restart
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const EndTestModal = ({ isOpen, onClose, onConfirm }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+                        <h3 className="text-2xl font-bold text-[#003366] mb-4">Xác nhận Nộp Bài</h3>
+                        <p className="mb-6 text-gray-700">Bạn có chắc chắn muốn kết thúc bài thi và nộp bài để gửi kết quả lên hệ thống?</p>
+                        <div className="flex justify-end space-x-4">
+                            <button className="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onClick={onClose}>Hủy</button>
+                            <button className="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onClick={onConfirm}>Nộp bài & Xem kết quả</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ReportModal = ({ isOpen, onClose, candidate, isSubmitting, submitStatus }) => {
+            if (!isOpen) return null;
+
+            const answers = candidate.answers.reading || {};
+            const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+            let scoreCount = 0;
+            answerKeys.forEach(qId => {
+                if (checkAnswer(qId, answers[qId])) scoreCount++;
+            });
+            const bandScore = calculateIELTSBand(scoreCount);
+
+            return (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                        <h3 className="text-2xl font-bold text-[#003366] mb-2 border-b pb-2">KẾT QUẢ BÀI THI IELTS READING</h3>
+                        
+                        {isSubmitting && (
+                            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded mb-4 text-center font-medium animate-pulse">
+                                🔄 Đang gửi kết quả thi lên hệ thống Google Sheets...
+                            </div>
+                        )}
+                        {submitStatus && (
+                            <div className={`px-4 py-2 rounded mb-4 text-center font-semibold ${
+                                submitStatus.includes("Thành công") ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"
+                            }`}>
+                                {submitStatus}
+                            </div>
+                        )}
+
+                        <div className="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                            <div className="p-4 bg-gray-50 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH / LỚP</span>
+                                    <span className="font-bold text-base text-[#003366]">{candidate.code}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">HỌ VÀ TÊN</span>
+                                    <span className="font-bold text-base text-[#003366]">{candidate.name}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                    <span className="font-bold text-xl text-green-600">{scoreCount} / 40</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">IELTS BAND SCORE</span>
+                                    <span className="font-extrabold text-2xl text-[#f97316]">{bandScore}</span>
+                                </div>
+                            </div>
+                            
+                            <h4 className="text-xl font-bold text-[#003366] mt-4 mb-2">CHI TIẾT ĐÁP ÁN</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-white ielts-border rounded-lg">
+                                {answerKeys.map(qId => {
+                                    const answerValue = answers[qId] || '';
+                                    const isCorrect = checkAnswer(qId, answerValue);
+                                    const displayAnswer = Array.isArray(answerValue) ? answerValue.join(', ') : answerValue;
+                                    const displayCorrect = Array.isArray(READING_CORRECT_ANSWERS[qId]) 
+                                        ? READING_CORRECT_ANSWERS[qId].join(', ') 
+                                        : READING_CORRECT_ANSWERS[qId];
+                                    return (
+                                        <div key={qId} className={`p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                            <p className="font-bold text-xs uppercase text-gray-600">{qId.replace('r_q', 'Câu ')}</p>
+                                            <p className="text-xs"><strong>Đã chọn:</strong> {displayAnswer || '-'}</p>
+                                            <p className="text-xs"><strong>Đáp án:</strong> {displayCorrect}</p>
+                                            <p className={`font-semibold text-xs mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                                {isCorrect ? '✓ Đúng' : '✗ Sai'}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                            <button className="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onClick={onClose}>Đóng & Hoàn Thành</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ReadingContent = ({ answers, onSaveAnswer }) => {
+            return (
+                <div className="skill-content" id="content-reading">
+                    <h2 className="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">READING SECTION</h2>
+                    <div className="reading-grid">
+                        {/* Left Column: Passages */}
+                        <div className="reading-passage-column bg-gray-50 ielts-border custom-scrollbar">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-gray-50 z-10">READING PASSAGE CONTENT</h3>
+                            
+                            {/* PASSAGE 1 */}
+                            <div id="reading-passage-1" className="mb-8">
+                                <h4 className="text-lg font-semibold mb-2 text-[#f97316]">READING PASSAGE 1: WHEN MAPS WERE MADE FOR THE PUBLIC</h4>
+                                <p className="mb-4 text-sm font-medium italic">You should spend about 20 minutes on Questions 1-13, which are based on Reading Passage 1 below.</p>
+                                <div className="space-y-4 text-sm leading-relaxed">
+                                    <p>Since the art of map-making began, maps have largely been made for explorers, academics and rulers. It wasn't until the 19th century that the general public began to demand maps for themselves. More than anything else, it was the appeal of travel to ordinary people that encouraged publishing companies to begin creating and printing more maps than ever before, in order to meet the demand of their new market.</p>
+                                    <p>In the years after the American Civil War (1861-65), the rapidly growing US railroad system had so many independent rail companies, schedules and destinations that maps were critical for planning a person's journey. One publisher, Rand McNally, made a fortune from producing railways maps for different parts of the USA, combined with a timetable and many descriptions of scenery and towns in the same booklet.</p>
+                                    <p>When safety improvements in the 1880s helped to make the bicycle popular, cycling maps quickly followed. Trying to provide something special, publisher George Philip produced attractive-looking maps that would remain in good condition even if they were exposed to water. In 1896, one of the finest cycling maps was produced, in seven parts: George Blum's Cyclers' Guide and Road Book of California. Each cycle road was highlighted in red and labelled with not only the type of surface riders could expect to find, but also an indication of how steep it was.</p>
+                                    <p>The advent of the car brought a need for road maps and travel information. In 1900, André Michelin published a guide about France, with maps that showed the location of different kinds of reasonably priced accommodation and also car assistance for any mechanical problems. However, it was due primarily to its recommendations regarding which was the best restaurant to go to that the guide quickly became something that a huge number of tourists and travellers bought and relied on.</p>
+                                    <p>Nowhere was the need for road maps greater than in the United States. In 1902, the American Automobile Association was founded in Chicago, and three years later it published its first road maps for long-distance drivers. In 1917, Rand McNally began to publish Auto Trails Maps, a series of maps that each focussed in detail on a different region that people might hope to visit within North America. The same publisher also helped to establish the US's system of identifying its roads. Previously roads had names, following the European tradition, but now, thanks in part to Rand McNally, they were allocated numbers instead. Also in the early twentieth century, publisher H. M. Gousha Company developed the Touraide, a set of spiral-bound maps with places to stay and eat and points of interest, ordered in advance and assembled individually for the traveler.</p>
+                                    <p>The oil companies did not take long to realize the profit to be made from Americans exploring the open road, so service stations soon began to distribute free maps to encourage this. Free road maps became part of the fabric of American life, and it has been estimated that more than ten billion were distributed before the 1970s. It was then that the rising costs of oil and subsequent falling consumption led to the oil companies investigating where savings could be made. The maps were one of the first things to go.</p>
+                                    <p>Another map product was the aeronautical chart for pilots. The first examples were produced in France and England around 1911. Techniques progressed greatly during World War 1, and during the 1920s there was continual development of maps for air navigation.</p>
+                                    <p>New maps also became available for those who only wanted to cross town by train. Some of the early maps of the London Underground were based on the city above ground; therefore, although they were accurate in terms of distance and direction, the maps were confusing because the stations in central London were so crowded together. In 1931, Harry Beck produced a map that looked rather like an electrical circuit, with straight lines and symbols. It included only one feature above ground: the river Thames. The stations were also spaced relatively equally, making the map much easier to read. Although Beck's map was initially rejected as too radical, it was approved in 1933. He continued to refine it for the next 25 years.</p>
+                                    <p>Shortly after Beck's contribution to the mapping of subterranean London, an equally significant achievement was performed above ground. Phyllis Pearsall was a painter who, in 1935, became lost on the way to a party in London, due to the lack of a good map. This inspired her to plot all of London, and the next year she traced and catalogued its 23,000 streets. With map-maker James Duncan, Pearsall then produced an atlas and a comprehensive street index. Unable to interest any of the major publishers, the two founded their own company, the Geographer's Map Company Ltd, and produced what was then called the A-Z Atlas and Guide to London. The company still exists and now publishes more than 300 different A-Z maps and atlases.</p>
+                                </div>
+                            </div>
+
+                            {/* PASSAGE 2 */}
+                            <div id="reading-passage-2" className="mb-8">
+                                <h4 className="text-lg font-semibold mb-2 text-[#f97316]">READING PASSAGE 2: PRESERVING ANTARCTIC HISTORY</h4>
+                                <p className="mb-4 text-sm font-medium italic">You should spend about 20 minutes on Questions 14-26, which are based on Reading Passage 2 below.</p>
+                                <div className="space-y-4 text-sm leading-relaxed">
+                                    <p><strong>A.</strong> Few people conjuring up the 'most comfortable dwelling place imaginable' are likely to picture a wooden shelter on an island off the coldest continent on Earth. But that's how Antarctic explorer Robert Falcon Scott described the hut at Cape Evans on Ross Island that was the base for his 1910-13 expedition. The hut is nestled below a small hill on a long stretch of black sand. In 2011, it looked like a building site, but now, seals lie on the ice in front of the newly restored structure and sun reflects off the cliffs of the nearby glacier.</p>
+                                    <p><strong>B.</strong> The New Zealand Antarctic Heritage Trust (NZAHT) and its team of conservation workers recently announced the completion of 10 years of intensive work to save three historic buildings on Ross Island. As well as the hut at Cape Evans, it has worked on the Discovery Hut from Scott's 1901-04 expedition at Hut Point, and the hut at Cape Royds, built for Ernest Shackleton's 1907-09 expedition. When work began, many of the artefacts were temporarily removed while carpenters from the team of conservation workers repaired the walls, floors and roof. In Scott's 'zone of command' was the table where team member Edward Wilson made his enduring biological and botanical illustrations. In a dark corner nearby, Edward Atkinson had once incubated his moulds and parasites. Of particular interest is the small workbench and array of test tubes, sample jars and Bunsen burner stands of biologist Edward Nelson, lit by sunshine through a dusty window. This was where the young scientist preserved marine specimens as part of his search for new species and an understanding of the Antarctic food chain.</p>
+                                    <p><strong>C.</strong> The NZAHT executive director Nigel Watson describes the three restored huts as 'fantastic remnants of humans' first contact with the continent'. The idea for the birth of the conservation project, he says, 'was the fact that we were in great danger of losing them'. When the on-site work began in 2004, snow and ice were building up around, under and sometimes inside the huts, damaging the structures and threatening their contents. 'We now have three buildings that are structurally sound and watertight with a very different feel they are drier and lighter and the humidity is reduced. It's a much better environment for the collection.'</p>
+                                    <p><strong>D.</strong> As well as heritage carpenters, the NZAHT team on Ross Island has included experts in textile, paper and metal conservation: in total, 62 experts from 11 countries have visited Antarctica to work on the project, often spending a whole summer on-site, sleeping in tents and popping 25km back to Scott Base for the occasional shower. 'It became known as the most exciting conservation project in the world,' says Watson, 'so it attracted top heritage conservation talent.'</p>
+                                    <p><strong>E.</strong> Some of the most exciting discoveries were three intact crates of 'Mackinlay's Rare Old Highland Malt Whisky' found encased in ice beneath Shackleton's hut, a paper notebook that belonged to surgeon, zoologist and photographer George Murray Levick found buried in dirt at Cape Evans and a small box of 22 cellulose nitrate negatives waiting to be developed into photographs found in Herbert Ponting's darkroom. But most of the 18,202 items catalogued and conserved are more mundane: food, tools, clothing and other personal items that were not precious enough to be taken home on the return voyages.</p>
+                                    <p><strong>F.</strong> The NZAHT team's conservation treatments involved thorough cleaning, followed by chemical treatment to help slow, or even reverse, the deterioration. Metal items would go through corrosion removal, followed by a chemical stabilisation treatment, then application of an oxygen and moisture barrier to prevent further corrosion. Treatment of paper items often involved washing to remove harmful acids and salts and to help reinforce the fibres so that in some cases the paper was even stronger than before.</p>
+                                    <p><strong>G.</strong> As a result of the project, the NZAHT has become the world leader in cold-climate heritage conservation and its members have been interviewed for numerous television documentaries and radio reports. The Ross Island huts are 'the jewels in the crown', says Watson, but there are other historic buildings needing attention. With logistics support from Antarctica New Zealand, programme managers Al Fastier and Lizzie Meek will be part of a small team heading to Cape Adare, an exposed site more than 700 km north of Scott Base. The two Cape Adare huts, remnants of an 1898-1900 British expedition, 'are not only the first buildings on the continent', says Watson, but also 'the only example of humanity's first buildings on any continent on Earth.'</p>
+                                    <p><strong>H.</strong> The three-year restoration effort will involve construction repairs and the removal, conservation and return of about 1100 objects. Compared with the hut sites on Ross Island, which are relatively sheltered, Cape Adare is 'a very remote and challenging place to work in,' says Watson. It's set among world's biggest colony of Adélie penguins on an exposed spit of land, and it is important that they don't interrupt the functioning of the colony in any way while they are there. Lizzie Meek looks forward to the challenge. 'But I'm also looking forward to going back to the Ross Island huts and seeing them with fresh eyes. After so many years of working on them, to be able to step inside and look around to see what we have accomplished will be amazing.'</p>
+                                    <p><strong>I.</strong> If you can find your way to Antarctica, you'll need a permit to visit any of these huts, which are each in an Antarctic Specially Protected Area. But there's an easier way to see them without making the long journey: the trust has partnered with Google to offer Street View walkthroughs of each of the dwellings, available via Google Earth or through the NZAHT's website.</p>
+                                </div>
+                            </div>
+
+                            {/* PASSAGE 3 */}
+                            <div id="reading-passage-3" className="mb-8">
+                                <h4 className="text-lg font-semibold mb-2 text-[#f97316]">READING PASSAGE 3: FLOWER POWER</h4>
+                                <p className="mb-4 text-sm font-medium italic">You should spend 20 minutes on Questions 27-40, which are based on Reading Passage 3 below.</p>
+                                <div className="space-y-4 text-sm leading-relaxed">
+                                    <p><strong>Paragraph A:</strong> Why do we give people flowers? To offer condolence to those who are grieving. To celebrate. To woo. To ask for forgiveness. We all know intuitively that there is something psychologically powerful about giving flowers; in fact, few objects provoke such a universal emotional response. In the US alone, the flower industry is now worth about $5bn a year which suggests that, at the very least, they service a compelling human need.</p>
+                                    <p><strong>Paragraph B:</strong> Recent studies at the Department of Psychology at Rutgers State University of New Jersey investigated claims that flowers are unique among living organisms in their ability to induce profound changes in our emotional state. As the first part of their research, the Rutgers team visited 150 women in their homes. Each was presented with a variety of gifts such as flowers, fruit or sweets. The women were unaware that the study was about the effect of the flowers on their emotions. They were told that it was a study about their daily moods, and that they would receive a gift in return for taking part. Following the presentation of the gift, those receiving flowers were assessed as displaying a much more positive mood than those who got other gifts, and this effect lasted for several days. After receiving flowers, they were also more willing to answer questions concerning their social circle and intimate conversations with friends and family. The results suggest that flowers influence our secondary socio-emotional behaviours, as well as having a strong effect on our immediate emotional expression.</p>
+                                    <p><strong>Paragraph C:</strong> In the second study, the psychologists observed participants being handed single flowers, or alternative gifts, in a constrained and stressful situation – inside an elevator. Contrary to predictions regarding gender differences, both men and women presented with flowers were more likely to smile, to stand closer and to initiate conversation. Several subjects who were given the alternative gift then learnt that flowers were also being handed out, and returned to the elevator and demanded a flower. The scientists used elevators for this study precisely because the most typical behaviour in sparsely occupied elevators is for people to retreat to opposite corners. The subjects who received flowers, however, closed up that space to a considerable extent indicating that the flowers not only induced a strong positive mood, but brought a significant affiliation among people who had never previously met.</p>
+                                    <p><strong>Paragraph D:</strong> The third study involved regularly sending flowers to a selected sample of men and women. The researchers found not only a profound elevation of mood, but also reliable improvements in other measures of cognitive function, like memory. In this series of experiments, some participants produced such extraordinary emotional displays that the psychologists were totally unprepared for them. Subjects gave spontaneous hugs and kisses to the people who delivered the flowers, and sent invitations to the psychologists to come to their homes for refreshments.</p>
+                                    <p><strong>Paragraph E:</strong> Various evolutionary hypotheses attempt to explain the remarkably powerful psychological effect of flowers. One is that our aesthetic preferences for fertile locations and growing things stem from prehistory, when these clues in our environment could mean the difference between starvation and survival. We may have become hardwired to respond positively to flowers because for early man, finding them in a particular location predicted future food supplies and possibly a better place to rear children. Yet the flaw in this argument is that the showy flowers which humans seem to find most visually attractive are generally found on those plants which yield no edible products.</p>
+                                    <p><strong>Paragraph F:</strong> The Rutgers psychologists findings show that the various physical attributes of flowers combine to directly affect our emotions through multi-channel interactions. We have evolved preferences for the particular colours, textures, patterned symmetries and specific floral odours which influence our moods. Indeed, previous research has established that popular perfumes, which often have a floral 'top-note', will actually reduce depression. The origins of these inclinations may well be as the evolutionary theories suggest: the patterned symmetries of flowers can be detected easily as a recognisable signal within a wide variety of visual arrays, and a response to certain colour tones is important in finding ripe fruit against a leafy background. But, claim the Rutgers team, these preferences have long been separated from their primary evolutionary use, and become rewarding to us more generally. Thus plants with preferred colours, shapes and odours despite having no other products – would therefore be protected and dispersed.</p>
+                                    <p><strong>Paragraph G:</strong> The Rutgers study suggests that flowers may have actually evolved to exploit their peculiar impact on humans. The team's theory proposes a plant-human co-evolution, or even domestication, based on the intense emotional rewards that flowers provide. The idea that flowering plants, with no known food or other basic survival value to man, have co-evolved with us by exploiting an emotional niche instead, is very much like the scenario presented for the evolution of dogs. Flowers may be the plant equivalent of 'companion animals'. If this is true, then there is a very real sense in which, when you next give flowers, they are using you just as much as you are using them.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Questions */}
+                        <div className="reading-question-column bg-white ielts-border custom-scrollbar">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2 sticky top-0 bg-white z-10">READING QUESTIONS</h3>
+                            
+                            {/* PASSAGE 1 QUESTIONS */}
+                            <div className="mb-8">
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 1–6: Complete the notes below</h4>
+                                <p className="mb-4 text-sm font-medium">Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.</p>
+                                <div className="space-y-3 border p-4 rounded-lg bg-gray-50 text-sm">
+                                    <h5 className="font-bold text-[#003366] mb-2">The development of maps from the 19th century onwards</h5>
+                                    <p>• A growing interest in travel led to the increased production of maps in the 19th century.</p>
+                                    <p>• After 1865: Rand McNally made a lot of money by putting a map and a 1 <AnswerInput type="text" id="r_q1" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> in one publication.</p>
+                                    <p>• After 1880: George Philip produced maps that could not be damaged by water.</p>
+                                    <p>George Blum's cycling map showed:</p>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        <li>The kind of 2 <AnswerInput type="text" id="r_q2" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> the paths had.</li>
+                                        <li>How steep the paths might be.</li>
+                                    </ul>
+                                    <p>• 1900 onwards: André Michelin's guide provided information about:</p>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        <li>Finding economical 3 <AnswerInput type="text" id="r_q3" answers={answers} onSaveAnswer={onSaveAnswer} className="w-32 mx-1" /> .</li>
+                                        <li>What to do if your car broke down.</li>
+                                        <li>The Michelin guide became popular mainly because it helped people select a 4 <AnswerInput type="text" id="r_q4" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> .</li>
+                                    </ul>
+                                    <p>• 1917 onwards (Rand McNally):</p>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        <li>The company's Auto Trails Maps helped people explore roads through a particular 5 <AnswerInput type="text" id="r_q5" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> of the USA.</li>
+                                        <li>The company was also responsible for giving 6 <AnswerInput type="text" id="r_q6" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> to American roads.</li>
+                                    </ul>
+                                </div>
+
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 7–13: TRUE/FALSE/NOT GIVEN</h4>
+                                <p className="mb-4 text-sm font-medium">Do the following statements agree with the information given in Reading Passage 1?</p>
+                                <div className="space-y-3">
+                                    {[
+                                        "The free road maps provided by oil companies were the most detailed maps available to drivers in the USA.",
+                                        "Pilots were the first people to make use of aeronautical maps.",
+                                        "Beck's London Underground map was immediately well received by the authorities.",
+                                        "Beck stopped working on the design of his map in 1933.",
+                                        "Pearsall created a new map of London because she got lost on her way to an event.",
+                                        "Pearsall needed the help of a professional cartographer to complete her map.",
+                                        "Pearsall's map was widely praised by London's major publishing companies."
+                                    ].map((text, i) => (
+                                        <div key={i} className="border p-3 rounded-lg bg-gray-50">
+                                            <p className="font-medium mb-2">{i + 7} {text}</p>
+                                            <div className="space-x-4">
+                                                {["TRUE", "FALSE", "NOT GIVEN"].map(opt => (
+                                                    <label key={opt} className="inline-flex items-center cursor-pointer mr-3">
+                                                        <AnswerInput type="radio" name={`r_q${i + 7}`} value={opt} answers={answers} onSaveAnswer={onSaveAnswer} className="mr-1" />
+                                                        {opt}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* PASSAGE 2 QUESTIONS */}
+                            <div className="mb-8">
+                                <h4 className="text-lg font-semibold mb-2 text-[#003366]">Questions 14–19: Matching Paragraphs</h4>
+                                <p className="mb-4 text-sm font-medium">Which paragraph contains the following information? Write A–I.</p>
+                                <div className="space-y-3 border p-4 rounded-lg bg-gray-50 text-sm">
+                                    {[
+                                        "a reason the early explorers left some objects behind",
+                                        "an explanation of how to see the huts without travelling to Antarctica",
+                                        "reference to the fact that Robert Falcon Scott enjoyed the time he spent living in the hut",
+                                        "reference to how the Ross Island project has received attention from the media",
+                                        "the reason the trust decided to begin conservation work at Ross Island",
+                                        "a description of the process for preserving paper"
+                                    ].map((text, i) => (
+                                        <div key={i} className="flex items-center space-x-2">
+                                            <span className="font-semibold w-8">{14 + i}</span>
+                                            <span className="flex-1">{text}</span>
+                                            <AnswerInput type="text" id={`r_q${14 + i}`} answers={answers} onSaveAnswer={onSaveAnswer} className="w-16" placeholder="A-I" />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 20–21</h4>
+                                <p className="mb-2 text-sm font-medium">Which TWO research activities were carried out by Scott's expedition team?</p>
+                                <div className="border p-4 rounded-lg bg-gray-50 space-y-2 text-sm">
+                                    {[
+                                        {val: 'A', text: "collecting samples of sea life"},
+                                        {val: 'B', text: "monitoring penguin behaviour"},
+                                        {val: 'C', text: "studying the effects of cold on the human body"},
+                                        {val: 'D', text: "keeping a record of Antarctic weather patterns"},
+                                        {val: 'E', text: "drawing pictures of plants and animals"}
+                                    ].map((opt) => (
+                                        <label key={opt.val} className="flex items-start cursor-pointer">
+                                            <input 
+                                                type="checkbox"
+                                                className="mt-1 mr-2"
+                                                checked={(answers['r_q20'] || []).includes(opt.val) || (answers['r_q21'] || []).includes(opt.val)}
+                                                onChange={(e) => {
+                                                    let current = Array.isArray(answers['r_q20']) ? [...answers['r_q20']] : (answers['r_q20'] ? [answers['r_q20']] : []);
+                                                    if (e.target.checked) {
+                                                        if (current.length < 2) { current.push(opt.val); current.sort(); }
+                                                    } else {
+                                                        current = current.filter(a => a !== opt.val);
+                                                    }
+                                                    onSaveAnswer('r_q20', current);
+                                                    onSaveAnswer('r_q21', current);
+                                                }}
+                                            />
+                                            <span className="font-semibold mr-2">{opt.val}</span>
+                                            <span>{opt.text}</span>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 22–23</h4>
+                                <p className="mb-2 text-sm font-medium">Which TWO statements are true about the conservation workers on Ross Island?</p>
+                                <div className="border p-4 rounded-lg bg-gray-50 space-y-2 text-sm">
+                                    {[
+                                        {val: 'A', text: "They lived in Scott's huts while carrying out the work."},
+                                        {val: 'B', text: "They were in Antarctica for months at a time."},
+                                        {val: 'C', text: "They had previously worked together in New Zealand."},
+                                        {val: 'D', text: "They restored the contents as well as the buildings themselves."},
+                                        {val: 'E', text: "They had no access to showers at all."}
+                                    ].map((opt) => (
+                                        <label key={opt.val} className="flex items-start cursor-pointer">
+                                            <input 
+                                                type="checkbox"
+                                                className="mt-1 mr-2"
+                                                checked={(answers['r_q22'] || []).includes(opt.val) || (answers['r_q23'] || []).includes(opt.val)}
+                                                onChange={(e) => {
+                                                    let current = Array.isArray(answers['r_q22']) ? [...answers['r_q22']] : (answers['r_q22'] ? [answers['r_q22']] : []);
+                                                    if (e.target.checked) {
+                                                        if (current.length < 2) { current.push(opt.val); current.sort(); }
+                                                    } else {
+                                                        current = current.filter(a => a !== opt.val);
+                                                    }
+                                                    onSaveAnswer('r_q22', current);
+                                                    onSaveAnswer('r_q23', current);
+                                                }}
+                                            />
+                                            <span className="font-semibold mr-2">{opt.val}</span>
+                                            <span>{opt.text}</span>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 24–26: Complete the summary</h4>
+                                <p className="mb-4 text-sm font-medium">Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.</p>
+                                <div className="p-4 border rounded-lg bg-gray-50 text-sm leading-loose">
+                                    <h5 className="font-bold text-[#003366] text-center mb-2">Cape Adare</h5>
+                                    <p>
+                                        Cape Adare is located several hundred kilometres north of Scott's hut. The huts on Cape Adare are not as 24 <AnswerInput type="text" id="r_q24" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> as those on Ross Island and the workers have to be careful not to disturb the group of 25 <AnswerInput type="text" id="r_q25" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> living nearby. Visitors to Antarctica must have a 26 <AnswerInput type="text" id="r_q26" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> to see the restored huts.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* PASSAGE 3 QUESTIONS */}
+                            <div className="mb-8">
+                                <h4 className="text-lg font-semibold mb-2 text-[#003366]">Questions 27–33: Matching Headings</h4>
+                                <p className="mb-2 text-sm font-medium">Choose the correct heading for each paragraph from the list below (i–viii).</p>
+                                <div className="bg-gray-100 p-3 rounded text-sm space-y-1 mb-4">
+                                    <p><strong>i.</strong> A negative reaction to receiving flowers</p>
+                                    <p><strong>ii.</strong> Some surprisingly strong responses to flowers</p>
+                                    <p><strong>iii.</strong> A mutually beneficial relationship?</p>
+                                    <p><strong>iv.</strong> Becoming more open about personal matters</p>
+                                    <p><strong>v.</strong> Some common social functions of flowers</p>
+                                    <p><strong>vi.</strong> Sensory appeal versus practical purpose of flowers</p>
+                                    <p><strong>vii.</strong> Bridging the gap between strangers in an enclosed space</p>
+                                    <p><strong>viii.</strong> An imperfect theory</p>
+                                </div>
+                                <div className="space-y-3 border p-4 rounded-lg bg-gray-50 text-sm mb-6">
+                                    {[
+                                        {num: 27, p: "Paragraph A"},
+                                        {num: 28, p: "Paragraph B"},
+                                        {num: 29, p: "Paragraph C"},
+                                        {num: 30, p: "Paragraph D"},
+                                        {num: 31, p: "Paragraph E"},
+                                        {num: 32, p: "Paragraph F"},
+                                        {num: 33, p: "Paragraph G"}
+                                    ].map(item => (
+                                        <div key={item.num} className="flex items-center space-x-2">
+                                            <span className="font-semibold w-8">{item.num}</span>
+                                            <span className="flex-1">{item.p}</span>
+                                            <AnswerInput type="text" id={`r_q${item.num}`} answers={answers} onSaveAnswer={onSaveAnswer} className="w-20" placeholder="i-viii" />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 34–37: Classify statements</h4>
+                                <p className="mb-2 text-sm font-medium">Classify the statements as referring to: A (First study), B (Second study), C (Third study).</p>
+                                <div className="space-y-3 border p-4 rounded-lg bg-gray-50 text-sm mb-6">
+                                    {[
+                                        "The study focused on participants' short-term reaction to receiving flowers.",
+                                        "Participants were deliberately misled as to the aim of the study.",
+                                        "Receiving flowers had a notable effect on participants' mental capacities.",
+                                        "Male and female responses were more uniform than expected."
+                                    ].map((text, i) => (
+                                        <div key={i} className="flex items-center space-x-2">
+                                            <span className="font-semibold w-8">{34 + i}</span>
+                                            <span className="flex-1">{text}</span>
+                                            <AnswerInput type="text" id={`r_q${34 + i}`} answers={answers} onSaveAnswer={onSaveAnswer} className="w-16" placeholder="A, B, C" />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <h4 className="text-lg font-semibold mt-6 mb-2 text-[#003366]">Questions 38–40: Complete the summary of Paragraph E</h4>
+                                <p className="mb-4 text-sm font-medium">Choose <strong>ONE WORD ONLY</strong> from paragraph E for each answer.</p>
+                                <div className="p-4 border rounded-lg bg-gray-50 text-sm leading-loose">
+                                    <h5 className="font-bold text-[#003366] text-center mb-2">A possible explanation for the appeal of flowers</h5>
+                                    <p>
+                                        It has been suggested that our intense response to flowers originates in prehistoric times. The presence of flowers might indicate a potential source of 38 <AnswerInput type="text" id="r_q38" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> in a particular location, and primitive humans would search for such signs when looking for a suitable site to raise their 39 <AnswerInput type="text" id="r_q39" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> . The interpretation of these signs was essential for the survival of our ancestors. However, the problem with this idea is that the plants producing the most attractive flowers do not usually have fruit which is 40 <AnswerInput type="text" id="r_q40" answers={answers} onSaveAnswer={onSaveAnswer} className="w-28 mx-1" /> .
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TestInterface = ({ candidate, onSwitchSkill, onSaveAnswer, onToggleTimer, onEndTest, warningCount }) => {
+            return (
+                <div className="app-container">
+                    <Header 
+                        candidate={candidate}
+                        onToggleTimer={onToggleTimer}
+                        onEndTest={onEndTest}
+                        warningCount={warningCount}
+                    />
+                    <SkillTabs 
+                        currentSkill={candidate.currentSkill}
+                        onSwitchSkill={onSwitchSkill}
+                    />
+                    <main className="main-content">
+                        <ReadingContent 
+                            answers={candidate.answers[candidate.currentSkill] || {}}
+                            onSaveAnswer={(qId, value) => onSaveAnswer(candidate.currentSkill, qId, value)}
+                        />
+                    </main>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState(INITIAL_CANDIDATE_STATE);
+            const [isEndModalOpen, setEndModalOpen] = useState(false);
+            const [isReportModalOpen, setReportModalOpen] = useState(false);
+            const [warningCount, setWarningCount] = useState(0);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+            
+            const timerInterval = useRef(null);
+
+            // Chống chuột phải & Bôi đen văn bản
+            useEffect(() => {
+                const handleContextMenu = (e) => e.preventDefault();
+                const handleSelectStart = (e) => e.preventDefault();
+                const handleCopy = (e) => e.preventDefault();
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('selectstart', handleSelectStart);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('selectstart', handleSelectStart);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            // Cảnh báo khi rời tab hoặc thoát Fullscreen
+            useEffect(() => {
+                if (appState !== 'testing') return;
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn vừa rời khỏi màn hình bài thi! Vui lòng tập trung làm bài.`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn đã thoát khỏi chế độ Toàn màn hình (Fullscreen)!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState]);
+
+            const pauseTimer = useCallback(() => {
+                if (timerInterval.current) {
+                    clearInterval(timerInterval.current);
+                    timerInterval.current = null;
+                }
+                setCandidate(prev => ({ ...prev, timerRunning: false }));
+            }, []);
+
+            const runTimer = useCallback(() => {
+                if (timerInterval.current) return;
+                setCandidate(prev => ({ ...prev, timerRunning: true }));
+                timerInterval.current = window.setInterval(() => {
+                    setCandidate(prev => {
+                        if (prev.times[prev.currentSkill] > 0) {
+                            return {
+                                ...prev,
+                                times: {
+                                    ...prev.times,
+                                    [prev.currentSkill]: prev.times[prev.currentSkill] - 1,
+                                },
+                            };
+                        }
+                        return prev;
+                    });
+                }, 1000);
+            }, []);
+
+            // Gửi dữ liệu kết quả lên Google Sheets (Đã thêm warningCount)
+const sendResultToGoogleSheets = useCallback(async (currentCandidate, warnings) => {
+    setIsSubmitting(true);
+    setSubmitStatus('');
+    
+    const answers = currentCandidate.answers.reading || {};
+    const answerKeys = Object.keys(READING_CORRECT_ANSWERS);
+    let scoreCount = 0;
+    answerKeys.forEach(qId => {
+        if (checkAnswer(qId, answers[qId])) scoreCount++;
+    });
+    const bandScore = calculateIELTSBand(scoreCount);
+
+    const payload = {
+        sheetName: "IELTS TESTS",
+        testType: "IELTS TESTS - READING TEST 1",
+        candidateCode: currentCandidate.code,
+        candidateName: currentCandidate.name,
+        correctCount: `${scoreCount}/40`,
+        score: bandScore,
+        warningCount: warnings // Gửi số lần vi phạm sang Cột G
+    };
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        setSubmitStatus('✅ Đã gửi kết quả thành công lên hệ thống!');
+    } catch (err) {
+        console.error("Lỗi khi gửi kết quả:", err);
+        setSubmitStatus('❌ Không thể tự động gửi kết quả. Vui lòng báo cho giáo viên.');
+    } finally {
+        setIsSubmitting(false);
+    }
+}, []);
+
+const showReportModal = useCallback(() => {
+    pauseTimer();
+    setEndModalOpen(false);
+    setReportModalOpen(true);
+    sendResultToGoogleSheets(candidate, warningCount);
+}, [pauseTimer, sendResultToGoogleSheets, candidate, warningCount]);
+
+            const handleSwitchSkill = useCallback((newSkill, checkTime = true) => {
+                pauseTimer();
+                setCandidate(prev => ({ ...prev, currentSkill: newSkill }));
+            }, [pauseTimer]);
+
+            const updateTimerDisplay = useCallback(() => {
+                const time = candidate.times[candidate.currentSkill];
+                if (time <= 0) {
+                    pauseTimer();
+                    showReportModal();
+                }
+            }, [candidate.currentSkill, candidate.times, pauseTimer, showReportModal]);
+
+            useEffect(() => {
+                try {
+                    const savedData = localStorage.getItem('ieltsMockTestState_Cam21_Test1');
+                    if (savedData) {
+                        const loadedCandidate = JSON.parse(savedData);
+                        setCandidate(loadedCandidate);
+                        if (loadedCandidate.code && loadedCandidate.name) {
+                            setAppState('testing');
+                            if (loadedCandidate.timerRunning) {
+                                runTimer();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    localStorage.removeItem('ieltsMockTestState_Cam21_Test1');
+                }
+            }, []);
+
+            useEffect(() => {
+                if (appState === 'testing') {
+                    try {
+                        localStorage.setItem('ieltsMockTestState_Cam21_Test1', JSON.stringify(candidate));
+                    } catch (error) {
+                        console.error("Failed to save state:", error);
+                    }
+                }
+            }, [candidate, appState]);
+
+            useEffect(() => {
+                updateTimerDisplay();
+            }, [candidate.times, updateTimerDisplay]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate(prev => ({ ...prev, code, name }));
+                setAppState('testing');
+                runTimer();
+                
+                // Tự động bật Fullscreen
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        console.warn(`Fullscreen error: ${err.message}`);
+                    });
+                }
+            };
+
+            const handleSaveAnswer = (skill, qId, value) => {
+                setCandidate(prev => ({
+                    ...prev,
+                    answers: {
+                        ...prev.answers,
+                        [skill]: {
+                            ...prev.answers[skill],
+                            [qId]: value,
+                        },
+                    },
+                }));
+            };
+
+            const handleToggleTimer = () => {
+                if (candidate.timerRunning) {
+                    pauseTimer();
+                } else {
+                    runTimer();
+                }
+            };
+
+            const showEndTestModal = () => {
+                pauseTimer();
+                setEndModalOpen(true);
+            };
+
+            const handleReset = () => {
+                pauseTimer();
+                localStorage.removeItem('ieltsMockTestState_Cam21_Test1');
+                setCandidate(INITIAL_CANDIDATE_STATE);
+                setAppState('setup');
+                setReportModalOpen(false);
+                window.location.reload();
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} onClearData={handleReset} />;
+            }
+
+            return (
+                <>
+                    <TestInterface
+                        candidate={candidate}
+                        onSwitchSkill={handleSwitchSkill}
+                        onSaveAnswer={handleSaveAnswer}
+                        onToggleTimer={handleToggleTimer}
+                        onEndTest={showEndTestModal}
+                        warningCount={warningCount}
+                    />
+                    <EndTestModal 
+                        isOpen={isEndModalOpen}
+                        onClose={() => setEndModalOpen(false)}
+                        onConfirm={showReportModal}
+                    />
+                    <ReportModal
+                        isOpen={isReportModalOpen}
+                        onClose={handleReset}
+                        candidate={candidate}
+                        isSubmitting={isSubmitting}
+                        submitStatus={submitStatus}
+                    />
+                </>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>
+        );
+    </script>
+</body>
+</html>

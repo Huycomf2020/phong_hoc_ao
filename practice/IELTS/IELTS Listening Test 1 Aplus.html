@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS LISTENING TEST 1</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            overflow-y: hidden;
+            margin: 0;
+            /* Chống bôi đen văn bản */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+        }
+        .header {
+            background-color: #003366;
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 64px;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .skill-tabs {
+            background-color: #e5e7eb;
+            padding: 0 1rem;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #4b5563;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 2px;
+            border: none;
+            background-color: transparent;
+        }
+        .tab-button.active {
+            background-color: white;
+            color: #003366;
+            border-top: 3px solid #f97316;
+        }
+        .skill-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem 1.5rem;
+            background-color: white;
+        }
+        .ielts-border {
+            border: 1px solid #d1d5db;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+    </style>
+    <!-- React & React DOM CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel CDN -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        const SKILL_ORDER = ['listening'];
+        const INITIAL_TIMES = { listening: 35 * 60 }; // Cài đặt Timer 35 Phút
+
+        // Đáp án chuẩn từ PDF Answer Key
+        const LISTENING_CORRECT_ANSWERS = {
+            'l_q1': ['central'],
+            'l_q2': ['address'],
+            'l_q3': ['pool'],
+            'l_q4': ['reception'],
+            'l_q5': ['view', 'views'],
+            'l_q6': ['price', 'prices'],
+            'l_q7': ['spanish'],
+            'l_q8': ['july'],
+            'l_q9': ['cliffton'],
+            'l_q10': ['903036602'],
+            'l_q11': 'C',
+            'l_q12': 'A',
+            'l_q13': 'C',
+            'l_q14': 'C',
+            'l_q15': 'A',
+            'l_q16': 'C',
+            'l_q17': 'E',
+            'l_q18': 'A',
+            'l_q19': 'G',
+            'l_q20': 'D',
+            'l_q21': 'C',
+            'l_q22': 'A',
+            'l_q23': 'A',
+            'l_q24': 'A',
+            'l_q25': 'E',
+            'l_q26': 'G',
+            'l_q27': 'C',
+            'l_q28': 'A',
+            'l_q29': 'B',
+            'l_q30': 'H',
+            'l_q31': ['temperature'],
+            'l_q32': ['movements'],
+            'l_q33': ['bones'],
+            'l_q34': ['holes'],
+            'l_q35': ['roots'],
+            'l_q36': ['sharks'],
+            'l_q37': ['chicks'],
+            'l_q38': ['feathers'],
+            'l_q39': ['space'],
+            'l_q40': ['diversity']
+        };
+
+        // Bảng quy đổi điểm IELTS Listening chuẩn 40 câu
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 32) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 26) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 18) return "5.5";
+            if (correct >= 16) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const INITIAL_CANDIDATE_STATE = {
+            code: '',
+            name: '',
+            currentSkill: 'listening',
+            answers: { listening: {} },
+            times: { ...INITIAL_TIMES },
+            timerRunning: false,
+        };
+
+        const formatTime = (seconds) => {
+            const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        };
+
+        const checkAnswer = (qId, value) => {
+            const correct = LISTENING_CORRECT_ANSWERS[qId];
+            if (!correct) return null;
+
+            if (Array.isArray(correct)) {
+                const cleanUser = String(value || '').trim().toLowerCase();
+                return correct.some(ans => ans.toLowerCase() === cleanUser);
+            }
+
+            return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+        };
+
+        const getAnsweredCount = (answers = {}) => {
+            let count = 0;
+            Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+                const val = answers[qId];
+                if (Array.isArray(val)) {
+                    if (val.length > 0) count++;
+                } else if (val && String(val).trim() !== '') {
+                    count++;
+                }
+            });
+            return count;
+        };
+
+        // Component Nhập đáp án
+        const AnswerInput = ({ type, id, name, value, className = '', placeholder, answers, onSaveAnswer }) => {
+            const qId = id || name || '';
+
+            const handleChange = (e) => {
+                if (type === 'checkbox') {
+                    const currentValues = (answers[qId] || []);
+                    const { checked, value: checkboxValue } = e.target;
+                    const newValues = checked
+                        ? [...currentValues, checkboxValue]
+                        : currentValues.filter(v => v !== checkboxValue);
+                    onSaveAnswer(qId, newValues);
+                } else {
+                    onSaveAnswer(qId, e.target.value);
+                }
+            };
+
+            const baseClassName = "ielts-border rounded-md p-2 w-full text-sm";
+
+            if (type === 'text') {
+                return (
+                    <input
+                        type="text"
+                        id={id}
+                        value={answers[qId] || ''}
+                        onChange={handleChange}
+                        className={`${baseClassName} ${className}`}
+                        placeholder={placeholder || `Q${id?.split('_q')[1] || ''}`}
+                    />
+                );
+            }
+
+            if (type === 'radio') {
+                return (
+                    <input
+                        type="radio"
+                        name={name}
+                        value={value}
+                        checked={answers[name] === value}
+                        onChange={handleChange}
+                        className={className}
+                    />
+                );
+            }
+
+            return null;
+        };
+
+        // Header Component
+        const Header = ({ candidate, onToggleTimer, onEndTest, warningCount }) => {
+            const remainingTime = candidate.times[candidate.currentSkill];
+            const isTimeLow = remainingTime <= 60 && remainingTime > 0;
+            const currentAnswers = candidate.answers[candidate.currentSkill] || {};
+            const answeredCount = getAnsweredCount(currentAnswers);
+            const totalQuestions = Object.keys(LISTENING_CORRECT_ANSWERS).length;
+            const canEndTest = answeredCount >= totalQuestions;
+
+            const handleEndClick = () => {
+                if (!canEndTest) {
+                    alert("Bạn chưa làm đủ 40 câu hỏi để mở đáp án và nộp bài!");
+                    return;
+                }
+                onEndTest();
+            };
+
+            return (
+                <header className="header flex justify-between items-center px-4 md:px-8">
+                    <div className="flex items-center space-x-4">
+                        <span className="text-xl font-bold">IELTS MOCK TEST 1</span>
+                        <span className="hidden md:block text-sm font-medium opacity-80">{candidate.code} | {candidate.name}</span>
+                        {warningCount > 0 && (
+                            <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                                Cảnh báo vi phạm: {warningCount}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                            <span className="block text-xs opacity-70">TIME REMAINING</span>
+                            <span className={`text-2xl font-extrabold ${isTimeLow ? 'text-red-500' : 'text-[#f97316]'}`}>
+                                {formatTime(remainingTime)}
+                            </span>
+                        </div>
+                        <div className="hidden lg:block text-xs bg-white/10 px-3 py-1.5 rounded text-white font-medium">
+                            Đã làm: <span className="font-bold text-[#f97316]">{answeredCount}</span>/{totalQuestions} câu
+                        </div>
+                        <button 
+                            className="action-button bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-semibold"
+                            onClick={onToggleTimer}
+                            disabled={remainingTime <= 0}
+                        >
+                            {candidate.timerRunning ? 'Pause' : 'Continue'}
+                        </button>
+                        <button 
+                            className={`action-button py-2 px-4 rounded-md font-semibold text-white transition-colors ${
+                                canEndTest 
+                                    ? 'bg-blue-500 hover:bg-blue-600 cursor-pointer' 
+                                    : 'bg-gray-400 cursor-not-allowed opacity-75'
+                            }`}
+                            onClick={handleEndClick}
+                            title={!canEndTest ? "Bạn chưa làm đủ 40 câu hỏi" : "Nộp bài và xem kết quả"}
+                        >
+                            End Test
+                        </button>
+                    </div>
+                </header>
+            );
+        };
+
+        const SkillTabs = ({ currentSkill, onSwitchSkill }) => (
+            <div className="skill-tabs flex">
+                {SKILL_ORDER.map(skill => (
+                    <button 
+                        key={skill}
+                        className={`tab-button ${currentSkill === skill ? 'active' : ''}`}
+                        onClick={() => onSwitchSkill(skill)}
+                    >
+                        {skill.toUpperCase()}
+                    </button>
+                ))}
+            </div>
+        );
+
+        const SetupScreen = ({ onStartTest, onClearData }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã số Thí sinh / Lớp và Họ tên.');
+                    return;
+                }
+                setError('');
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+                        <h2 className="text-xl font-semibold text-center text-green-800 mb-2">APLUS FOREIGN LANGUAGE CENTRE</h2>
+                        <h1 className="text-3xl font-bold text-center text-[#003366] mb-4">IELTS LISTENING MOCK TEST 1</h1>
+                        <p className="text-center text-xs text-red-600 mb-6 font-semibold">
+                            ⚠️ Bài thi tự động chạy Fullscreen, chống bôi đen & chuột phải. Chuyển tab hoặc thoát Toàn màn hình sẽ bị ghi nhận vi phạm!
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="candidate-code" className="block text-sm font-medium text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    id="candidate-code"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" 
+                                    placeholder="Ví dụ: 11A11 / APL0101"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="full-name" className="block text-sm font-medium text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    id="full-name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-[#f97316] focus:border-[#f97316]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-center mt-4 text-sm">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-8 w-full bg-[#f97316] text-white py-3 rounded-md font-bold hover:bg-[#e16913] transition-colors shadow-lg"
+                        >
+                            BẮT ĐẦU BÀI THI (FULLSCREEN)
+                        </button>
+                        <button 
+                            className="mt-4 text-xs text-gray-400 hover:text-red-500 underline mx-auto block"
+                            onClick={onClearData}
+                        >
+                            Clear Old Data & Restart
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const EndTestModal = ({ isOpen, onClose, onConfirm }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
+                        <h3 className="text-2xl font-bold text-[#003366] mb-4">Xác nhận Nộp Bài</h3>
+                        <p className="mb-6 text-gray-700">Bạn có chắc chắn muốn kết thúc bài thi và nộp bài để gửi kết quả lên hệ thống?</p>
+                        <div className="flex justify-end space-x-4">
+                            <button className="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onClick={onClose}>Hủy</button>
+                            <button className="py-2 px-4 rounded-md font-semibold bg-red-600 hover:bg-red-700 text-white" onClick={onConfirm}>Nộp bài & Xem kết quả</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ReportModal = ({ isOpen, onClose, candidate, isSubmitting, submitStatus }) => {
+            if (!isOpen) return null;
+
+            const answers = candidate.answers.listening || {};
+            const answerKeys = Object.keys(LISTENING_CORRECT_ANSWERS);
+            let scoreCount = 0;
+            answerKeys.forEach(qId => {
+                if (checkAnswer(qId, answers[qId])) scoreCount++;
+            });
+            const bandScore = calculateIELTSBand(scoreCount);
+
+            return (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                        <h3 className="text-2xl font-bold text-[#003366] mb-2 border-b pb-2">KẾT QUẢ BÀI THI IELTS LISTENING</h3>
+                        
+                        {isSubmitting && (
+                            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded mb-4 text-center font-medium animate-pulse">
+                                🔄 Đang gửi kết quả thi lên hệ thống Google Sheets...
+                            </div>
+                        )}
+                        {submitStatus && (
+                            <div className={`px-4 py-2 rounded mb-4 text-center font-semibold ${
+                                submitStatus.includes("Thành công") ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"
+                            }`}>
+                                {submitStatus}
+                            </div>
+                        )}
+
+                        <div className="space-y-4 text-sm mb-4 overflow-y-auto custom-scrollbar flex-grow">
+                            <div className="p-4 bg-gray-50 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH / LỚP</span>
+                                    <span className="font-bold text-base text-[#003366]">{candidate.code}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">HỌ VÀ TÊN</span>
+                                    <span className="font-bold text-base text-[#003366]">{candidate.name}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                    <span className="font-bold text-xl text-green-600">{scoreCount} / 40</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xs text-gray-500">IELTS BAND SCORE</span>
+                                    <span className="font-extrabold text-2xl text-[#f97316]">{bandScore}</span>
+                                </div>
+                            </div>
+                            
+                            <h4 className="text-xl font-bold text-[#003366] mt-4 mb-2">CHI TIẾT ĐÁP ÁN</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-white ielts-border rounded-lg">
+                                {answerKeys.map(qId => {
+                                    const answerValue = answers[qId] || '';
+                                    const isCorrect = checkAnswer(qId, answerValue);
+                                    const displayAnswer = Array.isArray(answerValue) ? answerValue.join(', ') : answerValue;
+                                    const displayCorrect = Array.isArray(LISTENING_CORRECT_ANSWERS[qId]) 
+                                        ? LISTENING_CORRECT_ANSWERS[qId].join(' / ') 
+                                        : LISTENING_CORRECT_ANSWERS[qId];
+                                    return (
+                                        <div key={qId} className={`p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                            <p className="font-bold text-xs uppercase text-gray-600">{qId.replace('l_q', 'Câu ')}</p>
+                                            <p className="text-xs"><strong>Đã chọn:</strong> {displayAnswer || '-'}</p>
+                                            <p className="text-xs"><strong>Đáp án:</strong> {displayCorrect}</p>
+                                            <p className={`font-semibold text-xs mt-1 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                                {isCorrect ? '✓ Đúng' : '✗ Sai'}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-4 sticky bottom-0 bg-white pt-4 border-t mt-auto">
+                            <button className="py-2 px-4 rounded-md font-semibold bg-gray-300 hover:bg-gray-400 text-gray-800" onClick={onClose}>Đóng & Hoàn Thành</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ListeningContent = ({ answers, onSaveAnswer, audioRef }) => {
+            return (
+                <div className="skill-content custom-scrollbar" id="content-listening">
+                    <h2 className="text-2xl font-bold text-[#003366] mb-4 border-b pb-2">LISTENING SECTION</h2>
+                    
+                    {/* Audio Player với Link Audio mới */}
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center space-x-4">
+                        <audio ref={audioRef} controls preload="auto" className="w-full">
+                            <source src="https://ia903207.us.archive.org/18/items/ielts-l-t-1/IELTS-L-T1.mp3" type="audio/mpeg" />
+                            Trình duyệt của bạn không hỗ trợ thẻ audio.
+                        </audio>
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* SECTION 1 */}
+                        <div className="p-4 bg-white rounded-lg ielts-border shadow-sm">
+                            <h3 className="text-xl font-semibold mb-2 text-[#003366]">SECTION 1 (Questions 1-10)</h3>
+                            <p className="mb-4 text-sm text-gray-700">Complete the notes below. Write <strong>ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
+                            
+                            <div className="p-4 bg-gray-50 rounded-lg border space-y-3 text-sm">
+                                <h4 className="font-bold text-lg text-center text-[#003366]">Revision Note</h4>
+                                <p className="italic text-gray-600">Example: Problem with: the brochure sample</p>
+                                
+                                <p>• Company name: 1 <AnswerInput type="text" id="l_q1" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> Hotel Chains</p>
+                                <p>• Letters of 2 <AnswerInput type="text" id="l_q2" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> should be bigger.</p>
+                                <p>• The 3 <AnswerInput type="text" id="l_q3" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> should be removed.</p>
+                                <p>• Change the description under the top photo to 4 <AnswerInput type="text" id="l_q4" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></p>
+                                <p>• Use the picture with 5 <AnswerInput type="text" id="l_q5" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> of the hotel.</p>
+                                <p>• The 6 <AnswerInput type="text" id="l_q6" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> should be in red print.</p>
+                                <p>• Translate into 7 <AnswerInput type="text" id="l_q7" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></p>
+                                <p>• Deadline: by the end of 8 <AnswerInput type="text" id="l_q8" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></p>
+                                <p>• Address: No. 9 Green Drive, 9 <AnswerInput type="text" id="l_q9" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> NY21300</p>
+                                <p>• Telephone number: 10 <AnswerInput type="text" id="l_q10" answers={answers} onSaveAnswer={onSaveAnswer} className="w-40 inline-block mx-1" /></p>
+                            </div>
+                        </div>
+
+                        {/* SECTION 2 */}
+                        <div className="p-4 bg-white rounded-lg ielts-border shadow-sm">
+                            <h3 className="text-xl font-semibold mb-4 text-[#003366]">SECTION 2 (Questions 11-20)</h3>
+                            <h4 className="font-semibold mb-2 text-sm">Questions 11-16: Choose the correct letter, A, B or C.</h4>
+                            
+                            <div className="space-y-4 text-sm mb-6">
+                                {[
+                                    {q: 11, text: "The most famous view in this park is", options: ["the largest waterfall worldwide.", "the longest river in the world.", "the biggest sub-tropical rainforest in the world."]},
+                                    {q: 12, text: "According to the tour guide, what is best to do on top of the mountain?", options: ["having a picnic", "taking photos", "strolling about"]},
+                                    {q: 13, text: "What did the tour guide recommend for more experienced walkers?", options: ["the mountain trail", "the Bush Track", "the Creek Circuit"]},
+                                    {q: 14, text: "What is mentioned about the transport in the park?", options: ["Bicycle can be hired.", "Trams are available for tourists.", "It is included in the bill."]},
+                                    {q: 15, text: "Which activity is provided for adults all year round?", options: ["abseiling", "bungee jumping", "paragliding"]},
+                                    {q: 16, text: "What should the visitors do before they go to the restaurant?", options: ["make bookings", "inquire about availability", "collect the meal ticket at the reception"]},
+                                ].map(({q, text, options}) => (
+                                    <div key={q} className="border p-3 rounded-lg bg-gray-50">
+                                        <p className="font-medium mb-2">{q}. {text}</p>
+                                        <div className="space-y-1 pl-2">
+                                            {options.map((opt, i) => {
+                                                const letter = String.fromCharCode(65 + i);
+                                                return <label key={i} className="block cursor-pointer"><AnswerInput type="radio" name={`l_q${q}`} value={letter} answers={answers} onSaveAnswer={onSaveAnswer} className="mr-2" />{letter}. {opt}</label>
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <h4 className="font-semibold mb-2 text-sm">Questions 17-20: Label the plan below</h4>
+                            <p className="mb-4 text-sm text-gray-700">Write the correct letter, <strong>A-I</strong>, next to Questions 17-20.</p>
+
+                            {/* Map Image Included */}
+                            <div className="mb-6 p-2 border rounded-lg bg-gray-50 text-center">
+                                <img src="https://i.ibb.co/gZCvWYhQ/map.png" alt="Park Map Plan" className="max-w-full h-auto mx-auto rounded shadow-sm border" />
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">17 Campsite:</span><AnswerInput type="text" id="l_q17" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-I" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">18 Business Centre:</span><AnswerInput type="text" id="l_q18" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-I" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">19 Museum:</span><AnswerInput type="text" id="l_q19" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-I" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">20 Café:</span><AnswerInput type="text" id="l_q20" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-I" className="w-1/2 md:w-1/6" /></div>
+                            </div>
+                        </div>
+
+                        {/* SECTION 3 */}
+                        <div className="p-4 bg-white rounded-lg ielts-border shadow-sm">
+                            <h3 className="text-xl font-semibold mb-4 text-[#003366]">SECTION 3 (Questions 21-30)</h3>
+                            
+                            <h4 className="font-semibold mb-2 text-sm">Questions 21-24: Choose the correct letter, A, B or C.</h4>
+                            <div className="space-y-4 text-sm mb-6">
+                                {[
+                                    {q: 21, text: "How old are the students of the nursing program?", options: ["They are teenagers.", "They are in their twenties.", "They belong to different age groups."]},
+                                    {q: 22, text: "What do the speakers say about the group project?", options: ["It helps to improve relationship among different classmates.", "It helps to develop problem solving skills.", "It provides supportive learning environment."]},
+                                    {q: 23, text: "Which part of the program surprised Paul?", options: ["There's a number of essays to write.", "There's a lot of practical work.", "There's internship provided."]},
+                                    {q: 24, text: "What do they feel about learning law?", options: ["It is essential training.", "It is too theoretical.", "It takes up too much time."]}
+                                ].map(({q, text, options}) => (
+                                    <div key={q} className="border p-3 rounded-lg bg-gray-50">
+                                        <p className="font-medium mb-2">{q}. {text}</p>
+                                        <div className="space-y-1 pl-2">
+                                            {options.map((opt, i) => {
+                                                const letter = String.fromCharCode(65 + i);
+                                                return <label key={i} className="block cursor-pointer"><AnswerInput type="radio" name={`l_q${q}`} value={letter} answers={answers} onSaveAnswer={onSaveAnswer} className="mr-2" />{letter}. {opt}</label>
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <h4 className="font-semibold mb-2 text-sm">Questions 25-30</h4>
+                            <p className="mb-2 text-sm text-gray-700">What are the suggestions offered by the speakers?</p>
+                            <p className="mb-4 text-sm text-gray-700">Choose <strong>SIX</strong> answers from the box and write the correct letter, <strong>A-H</strong>, next to Questions 25-30.</p>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4 text-xs font-mono bg-gray-100 p-3 rounded border">
+                                <div><strong>A:</strong> get feedback from teaching staff</div>
+                                <div><strong>B:</strong> do more reading</div>
+                                <div><strong>C:</strong> get help from school supporting staff</div>
+                                <div><strong>D:</strong> get help for nursing problems</div>
+                                <div><strong>E:</strong> manage time properly</div>
+                                <div><strong>F:</strong> be well prepared</div>
+                                <div><strong>G:</strong> review the notes regularly</div>
+                                <div><strong>H:</strong> don't set unrealistic goals</div>
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">25 Essays:</span><AnswerInput type="text" id="l_q25" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-H" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">26 Lectures:</span><AnswerInput type="text" id="l_q26" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-H" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">27 Research:</span><AnswerInput type="text" id="l_q27" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-H" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">28 Online forum:</span><AnswerInput type="text" id="l_q28" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-H" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">29 Placement tests:</span><AnswerInput type="text" id="l_q29" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-H" className="w-1/2 md:w-1/6" /></div>
+                                <div className="flex items-center space-x-2"><span className="w-1/2 md:w-1/3">30 Freshmen:</span><AnswerInput type="text" id="l_q30" answers={answers} onSaveAnswer={onSaveAnswer} placeholder="A-H" className="w-1/2 md:w-1/6" /></div>
+                            </div>
+                        </div>
+
+                        {/* SECTION 4 */}
+                        <div className="p-4 bg-white rounded-lg ielts-border shadow-sm">
+                            <h3 className="text-xl font-semibold mb-4 text-[#003366]">SECTION 4 (Questions 31-40)</h3>
+                            <p className="mb-4 font-medium text-sm">Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>
+                            
+                            <div className="bg-gray-50 p-4 rounded-md space-y-4 text-sm border">
+                                <h4 className="text-lg font-bold text-center text-[#003366]">Penguins in Africa</h4>
+                                
+                                <div>
+                                    <p className="font-bold mb-1">Appearance and lifestyle</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li>They are also called Jackass Penguins for the sound they make.</li>
+                                        <li>The 31 <AnswerInput type="text" id="l_q31" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> of their body remains constant.</li>
+                                        <li>They restrict their 32 <AnswerInput type="text" id="l_q32" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> on land from dusk till dawn.</li>
+                                        <li>They cannot fly because they have heavy 33 <AnswerInput type="text" id="l_q33" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></li>
+                                        <li>They nest under the tree 34 <AnswerInput type="text" id="l_q34" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></li>
+                                        <li>They eat tree 35 <AnswerInput type="text" id="l_q35" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <p className="font-bold mb-1">Predators</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li>seals</li>
+                                        <li>36 <AnswerInput type="text" id="l_q36" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /></li>
+                                        <li>seagulls (eat the penguin 37 <AnswerInput type="text" id="l_q37" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" />)</li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <p className="font-bold mb-1">Threats</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li>They lose 38 <AnswerInput type="text" id="l_q38" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> in winter.</li>
+                                        <li>They are fighting for nesting 39 <AnswerInput type="text" id="l_q39" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> and food because of human activities.</li>
+                                        <li>In order to improve survivorship, it is helpful to increase the 40 <AnswerInput type="text" id="l_q40" answers={answers} onSaveAnswer={onSaveAnswer} className="w-36 inline-block mx-1" /> of their genes.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TestInterface = ({ candidate, onSwitchSkill, onSaveAnswer, onToggleTimer, onEndTest, warningCount, audioRef }) => {
+            return (
+                <div className="app-container">
+                    <Header 
+                        candidate={candidate}
+                        onToggleTimer={onToggleTimer}
+                        onEndTest={onEndTest}
+                        warningCount={warningCount}
+                    />
+                    <SkillTabs 
+                        currentSkill={candidate.currentSkill}
+                        onSwitchSkill={onSwitchSkill}
+                    />
+                    <main className="main-content">
+                        <ListeningContent 
+                            answers={candidate.answers[candidate.currentSkill] || {}}
+                            onSaveAnswer={(qId, value) => onSaveAnswer(candidate.currentSkill, qId, value)}
+                            audioRef={audioRef}
+                        />
+                    </main>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState(INITIAL_CANDIDATE_STATE);
+            const [isEndModalOpen, setEndModalOpen] = useState(false);
+            const [isReportModalOpen, setReportModalOpen] = useState(false);
+            const [warningCount, setWarningCount] = useState(0);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+            
+            const timerInterval = useRef(null);
+            const audioRef = useRef(null);
+
+            // Chống chuột phải & Bôi đen văn bản
+            useEffect(() => {
+                const handleContextMenu = (e) => e.preventDefault();
+                const handleSelectStart = (e) => e.preventDefault();
+                const handleCopy = (e) => e.preventDefault();
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('selectstart', handleSelectStart);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('selectstart', handleSelectStart);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            // Cảnh báo khi rời tab hoặc thoát Fullscreen
+            useEffect(() => {
+                if (appState !== 'testing') return;
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn vừa rời khỏi màn hình bài thi! Vui lòng tập trung làm bài.`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn đã thoát khỏi chế độ Toàn màn hình (Fullscreen)!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState]);
+
+            const pauseTimer = useCallback(() => {
+                if (timerInterval.current) {
+                    clearInterval(timerInterval.current);
+                    timerInterval.current = null;
+                }
+                setCandidate(prev => ({ ...prev, timerRunning: false }));
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                }
+            }, []);
+
+            const runTimer = useCallback(() => {
+                if (timerInterval.current) return;
+                setCandidate(prev => ({ ...prev, timerRunning: true }));
+                
+                if (audioRef.current) {
+                    audioRef.current.play().catch(e => console.log("Audio Autoplay bị chặn:", e));
+                }
+
+                timerInterval.current = window.setInterval(() => {
+                    setCandidate(prev => {
+                        if (prev.times[prev.currentSkill] > 0) {
+                            return {
+                                ...prev,
+                                times: {
+                                    ...prev.times,
+                                    [prev.currentSkill]: prev.times[prev.currentSkill] - 1,
+                                },
+                            };
+                        }
+                        return prev;
+                    });
+                }, 1000);
+            }, []);
+
+            // Gửi dữ liệu kết quả lên Google Sheets
+            const sendResultToGoogleSheets = useCallback(async (currentCandidate, warnings) => {
+                setIsSubmitting(true);
+                setSubmitStatus('');
+                
+                const answers = currentCandidate.answers.listening || {};
+                const answerKeys = Object.keys(LISTENING_CORRECT_ANSWERS);
+                let scoreCount = 0;
+                answerKeys.forEach(qId => {
+                    if (checkAnswer(qId, answers[qId])) scoreCount++;
+                });
+                const bandScore = calculateIELTSBand(scoreCount);
+
+                const payload = {
+                    sheetName: "IELTS TESTS",
+                    testType: "IELTS TESTS - LISTENING TEST 1",
+                    candidateCode: currentCandidate.code,
+                    candidateName: currentCandidate.name,
+                    correctCount: `${scoreCount}/40`,
+                    score: bandScore,
+                    warningCount: warnings // Gửi số lần vi phạm sang Cột G
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên hệ thống!');
+                } catch (err) {
+                    console.error("Lỗi khi gửi kết quả:", err);
+                    setSubmitStatus('❌ Không thể tự động gửi kết quả. Vui lòng báo cho giáo viên.');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            }, []);
+
+            const showReportModal = useCallback(() => {
+                pauseTimer();
+                setEndModalOpen(false);
+                setReportModalOpen(true);
+                sendResultToGoogleSheets(candidate, warningCount);
+            }, [pauseTimer, sendResultToGoogleSheets, candidate, warningCount]);
+
+            const handleSwitchSkill = useCallback((newSkill, checkTime = true) => {
+                pauseTimer();
+                setCandidate(prev => ({ ...prev, currentSkill: newSkill }));
+            }, [pauseTimer]);
+
+            const updateTimerDisplay = useCallback(() => {
+                const time = candidate.times[candidate.currentSkill];
+                if (time <= 0) {
+                    pauseTimer();
+                    showReportModal();
+                }
+            }, [candidate.currentSkill, candidate.times, pauseTimer, showReportModal]);
+
+            useEffect(() => {
+                try {
+                    const savedData = localStorage.getItem('ieltsMockTestState_Listening_Test1');
+                    if (savedData) {
+                        const loadedCandidate = JSON.parse(savedData);
+                        setCandidate(loadedCandidate);
+                        if (loadedCandidate.code && loadedCandidate.name) {
+                            setAppState('testing');
+                            if (loadedCandidate.timerRunning) {
+                                runTimer();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    localStorage.removeItem('ieltsMockTestState_Listening_Test1');
+                }
+            }, []);
+
+            useEffect(() => {
+                if (appState === 'testing') {
+                    try {
+                        localStorage.setItem('ieltsMockTestState_Listening_Test1', JSON.stringify(candidate));
+                    } catch (error) {
+                        console.error("Failed to save state:", error);
+                    }
+                }
+            }, [candidate, appState]);
+
+            useEffect(() => {
+                updateTimerDisplay();
+            }, [candidate.times, updateTimerDisplay]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate(prev => ({ ...prev, code, name }));
+                setAppState('testing');
+                runTimer();
+                
+                // Tự động bật Fullscreen
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {
+                        console.warn(`Fullscreen error: ${err.message}`);
+                    });
+                }
+            };
+
+            const handleSaveAnswer = (skill, qId, value) => {
+                setCandidate(prev => ({
+                    ...prev,
+                    answers: {
+                        ...prev.answers,
+                        [skill]: {
+                            ...prev.answers[skill],
+                            [qId]: value,
+                        },
+                    },
+                }));
+            };
+
+            const handleToggleTimer = () => {
+                if (candidate.timerRunning) {
+                    pauseTimer();
+                } else {
+                    runTimer();
+                }
+            };
+
+            const showEndTestModal = () => {
+                pauseTimer();
+                setEndModalOpen(true);
+            };
+
+            const handleReset = () => {
+                pauseTimer();
+                localStorage.removeItem('ieltsMockTestState_Listening_Test1');
+                setCandidate(INITIAL_CANDIDATE_STATE);
+                setAppState('setup');
+                setReportModalOpen(false);
+                window.location.reload();
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} onClearData={handleReset} />;
+            }
+
+            return (
+                <>
+                    <TestInterface
+                        candidate={candidate}
+                        onSwitchSkill={handleSwitchSkill}
+                        onSaveAnswer={handleSaveAnswer}
+                        onToggleTimer={handleToggleTimer}
+                        onEndTest={showEndTestModal}
+                        warningCount={warningCount}
+                        audioRef={audioRef}
+                    />
+                    <EndTestModal 
+                        isOpen={isEndModalOpen}
+                        onClose={() => setEndModalOpen(false)}
+                        onConfirm={showReportModal}
+                    />
+                    <ReportModal
+                        isOpen={isReportModalOpen}
+                        onClose={handleReset}
+                        candidate={candidate}
+                        isSubmitting={isSubmitting}
+                        submitStatus={submitStatus}
+                    />
+                </>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <React.StrictMode>
+                <App />
+            </React.StrictMode>
+        );
+    </script>
+</body>
+</html>

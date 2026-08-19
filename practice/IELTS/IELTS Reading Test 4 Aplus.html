@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS READING MOCK TEST 4</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Chống bôi đen văn bản */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* IELTS IDP Dark Green Header */
+        .aplus-brand {
+            color: #0f5132;
+            font-weight: 900;
+            font-size: 1.35rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-top {
+            height: 52px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .part-header-banner {
+            background-color: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        /* Split Screen Area */
+        .main-workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .passage-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .divider-handle {
+            width: 14px;
+            background: #e8ecef;
+            border-left: 1px solid #d1d5db;
+            border-right: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: col-resize;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .questions-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+        }
+
+        /* Footer Test Navigation */
+        .test-footer {
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            z-index: 20;
+        }
+
+        .nav-part-btn {
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav-part-btn.active {
+            color: #0f5132;
+            background-color: #e8f5e9;
+        }
+
+        .q-square {
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            margin: 0 1px;
+        }
+
+        .q-square.answered {
+            background-color: #e5e7eb;
+            font-weight: 700;
+            border-color: #9ca3af;
+        }
+
+        /* Custom Scrollbars */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* Radio option styling like IDP */
+        .idp-radio-label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .idp-radio-label:hover {
+            background-color: #f3f4f6;
+        }
+        .idp-radio-label input[type="radio"] {
+            margin-right: 12px;
+            accent-color: #0f5132;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // Đáp án chuẩn 40 câu từ file TEST 2.pdf
+        const READING_CORRECT_ANSWERS = {
+            'r_q1': 'science',
+            'r_q2': 'technology',
+            'r_q3': 'parents',
+            'r_q4': 'Powerhouse',
+            'r_q5': 'cooperation',
+            'r_q6': 'interactive',
+            'r_q7': 'favourite displays',
+            'r_q8': 'break',
+            'r_q9': 'two hours',
+            'r_q10': 'TRUE',
+            'r_q11': 'NOT GIVEN',
+            'r_q12': 'FALSE',
+            'r_q13': 'NOT GIVEN',
+            'r_q14': 'F',
+            'r_q15': 'A',
+            'r_q16': 'B',
+            'r_q17': 'D',
+            'r_q18': 'C',
+            'r_q19': 'A',
+            'r_q20': 'D',
+            'r_q21': 'C',
+            'r_q22': 'D',
+            'r_q23': 'A',
+            'r_q24': 'facade',
+            'r_q25': 'escalators',
+            'r_q26': 'atrium',
+            'r_q27': 'G',
+            'r_q28': 'D',
+            'r_q29': 'F',
+            'r_q30': 'B',
+            'r_q31': 'A',
+            'r_q32': 'C',
+            'r_q33': 'D',
+            'r_q34': 'B',
+            'r_q35': 'D',
+            'r_q36': 'YES',
+            'r_q37': 'NO',
+            'r_q38': 'NOT GIVEN',
+            'r_q39': 'YES',
+            'r_q40': 'NO'
+        };
+
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 33) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 27) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 19) return "5.5";
+            if (correct >= 15) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const checkAnswer = (qId, value) => {
+            const correct = READING_CORRECT_ANSWERS[qId];
+            if (!correct) return false;
+            const cleanVal = String(value || '').trim().toLowerCase();
+            const cleanCorr = String(correct).trim().toLowerCase();
+            if (qId === 'r_q7' && (cleanVal === 'favorite displays' || cleanVal === 'favourite displays')) return true;
+            return cleanVal === cleanCorr;
+        };
+
+        // Form Đăng nhập
+        const SetupScreen = ({ onStartTest }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã thí sinh/Lớp và Họ tên.');
+                    return;
+                }
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-[#0f5132]">
+                        <h2 className="text-xl font-bold text-center text-[#0f5132] mb-1">APLUS LANGUAGE CENTER</h2>
+                        <h1 className="text-2xl font-black text-center text-gray-800 mb-4">IELTS READING MOCK TEST 4</h1>
+                        <p className="text-xs text-red-600 mb-6 text-center font-medium">
+                            ⚠️ Chế độ thi tự động bật Toàn màn hình, khóa chuột phải và chống copy. Vi phạm chuyển tab sẽ bị ghi nhận!
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: 12A1 / APLUS104"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-xs mt-3 text-center">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-6 w-full bg-[#0f5132] text-white py-3 rounded-md font-bold hover:bg-[#0b3d26] transition-colors shadow-md"
+                        >
+                            BẮT ĐẦU BÀI THI (FULLSCREEN)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // App Chính
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState({ code: '', name: '' });
+            const [answers, setAnswers] = useState({});
+            const [currentPart, setCurrentPart] = useState(1);
+            const [timeLeft, setTimeLeft] = useState(60 * 60);
+            const [warningCount, setWarningCount] = useState(0);
+            const [isSubmitted, setIsSubmitted] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+
+            // Chống chuột phải & Bôi đen
+            useEffect(() => {
+                const handleContextMenu = (e) => e.preventDefault();
+                const handleSelectStart = (e) => e.preventDefault();
+                const handleCopy = (e) => e.preventDefault();
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('selectstart', handleSelectStart);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('selectstart', handleSelectStart);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            // Cảnh báo vi phạm
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn vừa chuyển tab hoặc rời khỏi bài thi!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement) {
+                        setWarningCount(prev => {
+                            const newCount = prev + 1;
+                            alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn đã thoát khỏi chế độ Toàn màn hình!`);
+                            return newCount;
+                        });
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState, isSubmitted]);
+
+            // Timer
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            handleSubmitTest();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [appState, isSubmitted]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate({ code, name });
+                setAppState('testing');
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                }
+            };
+
+            const handleAnswerChange = (qId, val) => {
+                setAnswers(prev => ({ ...prev, [qId]: val }));
+            };
+
+            const countPartAnswered = (start, end) => {
+                let cnt = 0;
+                for (let i = start; i <= end; i++) {
+                    if (answers[`r_q${i}`] && String(answers[`r_q${i}`]).trim() !== '') {
+                        cnt++;
+                    }
+                }
+                return cnt;
+            };
+
+            const handleSubmitTest = async () => {
+                const totalAnswered = Object.keys(answers).filter(k => String(answers[k]).trim() !== '').length;
+                if (totalAnswered < 40 && !confirm(`Bạn mới làm ${totalAnswered}/40 câu. Bạn có chắc chắn muốn nộp bài?`)) {
+                    return;
+                }
+
+                setIsSubmitted(true);
+                setIsSubmitting(true);
+
+                let correctCount = 0;
+                Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                    if (checkAnswer(qId, answers[qId])) correctCount++;
+                });
+
+                const bandScore = calculateIELTSBand(correctCount);
+
+                const payload = {
+                    sheetName: "IELTS TESTS",
+                    testType: "IELTS TESTS - MOCK TEST 4",
+                    candidateCode: candidate.code,
+                    candidateName: candidate.name,
+                    correctCount: `${correctCount}/40`,
+                    score: bandScore,
+                    warningCount: warningCount
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên Google Sheets!');
+                } catch (err) {
+                    setSubmitStatus('❌ Lỗi gửi dữ liệu. Vui lòng chụp màn hình báo cho giáo viên!');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} />;
+            }
+
+            return (
+                <div className="h-screen flex flex-col">
+                    {/* Header IDP Style */}
+                    <header className="header-top">
+                        <div className="flex items-center space-x-6">
+                            <div className="aplus-brand">APLUS</div>
+                            <div className="text-xs text-gray-600">
+                                Test taker ID: <span className="font-semibold text-gray-800">{candidate.code} ({candidate.name})</span>
+                            </div>
+                        </div>
+
+                        <div className="font-semibold text-sm text-gray-700">
+                            {Math.floor(timeLeft / 60)} minutes left
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                            {warningCount > 0 && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold border border-red-300">
+                                    Cảnh báo: {warningCount}
+                                </span>
+                            )}
+                            <button 
+                                onClick={handleSubmitTest}
+                                className="bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs font-bold px-4 py-2 rounded shadow-sm transition-colors"
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* Part Banner Header */}
+                    <div className="part-header-banner font-medium">
+                        Reading Part {currentPart}
+                        <span className="text-xs text-gray-500 ml-2">Read the passage and answer questions {currentPart === 1 ? '1–13' : currentPart === 2 ? '14–26' : '27–40'}.</span>
+                    </div>
+
+                    {/* Split Workspace */}
+                    <div className="main-workspace">
+                        {/* Cột trái: Passage */}
+                        <div className="passage-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-4 text-center">Museums and family visitors in Australia</h1>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p>Museums in Australia have recognised the need to become more responsive to their audiences, especially families who visit museums in large numbers. Research has consistently found that positive early family visits to museums have a significant impact on later visiting habits. What is more, researchers have identified the importance of learning in family visits and the different roles that various family members play before, during and after their visit.</p>
+                                        <p>For many years museums in Australia have acknowledged the importance of families as visitors, with several establishing separate spaces for these groups, especially those with very young children. Major museums have developed dedicated spaces specifically designed for children and families. For example, the Melbourne Museum's Children's Gallery is aimed at three- to eight-year-olds and has a mandate to encourage children to discover and explore within a range of science issues. The goal is to provide an interactive, hands-on and playful space that engages all the senses through continually updated exhibitions. The National Museum of Australia in Canberra developed Kspace, an interactive space where children design their own future with the help of technology. This museum also designed Our Place, a series of cosy play spaces where children can explore the museum's themes in their own ways.</p>
+                                        <p>Other museums have also considered the entire family when designing their dedicated spaces. The Australian National Maritime Museum in Sydney, when developing Pirates, its below-the-deck pirate ship experience, realised that exhibitions aimed at children, particularly school-aged children, also needed more sophisticated exhibits to occupy their accompanying parents. The Powerhouse Museum in Sydney, while catering to varying tastes within families through its many temporary exhibitions and programs, recognised the value of a dedicated space for children who were visiting with their parents. The museum's installation, Zoe's House, caters specifically for children aged three to five years, to facilitate cooperation in children through play.</p>
+                                        <p>Family visits to museums in Australia share a number of characteristics. Generally, visitors take time for orientation, enter with a sense of curiosity, link what they see to their own prior experiences and are most attracted to interactive displays. Their common viewing behaviour involves looking very closely at each display in the first gallery and then skimming and moving randomly in subsequent galleries. Their visiting behaviour is modified by increased experience with the setting: they like to revisit favourite displays, share their viewing and learning in a social context and interact with people from the museum. They respond to physical needs by using the comfortable chairs provided or having a break after a little more than an hour, and generally stay for two hours at most.</p>
+                                        <p>Research has found that adult members of family groups play three roles which are particularly relevant to the family group during the visit: visit manager by directing and organising; museum expert through explaining, clarifying and correcting; and learning-facilitator in questioning and reminiscing. These roles occur simultaneously, are closely linked to the process of learning and are dependent on both the social context of the visit and the group composition, particularly the ages of any accompanying children.</p>
+                                        <p>Parents consider museum visits to be valuable in creating and strengthening relationships with their children and in enabling them to tune into what fascinates their children. Parents make use of learning facilities such as open access libraries and activity kits if they know the resources are there and understand their role. Family members each take notice of different aspects of an exhibit and construct a shared meaning together. Museums are seen as a good day out, something the whole family can enjoy as a different form of education and are generally considered good value for money.</p>
+                                        <p>In this increasingly complex world, where the real and virtual are blurring, and where changes in society can seem overwhelming, museums are able to provide spaces for families to be together as well as learn together. Parents value museum visits because they provide children with opportunities to learn in different ways through bringing concepts to life and enhancing school learning experiences. Museums stimulate visitors of all ages and open their minds to new ideas, the world around them, history and other cultures. Children enjoy museums as places where they can fantasise, explore and learn in ways that are more engaging than they experience in more formal settings, such as school. Museums need to identify the elements that families value, the ways families interact with museums, and how museums operate as extremely effective learning units. The challenge is for museums to then apply these principles, not only to the development of future exhibitions and programs, but also to the ways they plan for all visitors.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">Boring buildings</h1>
+                                    <p className="italic text-sm text-gray-600 mb-4 text-center">There could be more than an economic or nostalgic price to impersonal retail and high-rise construction; boring architecture may take an emotional toll on the people forced to live with it.</p>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p><strong>Section A:</strong> A growing body of research in cognitive science illuminates the physical and mental toll bland cityscapes take on residents. Generally, these researchers argue that humans are healthier when they live surrounded by variety or work in well-designed, unique spaces, rather than unattractive, generic ones. Urban policy professor Justin Hollander and architect Ann Sussman review scientific data to help architects and urban planners understand how, exactly, people respond to their built surroundings, particularly at work. People, they argue, function best in intricate settings, not 'big, blank, boxy offices'.</p>
+                                        <p><strong>Section B:</strong> Indeed, that's what Colin Ellard, a neuroscientist at the University of Waterloo in Canada, has found in his work. Five years ago, Ellard became interested in a certain building - the gigantic Whole Foods Market 'plopped into' a notoriously textured part of lower Manhattan in New York. Ellard partnered with the Guggenheim Museum to analyze what happens when someone walks out of a tiny neighborhood restaurant and encounters a full city block with nothing but 'the long, blank facade of the Whole Foods Market' building. In 2011, Ellard led small groups on Lower East Side walks to measure the effect of the urban environment on them. Participants recorded their response to questions at each stopping point and wore sensors that measured skin conductance, a response to emotional excitement. Passing the monolithic Whole Foods Market, people's state of arousal plummeted. Physiologically, Ellard explained, they were bored. To describe this place, they used words like 'bland' and 'passionless'. In contrast, one block east at the other test site - a 'lively sea of restaurants with lots of open doors and windows' - people measured high levels of excitement, and they listed words like 'lively', and 'socializing'. Ellard explains that the main objective of urban design should be to produce some kind of novelty or change every few seconds; otherwise, we become cognitively disengaged.</p>
+                                        <p><strong>Section C:</strong> The trick, it seems, is to design a world that excites but doesn't overload our faculties with a constant barrage of information. 'We are, as animals, programmed to respond to thrill,' said professor Brendan Walker. In Walker's 'thrill laboratory' at the University of Nottingham in the UK, devices measure heart rate and skin conductance to see how people respond to adrenaline-producing experiences such as a roller-coaster ride. A thrilling encounter moves us quickly from a state of equilibrium to a desirable 'disorientation'. 'Humans want a certain element of turmoil or confusion,' he said. 'Complexity is thrilling whether in an amusement park or architecture.'</p>
+                                        <p><strong>Section D:</strong> Psychologists have found that awe-inspiring moments can potentially improve our well-being. One study conducted by Melanie Rudd, Kathleen Vohs and Jennifer Aaker of Stanford University in the US showed that the feeling of 'awe' can make people more patient and less materialistic. In an experiment, the researchers showed students 60-second clips of waterfalls, whales, or astronauts in space. After only a minute of virtual images, those who said they were awed also felt less pressed for time. And in another variation, people made hypothetical choices between physical and experiential goods of equal monetary value. Those who had just 'felt awe' were more likely to choose an experience over a possession, a choice that is linked with greater satisfaction in the long run. In other words, a visual buzz - whether architectural or natural - might have the ability to change our frame of mind, making modern-day life more satisfying and interactive.</p>
+                                        <p><strong>Section E:</strong> It's important to note, however, that architectural boredom isn't about how pristine a street is. People often confuse successful architecture with whether an area looks pleasant. On the contrary, when it comes to city buildings, people often focus too narrowly on aesthetics, said Charles Montgomery, author of Happy City: Transforming Our Lives Through Urban Design. Some of the happiest blocks in New York City, he argues, are 'kind of ugly and messy'. In 2014, Montgomery's Happy City lab conducted an experiment in which he found a strong correlation between messier blocks and pro-social behavior. Montgomery sent researchers, posing as lost tourists, to places he coded as either 'active' or 'inactive' facades. He concluded that the former had a high level of interest, that is they were messy, while the latter had no special features such as long warehouse blocks. Pedestrians at active sites were nearly five times more likely to offer assistance than at inactive ones. Of those who assisted, seven times as many at the active site offered use of their phone.</p>
+                                        <p><strong>Section F:</strong> Fortunately, it's not necessarily a dichotomy - new architecture can achieve the optimal level of cacophony and beauty. Take the 2006 Hearst Tower in midtown Manhattan. Designed by architect Norman Foster, Hearst Tower is a glass-and-steel skyscraper, 40 stories of which are designed in a triangular pattern, differing in style from the 1920s Art Deco base. From the outside, the facade jolts city dwellers from their daily commutes, while energizing employees who enter it each morning. For many who walk by, Hearst Tower's design may not be the easiest to understand; it's both sleek and old. The top looks like it traveled from the future. Inside, workers travel upon diagonal escalators, up a three-story water sculpture, through the tower's historic atrium, flooded with light. Few New Yorkers who pass by would find this building boring. And they're likely to be happier - maybe even nicer to each other - because of it.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900 mb-2 text-center">Thinking for themselves</h1>
+                                    <p className="italic text-sm text-gray-600 mb-4 text-center">Some insights into animal intelligence</p>
+                                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                                        <p>In 1977 Irene Pepperberg brought Alex, a one-year-old African gray parrot, into her lab at Harvard University to teach him to reproduce the sounds of English. At that time most scientists considered animals mere machines, lacking the ability to think in a rational way or feel emotions as humans do. 'I wasn't trying to see if Alex could learn a human language,' said Pepperberg. 'My plan always was to use his imitative skills to get a better understanding of avian cognition.' Given that Alex's brain was the size of a walnut, most researchers thought Pepperberg's study would be futile. But by the time Alex died in 2007, he knew 150 words, could count, do simple arithmetic, and distinguish between objects according to shape, color, and material. Many of Alex's skills, such as his ability to understand the concepts of 'same' and 'different', are generally ascribed only to higher mammals. But parrots, like higher apes (and humans), live in complex societies, and need to monitor changing relationships and environments.</p>
+                                        <p>'They need to distinguish colors to know when a fruit is ripe or unripe,' Pepperberg noted. 'They need to categorize things - what's edible, what isn't - and to know the shapes of predators. And it helps to have a concept of numbers if you need to keep track of your flock. For a long-lived bird, you can't do all of this with instinct; cognition must be involved.'</p>
+                                        <p>Just how easily mental skills can be acquired is perhaps best illustrated by dogs. For abstract thinking, humans employ symbols, letting one thing stand for another. And Juliane Kaminski, of the Max Planck Institute for Evolutionary Anthropology in Leipzig, believes that dogs can do this too. In 2008, Kaminski and her colleague Sebastian Tempelmann conducted an experiment with a border collie. The dog successfully selected and brought her owner toys which she had never seen before, prompted only by a picture of each toy.</p>
+                                        <p>Creativity is another skill which seems to have evolved in humans and animals alike. 'People were initially surprised to discover that chimpanzees make tools,' says behavioral ecologist Alex Kacelnik. 'But then people thought, "Well, they share our ancestry - of course they're smart." Now we're finding these kinds of exceptional behaviors in some species of birds.' New Caledonian crows, for example, use their beaks and claws to fashion tools to poke out grubs from palm trees. 'But the problem is we don't have a recently shared ancestry with birds - our last common ancestor was a reptile living over 300 million years ago.'</p>
+                                        <p>Kacelnik and his researchers at Oxford University were particularly impressed with the ingenuity of one of the crows - Betty, a wild-caught female. In one experiment, Betty successfully selected a hook-shaped wire to get a piece of meat from a glass tube. Then, when another bird unexpectedly stole the hook, Betty took a straight piece of wire, shaped it into a hook, and retrieved the food. This was the first time Betty had seen a piece of wire like this, Kacelnik says, 'is a major kind of cognitive sophistication.'</p>
+                                        <p>We are clearly not alone in our ability to invent or plan - or even to plot and lie. Studies show that western scrub jays can guess another bird's intentions and act on that knowledge. A jay knows that if another jay watches it hide a nut, there's a chance it will be stolen. So the first jay will return to move the nut when the other jay is gone. 'It's some of the best evidence so far of experience projection in another species,' says Nicky Clayton of Cambridge University. What's more, the jays seem to know how long ago they hid a particular kind of food, and they manage to retrieve it before it spoils. Human cognitive psychologists call this ability 'episodic memory' and argue that it only exists in species that can mentally travel back in time. They believe that animals cannot distinguish among past, present, and future the way humans do. Such skepticism is a challenge for Clayton. 'We have good evidence that jays remember specific hiding events, which is the original definition of episodic memory. But now the goalposts have moved. Whenever we find a mental skill in a species that is reminiscent of human ability, the human cognition scientists change the definition.'</p>
+                                        <p>Cognitive psychologist Louis Herman has spent decades studying bottlenose dolphins. These intelligent mammals are highly interactive, social and cosmopolitan, living in subpolar to tropical environments worldwide. Among the many skills exhibited by Herman's dolphins is the ability to imitate the motor behaviors of instructors. If a trainer bent backward and lifted a leg, the dolphin would turn on its back and lift its tail in the air. This requires the imitator to form a mental image of the other individual's body, then adjust its own body accordingly - actions that imply an awareness of one's self, an ability once seen as the sole preserve of humans.</p>
+                                        <p>What Herman finds fascinating is that these aquatic creatures diverged from primates millions of years ago. That kind of cognitive convergence suggests there must be some similar pressures selecting for intellect. We don't share their biology or ecology, but do share the need to establish life-long bonds and alliances. This appears to be the likely common driving force.'</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Divider */}
+                        <div className="divider-handle">↔</div>
+
+                        {/* Cột phải: Questions */}
+                        <div className="questions-pane custom-scrollbar">
+                            {currentPart === 1 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 1 – 5</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the table below. Choose ONE WORD ONLY from the passage for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm space-y-3 mb-8">
+                                        <p className="font-bold text-[#0f5132]">Dedicated museum spaces for families with children</p>
+                                        <p>• <strong>Melbourne Museum (Children's Gallery):</strong> 3-8 year olds. Aim: present 1 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q1'] || ''} onChange={e => handleAnswerChange('r_q1', e.target.value)} /> topics in interesting ways; stimulate children's senses.</p>
+                                        <p>• <strong>National Museum of Australia (Kspace / Our Place):</strong> Children. Aim: Use 2 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q2'] || ''} onChange={e => handleAnswerChange('r_q2', e.target.value)} /> to imagine the future.</p>
+                                        <p>• <strong>National Australian Maritime Museum (Pirates):</strong> Children of school age & 3 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q3'] || ''} onChange={e => handleAnswerChange('r_q3', e.target.value)} />. Aim: Stimulate the life of a pirate.</p>
+                                        <p>• <strong>4 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q4'] || ''} onChange={e => handleAnswerChange('r_q4', e.target.value)} /> Museum (Zoe's House):</strong> Pre-schoolers. Aim: Use play to encourage 5 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q5'] || ''} onChange={e => handleAnswerChange('r_q5', e.target.value)} /> between children.</p>
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 6 – 9</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the notes below. Choose NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm space-y-3 mb-8">
+                                        <p className="font-bold text-gray-800">When families visit museums, they:</p>
+                                        <p>• determine the location of exhibits</p>
+                                        <p>• prefer exhibits that are 6 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q6'] || ''} onChange={e => handleAnswerChange('r_q6', e.target.value)} /></p>
+                                        <p>• move slowly through the first gallery</p>
+                                        <p>• move without planning through the remaining galleries</p>
+                                        <p>• enjoy seeing their 7 <input type="text" className="border rounded px-2 py-1 w-32 mx-1 border-gray-400" value={answers['r_q7'] || ''} onChange={e => handleAnswerChange('r_q7', e.target.value)} /> a second time</p>
+                                        <p>• speak to staff</p>
+                                        <p>• sit or take a 8 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q8'] || ''} onChange={e => handleAnswerChange('r_q8', e.target.value)} /></p>
+                                        <p>• stay for a maximum of 9 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q9'] || ''} onChange={e => handleAnswerChange('r_q9', e.target.value)} /></p>
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 10 – 13</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose TRUE, FALSE or NOT GIVEN based on Reading Passage 1.</p>
+                                    <div className="space-y-4">
+                                        {[
+                                            "10. Some adult visitors behave like a museum specialist when guiding younger visitors.",
+                                            "11. It is more enjoyable to visit a museum with a group of children who are all the same age.",
+                                            "12. Parents think that the cost of visiting museums is too high.",
+                                            "13. Children want to visit museums after they learn about a topic at school."
+                                        ].map((text, i) => (
+                                            <div key={i} className="border-b pb-3">
+                                                <p className="text-sm font-medium mb-2">{text}</p>
+                                                <div className="space-y-1">
+                                                    {["TRUE", "FALSE", "NOT GIVEN"].map(opt => (
+                                                        <label key={opt} className="idp-radio-label text-sm text-gray-700">
+                                                            <input type="radio" name={`r_q${i + 10}`} value={opt} checked={answers[`r_q${i + 10}`] === opt} onChange={() => handleAnswerChange(`r_q${i + 10}`, opt)} />
+                                                            {opt}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 2 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 14 – 18</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Which section contains the following information? Write A–F.</p>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "14. a description of a building that has a positive effect",
+                                            "15. a reference to architecture affecting people's performance in their jobs",
+                                            "16. examples of the intensity of people's reactions in two urban settings",
+                                            "17. details of a study where seeing certain pictures reduced people's stress",
+                                            "18. a claim about feelings experienced in response to both architecture and leisure settings"
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${14 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${14 + i}`, e.target.value)} placeholder="A-F" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 19 – 23</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Match each statement with the correct researcher (A, B, C or D).</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>A.</strong> Colin Ellard</p>
+                                        <p><strong>B.</strong> Brendan Walker</p>
+                                        <p><strong>C.</strong> Rudd, Vohs and Aaker</p>
+                                        <p><strong>D.</strong> Charles Montgomery</p>
+                                    </div>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "19. The aim of good city planning is to provide variety in architecture.",
+                                            "20. People in untidy areas were more helpful.",
+                                            "21. People who had recently felt amazed, placed less importance on material goods.",
+                                            "22. 'Attractive' places are not necessarily the most enjoyable places to be.",
+                                            "23. One particular building failed to provide visual stimulation."
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${19 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${19 + i}`, e.target.value)} placeholder="A-D" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 24 – 26</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Complete the summary below. Choose ONE WORD ONLY from the passage for each answer.</p>
+                                    <div className="bg-gray-50 p-4 rounded border text-sm leading-loose">
+                                        <p className="font-bold text-gray-800 mb-2">Hearst Tower</p>
+                                        Norman Foster's Hearst Tower was built in 2006. The 40-storey modern triangular-patterned building is made of glass and steel, contrasting with the base which is in the style of the 1920s. The sight of the building's 24 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q24'] || ''} onChange={e => handleAnswerChange('r_q24', e.target.value)} /> has a striking impact on commuters and employees. Some passers-by may find the building's design confusing, as it mixes old and new elements. Inside the tower 25 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q25'] || ''} onChange={e => handleAnswerChange('r_q25', e.target.value)} /> carry employees up past a large water sculpture in the light-filled 26 <input type="text" className="border rounded px-2 py-1 w-28 mx-1 border-gray-400" value={answers['r_q26'] || ''} onChange={e => handleAnswerChange('r_q26', e.target.value)} />.
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPart === 3 && (
+                                <div>
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 27 – 30</h3>
+                                    <p className="text-xs text-gray-600 mb-2">Complete each sentence with the correct ending, A–G.</p>
+                                    <div className="text-xs bg-gray-100 p-3 rounded mb-4 space-y-1">
+                                        <p><strong>A.</strong> make their own tools.</p>
+                                        <p><strong>B.</strong> copy a human's posture.</p>
+                                        <p><strong>C.</strong> recognise their own images.</p>
+                                        <p><strong>D.</strong> interpret visual representations of objects.</p>
+                                        <p><strong>E.</strong> use language creatively.</p>
+                                        <p><strong>F.</strong> predict another individual's actions.</p>
+                                        <p><strong>G.</strong> learn basic number skills.</p>
+                                    </div>
+                                    <div className="space-y-3 mb-8">
+                                        {[
+                                            "27. Irene Pepperberg has shown that parrots can",
+                                            "28. Experiments have indicated that dogs know how to",
+                                            "29. Research has revealed that scrub jays are able to",
+                                            "30. Captive dolphins have been seen to"
+                                        ].map((text, i) => (
+                                            <div key={i} className="flex items-center space-x-2 border-b pb-2">
+                                                <span className="text-sm flex-1">{text}</span>
+                                                <input type="text" className="border rounded w-16 p-1 text-center border-gray-400 uppercase" value={answers[`r_q${27 + i}`] || ''} onChange={e => handleAnswerChange(`r_q${27 + i}`, e.target.value)} placeholder="A-G" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 31 – 35</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose the correct letter, A, B, C or D.</p>
+                                    <div className="space-y-6 mb-8">
+                                        {[
+                                            {
+                                                q: "31. What is Pepperberg doing in the third paragraph?",
+                                                opts: ["A. justifying her belief in birds' cognitive skills", "B. explaining how cognition-based skills can be tested", "C. detailing the process by which birds acquire cognitive skills", "D. describing the differences between instinct- and cognition-based skills"]
+                                            },
+                                            {
+                                                q: "32. According to Kacelnik, people doubt birds' tool-making abilities because of the birds'",
+                                                opts: ["A. brain size.", "B. physical limitations.", "C. evolutionary history.", "D. feeding requirements."]
+                                            },
+                                            {
+                                                q: "33. What does Kacelnik say is most significant about Betty the crow's behaviour?",
+                                                opts: ["A. her ability to visualise the finished tool", "B. her physical dexterity at crafting the tool", "C. her speed in solving a variety of problems", "D. her understanding of the flexible properties of the wire"]
+                                            },
+                                            {
+                                                q: "34. What is Clayton's complaint about human cognition scientists?",
+                                                opts: ["A. They use different criteria to judge human and animal study findings.", "B. They alter the meanings of the terms of reference they use.", "C. They fail to understand the purpose of her investigations.", "D. They claim that there are flaws in her research methods."]
+                                            },
+                                            {
+                                                q: "35. According to Herman, what is an important factor in the development of cognitive skills in both humans and dolphins?",
+                                                opts: ["A. communicative ability", "B. social relationships", "C. range of habitat", "D. brain capacity"]
+                                            }
+                                        ].map((item, idx) => (
+                                            <div key={idx} className="border-b pb-4">
+                                                <p className="text-sm font-medium mb-2">{item.q}</p>
+                                                <div className="space-y-1">
+                                                    {item.opts.map((opt, oIdx) => {
+                                                        const letter = String.fromCharCode(65 + oIdx);
+                                                        return (
+                                                            <label key={letter} className="idp-radio-label text-sm text-gray-700">
+                                                                <input type="radio" name={`r_q${31 + idx}`} value={letter} checked={answers[`r_q${31 + idx}`] === letter} onChange={() => handleAnswerChange(`r_q${31 + idx}`, letter)} />
+                                                                {opt}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <h3 className="font-bold text-base text-gray-900 mb-2">Questions 36 – 40</h3>
+                                    <p className="text-xs text-gray-600 mb-4">Choose YES, NO or NOT GIVEN based on Reading Passage 3.</p>
+                                    <div className="space-y-4">
+                                        {[
+                                            "36. In 1977 only a few scientists believed that birds were capable of logical thought.",
+                                            "37. Pepperberg wanted to see if Alex could be trained to speak English fluently.",
+                                            "38. Higher apes such as chimpanzees show an awareness of others' intentions.",
+                                            "39. Betty was the only crow in Kacelnik's study who made a tool out of wire.",
+                                            "40. It is now widely accepted that animals understand about past events."
+                                        ].map((text, i) => (
+                                            <div key={i} className="border-b pb-3">
+                                                <p className="text-sm font-medium mb-2">{text}</p>
+                                                <div className="space-y-1">
+                                                    {["YES", "NO", "NOT GIVEN"].map(opt => (
+                                                        <label key={opt} className="idp-radio-label text-sm text-gray-700">
+                                                            <input type="radio" name={`r_q${36 + i}`} value={opt} checked={answers[`r_q${36 + i}`] === opt} onChange={() => handleAnswerChange(`r_q${36 + i}`, opt)} />
+                                                            {opt}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Footer Nav Bar */}
+                    <footer className="test-footer">
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(1)}
+                                className={`nav-part-btn ${currentPart === 1 ? 'active' : ''}`}
+                            >
+                                Part 1 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(1, 13)}/13</span>
+                            </button>
+
+                            <div className="flex items-center">
+                                {[1,2,3,4,5,6,7,8,9,10,11,12,13].map(q => (
+                                    <span 
+                                        key={q} 
+                                        className={`q-square ${answers[`r_q${q}`] ? 'answered' : ''}`}
+                                        onClick={() => setCurrentPart(1)}
+                                    >
+                                        {q}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(2)}
+                                className={`nav-part-btn ${currentPart === 2 ? 'active' : ''}`}
+                            >
+                                Part 2 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(14, 26)}/13</span>
+                            </button>
+
+                            <button 
+                                onClick={() => setCurrentPart(3)}
+                                className={`nav-part-btn ${currentPart === 3 ? 'active' : ''}`}
+                            >
+                                Part 3 <span className="text-xs text-gray-400 ml-1">{countPartAnswered(27, 40)}/14</span>
+                            </button>
+
+                            <div className="flex items-center space-x-1">
+                                <button onClick={() => setCurrentPart(prev => Math.max(1, prev - 1))} className="p-1 border rounded bg-gray-50 hover:bg-gray-200">←</button>
+                                <button onClick={() => setCurrentPart(prev => Math.min(3, prev + 1))} className="p-1 border rounded bg-gray-50 hover:bg-gray-200">→</button>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* Modal Báo kết quả */}
+                    {isSubmitted && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                <h2 className="text-2xl font-bold text-[#0f5132] border-b pb-2 mb-4">KẾT QUẢ BÀI THI IELTS READING MOCK TEST 4</h2>
+                                
+                                {isSubmitting && (
+                                    <div className="p-3 bg-blue-50 text-blue-700 rounded mb-4 text-center font-medium animate-pulse">
+                                        🔄 Đang ghi điểm lên Google Sheets...
+                                    </div>
+                                )}
+                                {submitStatus && (
+                                    <div className="p-3 bg-green-50 text-green-800 rounded mb-4 text-center font-bold">
+                                        {submitStatus}
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    let correct = 0;
+                                    Object.keys(READING_CORRECT_ANSWERS).forEach(qId => {
+                                        if (checkAnswer(qId, answers[qId])) correct++;
+                                    });
+                                    const band = calculateIELTSBand(correct);
+
+                                    return (
+                                        <div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg text-center mb-6">
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.code}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">HỌ TÊN</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.name}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                                    <span className="font-bold text-xl text-green-600">{correct} / 40</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">BAND SCORE</span>
+                                                    <span className="font-black text-2xl text-[#0f5132]">{band}</span>
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-bold text-base text-gray-800 mb-3">Chi Tiết Đáp Án:</h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                                {Object.keys(READING_CORRECT_ANSWERS).map((qId, idx) => {
+                                                    const isCorr = checkAnswer(qId, answers[qId]);
+                                                    return (
+                                                        <div key={qId} className={`p-2 border rounded ${isCorr ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                                                            <span className="font-bold">Câu {idx + 1}:</span> {answers[qId] || '-'}
+                                                            <br/>
+                                                            <span className="text-gray-500">Đ.Án: {READING_CORRECT_ANSWERS[qId]}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-6 w-full bg-gray-800 text-white py-2.5 rounded font-bold hover:bg-black"
+                                >
+                                    Đóng & Làm Bài Mới
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
