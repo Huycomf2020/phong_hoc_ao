@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHÒNG HỌC ẢO APLUS</title>
+    <!-- Font Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+            background-color: #0d1117;
+            color: #ffffff;
+        }
+
+        /* Background Video Overlay & Styling */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(8px) brightness(0.6) opacity(0.85);
+            transform: scale(1.05);
+            transition: transform 0.1s ease-out;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(16, 37, 28, 0.4) 0%, rgba(5, 12, 9, 0.85) 100%);
+            pointer-events: none;
+        }
+
+        /* Perspective Container for 3D Parallax */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            perspective: 1200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Header UI */
+        header {
+            width: 100%;
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            font-size: 22px;
+            color: #fff;
+        }
+
+        h1.header-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #ffffff, #a7f3d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+            color: #a7f3d0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* 3D Room / Content Area */
+        .room-3d {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 80px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Instruction Badge */
+        .instruction {
+            position: absolute;
+            top: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 14px;
+            color: #6ee7b7;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+
+        /* Book Item Wrapper */
+        .book-wrapper {
+            position: relative;
+            perspective: 1200px;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        /* 3D Book Container */
+        .book-3d {
+            width: 230px;
+            height: 320px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            transform: rotateY(-18deg) rotateX(6deg);
+        }
+
+        .book-wrapper:hover .book-3d {
+            transform: rotateY(0deg) rotateX(0deg) translateY(-10px) scale(1.05);
+        }
+
+        /* Trang Ruột Bên Trong (Xuất hiện khi mở bìa) */
+        .book-inside-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            text-align: center;
+            border-left: 6px solid #e2e8f0;
+            z-index: 1;
+        }
+
+        .inside-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            border-radius: 30px;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .book-wrapper:hover .inside-btn {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #047857, #059669);
+        }
+
+        /* Bìa Trước Mở Sang Trái Như Sách Thật */
+        .book-cover-front {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #10b981 100%);
+            border-radius: 4px 12px 12px 4px;
+            box-shadow: inset 4px 0 10px rgba(0,0,0,0.4), 0 15px 35px rgba(0, 0, 0, 0.5);
+            transform-origin: left center;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 25px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 8px solid #022c22;
+            backface-visibility: hidden; /* Dấu bìa sau khi mở hẳn */
+        }
+
+        /* Hiệu ứng Mở Bìa Sang Trái 180 độ */
+        .book-wrapper:hover .book-cover-front {
+            transform: rotateY(-180deg);
+        }
+
+        /* Dải Kim Loại / Spine Bìa */
+        .book-cover-front::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.2) 100%);
+            pointer-events: none;
+        }
+
+        .book-badge {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .book-title-area {
+            text-align: center;
+            margin: auto 0;
+        }
+
+        .book-title-area i {
+            font-size: 42px;
+            margin-bottom: 15px;
+            color: #a7f3d0;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+        }
+
+        .book-title-area h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.3;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        .book-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #d1fae5;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 12px;
+        }
+
+        /* Glow pedestal under books */
+        .pedestal {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%) rotateX(75deg);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(16, 185, 129, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .book-wrapper:hover .pedestal {
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.7) 0%, rgba(16, 185, 129, 0) 70%);
+        }
+
+        /* Footer */
+        footer {
+            padding: 20px;
+            z-index: 10;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+            width: 100%;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+            h1.header-title {
+                font-size: 18px;
+            }
+            .room-3d {
+                flex-direction: column;
+                gap: 40px;
+                height: auto;
+                margin: auto 0;
+            }
+            .book-3d {
+                width: 190px;
+                height: 270px;
+            }
+            .inside-btn {
+                font-size: 15px;
+                padding: 10px 18px;
+            }
+            .instruction {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Background Mờ -->
+    <div class="bg-container">
+        <video class="bg-video" autoplay loop muted playsinline>
+            <source src="images/background.mp4" type="video/mp4">
+        </video>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <!-- 3D Scene Wrapper -->
+    <div class="scene-container" id="sceneContainer">
+        
+        <!-- Header -->
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h1 class="header-title">PHÒNG HỌC ẢO APLUS</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="knowledge/" class="nav-btn"><i class="fa-solid fa-book-open"></i> Kiến Thức</a>
+                <a href="practice/" class="nav-btn"><i class="fa-solid fa-pen-ruler"></i> Luyện Thi</a>
+            </nav>
+        </header>
+
+        <!-- Instruction Badge -->
+        <div class="instruction">
+            <i class="fa-solid fa-hand-pointer"></i> Di chuyển chuột để xoay phòng 3D • Rê chuột vào sách để mở
+        </div>
+
+        <!-- 3D Interactive Room -->
+        <div class="room-3d" id="room3D">
+
+            <!-- Quyển sách 1: KIẾN THỨC -->
+            <a href="knowledge/" class="book-wrapper">
+                <div class="pedestal"></div>
+                <div class="book-3d">
+                    <!-- Trang Ruột Trắng Bên Trong -->
+                    <div class="book-inside-page">
+                        <div class="inside-btn">
+                            Vào học <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Bìa Trước Xanh Lục -->
+                    <div class="book-cover-front">
+                        <div class="book-badge">A+ MODULE</div>
+                        <div class="book-title-area">
+                            <i class="fa-solid fa-brain"></i>
+                            <h2>KIẾN THỨC</h2>
+                        </div>
+                        <div class="book-footer">
+                            <span>Thư viện lý thuyết</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Quyển sách 2: LUYỆN THI -->
+            <a href="practice/" class="book-wrapper">
+                <div class="pedestal"></div>
+                <div class="book-3d">
+                    <!-- Trang Ruột Trắng Bên Trong -->
+                    <div class="book-inside-page">
+                        <div class="inside-btn">
+                            Vào luyện thi <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- Bìa Trước Xanh Lục -->
+                    <div class="book-cover-front">
+                        <div class="book-badge">A+ PRACTICE</div>
+                        <div class="book-title-area">
+                            <i class="fa-solid fa-square-check"></i>
+                            <h2>LUYỆN THI</h2>
+                        </div>
+                        <div class="book-footer">
+                            <span>Đề thi & Trắc nghiệm</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 PHÒNG HỌC ẢO APLUS. Thiết kế hiện đại & sinh động cho không gian học tập trực tuyến.</p>
+        </footer>
+
+    </div>
+
+    <!-- Script tạo hiệu ứng 3D Parallax mượt mà -->
+    <script>
+        const room3D = document.getElementById('room3D');
+        const bgVideo = document.querySelector('.bg-video');
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            mouseX = (e.clientX - windowWidth / 2) / (windowWidth / 2);
+            mouseY = (e.clientY - windowHeight / 2) / (windowHeight / 2);
+        });
+
+        function animate() {
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            const rotateY = targetX * 12; // Giảm biên độ xoay để không bị giật
+            const rotateX = -targetY * 8;
+
+            room3D.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+            if (bgVideo) {
+                bgVideo.style.transform = `scale(1.05) translate(${-targetX * 8}px, ${-targetY * 8}px)`;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
