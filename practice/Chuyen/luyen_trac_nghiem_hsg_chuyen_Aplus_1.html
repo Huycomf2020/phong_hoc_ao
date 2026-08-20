@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUYỆN TRẮC NGHIỆM HSG-CHUYÊN - PHẦN NGỮ PHÁP & TỪ VỰNG</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            background-color: #f8fafc;
+        }
+        .header {
+            background-color: #0f172a;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 64px;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+        .opt-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .opt-card:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="custom-scrollbar">
+
+    <!-- SCREEN 1: LOGIN / SETUP -->
+    <div id="setup-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-6">
+                <span class="text-[11px] font-extrabold tracking-widest text-blue-600 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                    TRUNG TÂM NGOẠI NGỮ APLUS
+                </span>
+                <h1 class="text-2xl font-black text-slate-900 mt-3 leading-snug">
+                    LUYỆN TRẮC NGHIỆM HSG-CHUYÊN
+                </h1>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">ĐỀ THI CHUẨN B2 - C1 - C2 (LEXICAL-GRAMMAR)</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-xs font-bold uppercase text-slate-600 mb-1">
+                        Mã số Thí sinh / Lớp
+                    </label>
+                    <input 
+                        type="text" 
+                        id="candidate-code"
+                        class="w-full border border-slate-300 rounded-xl shadow-sm p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold" 
+                        placeholder="Ví dụ: HSG11-01"
+                        value="HSG-01"
+                    />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-xs font-bold uppercase text-slate-600 mb-1">
+                        Họ và Tên Thí sinh
+                    </label>
+                    <input 
+                        type="text" 
+                        id="full-name"
+                        class="w-full border border-slate-300 rounded-xl shadow-sm p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold" 
+                        placeholder="Ví dụ: Nguyễn Văn A"
+                        value="Phan Ngọc Huy"
+                    />
+                </div>
+                
+                <p id="setup-error" class="text-red-500 text-xs text-center font-semibold hidden"></p>
+                
+                <button 
+                    type="button"
+                    id="btn-start-now"
+                    onclick="startTestDirectly()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/30 text-sm cursor-pointer border-0 mt-2 block text-center uppercase tracking-wide"
+                >
+                    BẮT ĐẦU LÀM BÀI (30 PHÚT)
+                </button>
+            </div>
+
+            <button 
+                type="button"
+                onclick="resetSystem()"
+                class="mt-5 text-xs text-slate-400 hover:text-red-500 underline mx-auto block cursor-pointer border-0 bg-transparent transition"
+            >
+                Xóa dữ liệu & Làm lại từ đầu
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN TEST INTERFACE -->
+    <div id="test-interface" class="app-container hidden">
+        <!-- HEADER -->
+        <header class="header flex justify-between items-center px-4 md:px-8">
+            <div class="flex items-center space-x-4">
+                <span class="text-lg md:text-xl font-extrabold tracking-tight text-blue-400">LUYỆN HSG-CHUYÊN</span>
+                <span id="header-user-info" class="hidden md:block text-xs font-semibold opacity-80 border-l border-slate-700 pl-4"></span>
+            </div>
+            <div class="flex items-center space-x-3 md:space-x-5">
+                <div class="text-right">
+                    <span class="block text-[10px] uppercase tracking-wider opacity-70 font-bold">Thời gian còn lại</span>
+                    <span id="timer-display" class="text-xl md:text-2xl font-mono font-black text-amber-400">30:00</span>
+                </div>
+                <div class="hidden lg:block text-xs bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700 text-slate-200 font-medium">
+                    Đã làm: <span id="answered-count" class="font-black text-amber-400">0</span>/20 câu
+                </div>
+                <button 
+                    id="toggle-timer-btn"
+                    onclick="toggleTimer()"
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold shadow-sm cursor-pointer transition"
+                >
+                    Tạm dừng
+                </button>
+                <button 
+                    id="submit-btn"
+                    onclick="handleSubmitClick()"
+                    class="py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-slate-700 text-slate-400 cursor-not-allowed opacity-75 transition"
+                >
+                    Nộp bài
+                </button>
+            </div>
+        </header>
+
+        <!-- SUB-HEADER / TAB -->
+        <div class="bg-slate-200 px-6 border-b border-slate-300">
+            <button class="py-3 px-6 font-bold text-slate-900 bg-white border-t-2 border-blue-600 rounded-t-xl text-xs md:text-sm uppercase tracking-wider">
+                PHẦN NGỮ PHÁP - TỪ VỰNG - IDIOMS (20 CÂU HSG - CHUYÊN)
+            </button>
+        </div>
+
+        <!-- MAIN QUESTIONS CONTENT -->
+        <main class="main-content custom-scrollbar">
+            <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
+                <div class="border-b pb-4 mb-6">
+                    <h2 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">SECTION I. ADVANCED LEXICAL-GRAMMAR (20 QUESTIONS)</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-1">
+                        Choose the best option (A, B, C, or D) that best completes each of the following sentences.
+                    </p>
+                </div>
+
+                <div id="questions-container" class="space-y-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: CONFIRM SUBMISSION -->
+    <div id="end-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-100">
+            <h3 class="text-xl font-black text-slate-900 mb-2">Xác nhận nộp bài thi</h3>
+            <p class="mb-6 text-sm text-slate-600 leading-relaxed">
+                Bạn có chắc chắn muốn hoàn thành bài làm? Ngay sau khi nộp bài, hệ thống sẽ tự động lưu điểm vào Google Sheet và mở đáp án phân tích chi tiết.
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button class="py-2.5 px-4 rounded-xl font-bold text-slate-600 hover:bg-slate-100 text-sm cursor-pointer transition" onclick="closeEndModal()">
+                    Xem lại bài
+                </button>
+                <button class="py-2.5 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md text-sm cursor-pointer transition" onclick="confirmSubmit()">
+                    Nộp bài & Xem đáp án
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DETAILED REPORT & ANNOTATED KEY -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col">
+            <div class="border-b pb-4 mb-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900">KẾT QUẢ BÀI THI & GIẢI THÍCH CHI TIẾT</h3>
+                    <p id="report-user-info" class="text-xs font-semibold text-slate-500 mt-1"></p>
+                    <span id="sync-status" class="inline-block mt-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        ⏳ Đang đồng bộ điểm số lên Google Sheet...
+                    </span>
+                </div>
+                <div class="text-right bg-blue-50 border border-blue-200 px-5 py-2.5 rounded-2xl">
+                    <span class="text-[10px] font-extrabold text-blue-600 uppercase block tracking-wider">Tổng điểm</span>
+                    <span id="score-display" class="text-2xl font-black text-blue-700">0 / 20</span>
+                </div>
+            </div>
+
+            <div id="report-container" class="space-y-4 text-sm overflow-y-auto custom-scrollbar flex-grow pr-2"></div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t mt-4">
+                <button class="py-2.5 px-6 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white text-sm shadow cursor-pointer transition" onclick="resetSystem()">
+                    Hoàn thành & Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔗 THẦY DÁN URL WEB APP APPS SCRIPT VỪA TẠO VÀO GIỮA HAI DẤU NGOẶC KÉP NÀY:
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // MASTER ANSWER KEYS (AUTHENTICATED B2 - C1 - C2)
+        const CORRECT_ANSWERS = {
+            'q1': 'B', 'q2': 'C', 'q3': 'D', 'q4': 'C', 'q5': 'A',
+            'q6': 'B', 'q7': 'B', 'q8': 'A', 'q9': 'A', 'q10': 'A',
+            'q11': 'A', 'q12': 'A', 'q13': 'D', 'q14': 'B', 'q15': 'C',
+            'q16': 'A', 'q17': 'C', 'q18': 'D', 'q19': 'B', 'q20': 'B'
+        };
+
+        // PEDAGOGICAL & ADVANCED EXPLANATIONS
+        const EXPLANATIONS = {
+            'q1': '<b>Rút gọn Mệnh đề Trạng ngữ (Perfect Participle):</b> Dùng "Not having + V3/ed" chỉ lý do xảy ra và hoàn thành trước hành động trong mệnh đề chính. <i>Dịch: Do chưa từng đến công viên quốc gia trước đây, Sue rất ngạc nhiên khi thấy mạch nước phun.</i>',
+            'q2': '<b>Phân biệt Từ vựng (B2-C1):</b> <b>imply</b> (hàm ý, ám chỉ - dùng cho văn bản/người nói). Phân biệt với <b>refer to</b> (đề cập đến) và <b>infer</b> (suy ra - dùng cho người đọc/nghe). <i>Dịch: Đoạn văn hàm ý rằng những người định cư đầu tiên là người Tây Ban Nha.</i>',
+            'q3': '<b>Collocation / Unit Noun:</b> <b>item of news</b> (tin tức, mẩu tin). "News" là danh từ không đếm được nên phải dùng từ chỉ đơn vị "item".',
+            'q4': '<b>Collocation & Nguồn từ (C1):</b> <b>individual needs</b> (nhu cầu cá nhân / riêng biệt của từng người). "Separate" là tách biệt cơ học, "divided" là bị chia rẽ, "distinctive" là đặc trưng.',
+            'q5': '<b>Collocation / Legal Term:</b> <b>birth certificate</b> (giấy khai sinh). "License" là giấy phép/bằng lái; "paper/card" không dùng ghép với "birth" thành thuật ngữ pháp lý này.',
+            'q6': '<b>Từ vựng B2:</b> <b>punctual</b> (đúng giờ). Dựa vào ngữ cảnh "You are late again" (Bạn lại trễ rồi). "Accurate" là chính xác, "efficient" là hiệu suất cao, "reliable" là đáng tin cậy.',
+            'q7': '<b>Idiom (Idiomatic Expression):</b> <b>green with envy</b> (cực kỳ ghen tị/thèm muốn). Đây là thành ngữ cố định chỉ sự đố kỵ.',
+            'q8': '<b>Ngữ pháp Đại từ & Định lượng từ:</b> <b>almost everything</b> (hầu như mọi thứ). "Almost" làm trạng từ bổ nghĩa cho đại từ bất định "everything". "Everything" không bao giờ ở dạng số nhiều "everythings".',
+            'q9': '<b>Cấu trúc Đảo ngữ nâng cao (Inversion):</b> "Only + Trạng ngữ chỉ thời gian + Trợ động từ + S + V". Chọn A: <b>was liquor prohibited</b>. <i>Dịch: Chỉ trong suốt đầu thế kỷ 20 thì chất có cồn mới bị cấm tại Hoa Kỳ.</i>',
+            'q10': '<b>Cấu trúc Be used to + N/V-ing:</b> <b>be used to sth</b> (quen với cái gì). Câu B, C, D sai ngữ pháp hoặc sai thì trong ngữ cảnh hiện tại.',
+            'q11': '<b>Ngôn ngữ Giao tiếp (Conversational English):</b> <b>What a shame!</b> (Thật là đáng tiếc!). Các phương án B, C, D sai cấu trúc cảm thán chuẩn.',
+            'q12': '<b>Ngôn ngữ Giao tiếp / Phản hồi lời khuyên:</b> Kay nói "I wouldn\'t do that if I were you" (Nếu tôi là bạn tôi sẽ không làm vậy), John phản hồi tự nhiên: "<b>Wouldn\'t you? Why?</b>" (Bạn sẽ không làm sao? Tại sao?).',
+            'q13': '<b>Mệnh đề Quan hệ So sánh hơn (Relative Clause):</b> Giữa 2 căn phòng ("two rooms") dùng so sánh hơn "larger". Đại từ quan hệ chỉ vật đứng sau giới từ là "which" -> <b>the larger of which</b>.',
+            'q14': '<b>Thức Giả định (Subjunctive Structure):</b> "It\'s about time + S + V2/ed" (Đã đến lúc ai đó phải làm gì - mang tính nhắc nhở). Chọn động từ quá khứ đơn <b>did</b>.',
+            'q15': '<b>Thành ngữ Cấu trúc (Idiomatic Structure):</b> "<b>It\'s no good + V-ing</b>" = "It\'s no use + V-ing" (Chẳng ích gì / Không nên cố làm gì).',
+            'q16': '<b>Cấu trúc Would rather:</b> "<b>would rather + V-bare</b>" (thích/muốn làm gì hơn). Chọn động từ nguyên mẫu không "to": <b>go</b>.',
+            'q17': '<b>Cấu trúc Điều kiện Gián tiếp / Loại trừ:</b> <b>But for + N/V-ing</b> = If it hadn\'t been for... (Nếu không có/Nếu không nhờ có). <i>Dịch: Nếu không nhờ lời khuyên của ông ấy, tôi sẽ không bao giờ tìm được việc.</i>',
+            'q18': '<b>Rút gọn Mệnh đề Quan hệ có Số thứ tự (To-Infinitive Clause):</b> Khi có danh từ chứa số thứ tự "The first village", mệnh đề quan hệ dạng bị động rút gọn thành "<b>to be + V3/ed</b>" -> <b>to be built</b>.',
+            'q19': '<b>Cấu trúc Bị động & Giới từ (B2):</b> "<b>be fascinated by sth</b>" (bị mê hoặc/cuốn hút bởi cái gì) + Mệnh đề quan hệ xác định "the story (that) the teacher told them".',
+            'q20': '<b>Modal Verbs in the Past:</b> <b>should have + V3/ed</b> (đáng lẽ ra phải làm gì trong quá khứ nhưng đã không làm). <i>Dịch: Sếp đang giận tôi. Đáng lẽ ra tôi phải làm xong toàn bộ công việc vào tuần trước.</i>'
+        };
+
+        const QUESTIONS = [
+            { id: 'q1', num: 1, text: "........ to the national park before, Sue was amazed to see the geyser.", opts: { A: "Being not", B: "Not having been", C: "Have not been", D: "Having not been" } },
+            { id: 'q2', num: 2, text: "The passage ........ that the first settlers were Spanish.", opts: { A: "refers", B: "instills", C: "implies", D: "infers" } },
+            { id: 'q3', num: 3, text: "There are not many interesting ........ of news in the 'Evening'.", opts: { A: "parts", B: "articles", C: "loads", D: "items" } },
+            { id: 'q4', num: 4, text: "One problem for teacher is that each student has his/her own ........ needs.", opts: { A: "separate", B: "divided", C: "individual", D: "distinctive" } },
+            { id: 'q5', num: 5, text: "To get a passport, you must send in your birth ........ and two photos.", opts: { A: "certificate", B: "license", C: "paper", D: "card" } },
+            { id: 'q6', num: 6, text: "You are late again; please try to be ........ in the future.", opts: { A: "accurate", B: "punctual", C: "efficient", D: "reliable" } },
+            { id: 'q7', num: 7, text: "When Bill saw my new car, he was ........ with envy.", opts: { A: "blue", B: "green", C: "yellow", D: "white" } },
+            { id: 'q8', num: 8, text: "Today ........ seems more expensive than usual.", opts: { A: "almost everything", B: "almost of everythings", C: "most of everything", D: "almost everythings" } },
+            { id: 'q9', num: 9, text: "Only during the early twentieth century ........ in the United States.", opts: { A: "was liquor prohibited", B: "liquor was prohibited then", C: "When liquor was prohibited", D: "that liquor was prohibited" } },
+            { id: 'q10', num: 10, text: '"Mary has difficulty in fitting in." - "Well, I guess she ........ to this type of work."', opts: { A: "isn't used", B: "didn't use", C: "hasn't been used", D: "doesn't get used" } },
+            { id: 'q11', num: 11, text: '"I\'m afraid I can\'t come with you." - "........"', opts: { A: "What a shame!", B: "How pity you are!", C: "Patience.", D: "That's shame." } },
+            { id: 'q12', num: 12, text: 'Kay: "I wouldn\'t do that if I were you." - John: "........"', opts: { A: "Wouldn't you? Why?", B: "Would you, really?", C: "I'd rather you didn't.", D: "It's out of the question." } },
+            { id: 'q13', num: 13, text: "In my apartment there are two rooms, ........ is used as the living-room.", opts: { A: "the large one", B: "the largest one", C: "the largest of which", D: "the larger of which" } },
+            { id: 'q14', num: 14, text: '"It\'s about time you ........ your homework, Mary."', opts: { A: "must do", B: "did", C: "do", D: "will do" } },
+            { id: 'q15', num: 15, text: "........ to work if you are tired.", opts: { A: "You need to trying", B: "You are trying to", C: "It's no good trying", D: "There's no good trying" } },
+            { id: 'q16', num: 16, text: "I think you'd rather ........ to the beach for your holiday.", opts: { A: "go", B: "going", C: "went", D: "to go" } },
+            { id: 'q17', num: 17, text: "........ his advice, I would never have got a job.", opts: { A: "Except", B: "Apart from", C: "But for", D: "As for" } },
+            { id: 'q18', num: 18, text: "The first village ........ around 1000 hectares was not far from the capital.", opts: { A: "that they were built", B: "where built", C: "which built", D: "to be built" } },
+            { id: 'q19', num: 19, text: "The children were completely fascinated ........", opts: { A: "on the story the teacher told them", B: "by the story the teacher told them", C: "by the teacher told story", D: "on the story telling them by the teacher" } },
+            { id: 'q20', num: 20, text: "My boss is angry with me. I didn't do all the work I ........ last week.", opts: { A: "should do", B: "should have done", C: "could do", D: "must have done" } }
+        ];
+
+        // GLOBAL CANDIDATE STATE
+        let candidate = {
+            code: 'HSG-01',
+            name: 'Phan Ngọc Huy',
+            answers: {},
+            timeLeft: 30 * 60,
+            timerRunning: false
+        };
+        let timerInterval = null;
+
+        // DIRECT START FUNCTION
+        function startTestDirectly() {
+            const codeInput = document.getElementById('candidate-code').value.trim();
+            const nameInput = document.getElementById('full-name').value.trim();
+            const errorElem = document.getElementById('setup-error');
+
+            if (!codeInput || !nameInput) {
+                errorElem.innerText = 'Vui lòng nhập đầy đủ Mã thí sinh và Họ tên.';
+                errorElem.classList.remove('hidden');
+                return;
+            }
+
+            errorElem.classList.add('hidden');
+            candidate.code = codeInput;
+            candidate.name = nameInput;
+
+            document.getElementById('setup-screen').style.setProperty('display', 'none', 'important');
+            document.getElementById('test-interface').classList.remove('hidden');
+            document.getElementById('header-user-info').innerText = candidate.code + ' | ' + candidate.name;
+
+            renderQuestions();
+            startTimer();
+        }
+
+        // RENDER QUESTIONS CARDS
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            QUESTIONS.forEach(q => {
+                const qBox = document.createElement('div');
+                qBox.className = "p-4 md:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50";
+
+                let optionsHTML = '';
+                for (let key in q.opts) {
+                    const isChecked = candidate.answers[q.id] === key;
+                    optionsHTML += `
+                        <label class="opt-card flex items-center p-3.5 rounded-xl border cursor-pointer text-xs md:text-sm ${isChecked ? 'bg-blue-50 border-blue-500 text-blue-900 font-semibold shadow-sm' : 'bg-white border-slate-200 text-slate-700'}">
+                            <input 
+                                type="radio" 
+                                name="${q.id}" 
+                                value="${key}" 
+                                ${isChecked ? 'checked' : ''} 
+                                onchange="selectAnswer('${q.id}', '${key}')"
+                                class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 mr-3"
+                            />
+                            <span><strong class="mr-1.5">${key}.</strong> ${q.opts[key]}</span>
+                        </label>
+                    `;
+                }
+
+                qBox.innerHTML = `
+                    <p class="font-bold text-slate-900 text-sm md:text-base mb-3 leading-relaxed">
+                        <span class="text-blue-600 font-extrabold mr-1.5">${q.num}.</span> ${q.text}
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(qBox);
+            });
+        }
+
+        // SELECT ANSWER
+        function selectAnswer(qId, val) {
+            candidate.answers[qId] = val;
+            updateAnsweredCount();
+            renderQuestions();
+        }
+
+        // UPDATE ANSWERED COUNT & SUBMIT BUTTON STATE
+        function updateAnsweredCount() {
+            const count = Object.keys(candidate.answers).length;
+            document.getElementById('answered-count').innerText = count;
+
+            const submitBtn = document.getElementById('submit-btn');
+            if (count >= 20) {
+                submitBtn.className = "py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-blue-600 hover:bg-blue-500 cursor-pointer transition";
+            } else {
+                submitBtn.className = "py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-slate-700 text-slate-400 cursor-not-allowed opacity-75 transition";
+            }
+        }
+
+        // TIMER CONTROL
+        function startTimer() {
+            if (timerInterval) return;
+            candidate.timerRunning = true;
+            timerInterval = setInterval(() => {
+                if (candidate.timeLeft > 0) {
+                    candidate.timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    alert("Đã hết 30 phút làm bài! Hệ thống tự động chuyển sang trang kết quả.");
+                    confirmSubmit();
+                }
+            }, 1000);
+            document.getElementById('toggle-timer-btn').innerText = 'Tạm dừng';
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            candidate.timerRunning = false;
+            document.getElementById('toggle-timer-btn').innerText = 'Tiếp tục';
+        }
+
+        function toggleTimer() {
+            if (candidate.timerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const m = String(Math.floor(candidate.timeLeft / 60)).padStart(2, '0');
+            const s = String(candidate.timeLeft % 60).padStart(2, '0');
+            const display = document.getElementById('timer-display');
+            display.innerText = m + ':' + s;
+
+            if (candidate.timeLeft <= 180) {
+                display.className = "text-xl md:text-2xl font-mono font-black text-red-400 animate-pulse";
+            } else {
+                display.className = "text-xl md:text-2xl font-mono font-black text-amber-400";
+            }
+        }
+
+        // SUBMIT HANDLERS
+        function handleSubmitClick() {
+            const count = Object.keys(candidate.answers).length;
+            if (count < 20) {
+                alert("Bạn chưa hoàn thành đủ 20 câu hỏi (hiện tại: " + count + "/20 câu). Vui lòng hoàn thành tất cả các câu trước khi nộp bài.");
+                return;
+            }
+            pauseTimer();
+            document.getElementById('end-modal').classList.remove('hidden');
+        }
+
+        function closeEndModal() {
+            document.getElementById('end-modal').classList.add('hidden');
+        }
+
+        function confirmSubmit() {
+            pauseTimer();
+            closeEndModal();
+
+            // Calculate Score
+            let correctCount = 0;
+            QUESTIONS.forEach(q => {
+                if (candidate.answers[q.id] === CORRECT_ANSWERS[q.id]) {
+                    correctCount++;
+                }
+            });
+
+            const score10 = ((correctCount / 20) * 10).toFixed(1);
+
+            document.getElementById('score-display').innerText = correctCount + ' / 20';
+            document.getElementById('report-user-info').innerText = 'Thí sinh: ' + candidate.name + ' (' + candidate.code + ')';
+
+            // Build Annotated Report HTML
+            const reportContainer = document.getElementById('report-container');
+            reportContainer.innerHTML = '';
+
+            QUESTIONS.forEach(q => {
+                const userAns = candidate.answers[q.id] || 'Chưa chọn';
+                const correctAns = CORRECT_ANSWERS[q.id];
+                const isCorrect = userAns === correctAns;
+
+                let optBoxesHTML = '';
+                for (let key in q.opts) {
+                    let optBg = 'bg-white border-slate-200 text-slate-700';
+                    if (key === correctAns) {
+                        optBg = 'bg-emerald-600 text-white border-emerald-600 font-bold';
+                    } else if (key === userAns && !isCorrect) {
+                        optBg = 'bg-rose-500 text-white border-rose-500 font-bold';
+                    }
+                    optBoxesHTML += `
+                        <div class="p-2.5 rounded-xl border ${optBg}">
+                            ${key}. ${q.opts[key]}
+                        </div>
+                    `;
+                }
+
+                const item = document.createElement('div');
+                item.className = `p-4 md:p-5 rounded-2xl border ${isCorrect ? 'bg-emerald-50/50 border-emerald-200' : 'bg-rose-50/50 border-rose-200'}`;
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="font-bold text-slate-900 text-sm md:text-base">
+                            Câu ${q.num}: ${q.text}
+                        </p>
+                        <span class="text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider ${isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${isCorrect ? 'ĐÚNG' : 'SAI'}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
+                        ${optBoxesHTML}
+                    </div>
+
+                    <div class="text-xs bg-white p-3.5 rounded-xl border border-slate-200 space-y-1.5 shadow-sm">
+                        <p class="text-slate-600"><strong>Đáp án của bạn:</strong> <span class="${isCorrect ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'}">${userAns}</span></p>
+                        <p class="text-slate-600"><strong>Đáp án đúng:</strong> <span class="text-emerald-700 font-bold">${correctAns}</span></p>
+                        <p class="text-slate-800 mt-2 pt-2 border-t border-slate-100 leading-relaxed">
+                            💡 <strong>Giải thích chuyên sâu:</strong> ${EXPLANATIONS[q.id]}
+                        </p>
+                    </div>
+                `;
+                reportContainer.appendChild(item);
+            });
+
+            document.getElementById('report-modal').classList.remove('hidden');
+
+            // Send data to Google Sheet
+            sendDataToGoogleSheet({
+                candidateCode: candidate.code,
+                candidateName: candidate.name,
+                testType: "HSG - Ngữ pháp & Từ vựng (B2-C1-C2)",
+                correctCount: correctCount + "/20",
+                score: score10
+            });
+        }
+
+        // HÀM ĐẨY DATA VỀ GOOGLE SHEET
+        function sendDataToGoogleSheet(payload) {
+            const syncElem = document.getElementById('sync-status');
+            
+            if (!SCRIPT_URL || SCRIPT_URL.includes("AKfycbw...")) {
+                syncElem.innerText = "⚠️ Chưa gắn Web App URL. Dữ liệu chưa được lưu lên Google Sheet.";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200";
+                return;
+            }
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                syncElem.innerText = "✅ Đã lưu kết quả thành công vào Google Sheet (Data)!";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200";
+            }).catch(err => {
+                console.error("Lỗi đồng bộ:", err);
+                syncElem.innerText = "❌ Lỗi kết nối. Không thể ghi dữ liệu.";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200";
+            });
+        }
+
+        function resetSystem() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>

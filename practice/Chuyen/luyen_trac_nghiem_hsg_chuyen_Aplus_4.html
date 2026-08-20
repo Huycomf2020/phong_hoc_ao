@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUYỆN TRẮC NGHIỆM HSG-CHUYÊN - ĐỀ SỐ 4: LEXICO - GRAMMAR</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #1e293b;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none; /* Khóa bôi đen / copy text */
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            background-color: #f8fafc;
+        }
+        .header {
+            background-color: #0f172a;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 64px;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+        .opt-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .opt-card:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="custom-scrollbar" oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+
+    <!-- CẢNH BÁO CHUYỂN TAB / KHÔNG FULLSCREEN -->
+    <div id="cheat-warning-overlay" class="fixed inset-0 bg-red-950/90 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="bg-white p-8 rounded-2xl max-w-md shadow-2xl border border-red-200 space-y-4">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl font-black">⚠️</div>
+            <h3 class="text-xl font-black text-slate-900">CẢNH BÁO VI PHẠM QUY CHẾ THI</h3>
+            <p id="cheat-warning-msg" class="text-xs font-semibold text-slate-600 leading-relaxed">
+                Hệ thống phát hiện bạn đã thoát chế độ Toàn màn hình hoặc chuyển sang Tab/Ứng dụng khác. Hành vi này đã được ghi nhận vào hệ thống giám sát.
+            </p>
+            <button onclick="reEnterFullscreen()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-red-500/30 border-0 cursor-pointer">
+                QUAY LẠI BÀI THI NGAY (FULLSCREEN)
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: LOGIN / SETUP -->
+    <div id="setup-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-6">
+                <span class="text-[11px] font-extrabold tracking-widest text-blue-600 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                    TRUNG TÂM NGOẠI NGỮ APLUS
+                </span>
+                <h1 class="text-2xl font-black text-slate-900 mt-3 leading-snug">
+                    LUYỆN TRẮC NGHIỆM HSG-CHUYÊN
+                </h1>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">ĐỀ SỐ 4: SECTION II - LEXICO - GRAMMAR (20 CÂU)</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-xs font-bold uppercase text-slate-600 mb-1">
+                        Mã số Thí sinh / Lớp
+                    </label>
+                    <input 
+                        type="text" 
+                        id="candidate-code"
+                        class="w-full border border-slate-300 rounded-xl shadow-sm p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold" 
+                        placeholder="Ví dụ: HSG11-01"
+                        value="HSG-01"
+                    />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-xs font-bold uppercase text-slate-600 mb-1">
+                        Họ và Tên Thí sinh
+                    </label>
+                    <input 
+                        type="text" 
+                        id="full-name"
+                        class="w-full border border-slate-300 rounded-xl shadow-sm p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold" 
+                        placeholder="Ví dụ: Nguyễn Văn A"
+                        value="Phan Ngọc Huy"
+                    />
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-left">
+                    <p class="text-[11px] font-bold text-amber-800 flex items-center">
+                        <span class="mr-1.5">🔒</span> LƯU Ý BẢO MẬT BÀI THI:
+                    </p>
+                    <ul class="text-[10px] text-amber-700 mt-1 space-y-0.5 font-medium list-disc list-inside">
+                        <li>Hệ thống sẽ tự động chuyển sang chế độ <b>Toàn màn hình (Fullscreen)</b>.</li>
+                        <li>Khóa chuột phải, khóa phím F12, khóa sao chép dữ liệu.</li>
+                        <li>Nghiêm cấm chuyển Tab hoặc mở ứng dụng khác khi làm bài.</li>
+                    </ul>
+                </div>
+                
+                <p id="setup-error" class="text-red-500 text-xs text-center font-semibold hidden"></p>
+                
+                <button 
+                    type="button"
+                    id="btn-start-now"
+                    onclick="startTestDirectly()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/30 text-sm cursor-pointer border-0 mt-2 block text-center uppercase tracking-wide"
+                >
+                    BẮT ĐẦU LÀM BÀI (30 PHÚT)
+                </button>
+            </div>
+
+            <button 
+                type="button"
+                onclick="resetSystem()"
+                class="mt-4 text-xs text-slate-400 hover:text-red-500 underline mx-auto block cursor-pointer border-0 bg-transparent transition"
+            >
+                Xóa dữ liệu & Làm lại từ đầu
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN TEST INTERFACE -->
+    <div id="test-interface" class="app-container hidden">
+        <!-- HEADER -->
+        <header class="header flex justify-between items-center px-4 md:px-8">
+            <div class="flex items-center space-x-4">
+                <span class="text-lg md:text-xl font-extrabold tracking-tight text-blue-400">LUYỆN HSG-CHUYÊN (ĐỀ 4)</span>
+                <span id="header-user-info" class="hidden md:block text-xs font-semibold opacity-80 border-l border-slate-700 pl-4"></span>
+            </div>
+            <div class="flex items-center space-x-3 md:space-x-5">
+                <div class="text-right">
+                    <span class="block text-[10px] uppercase tracking-wider opacity-70 font-bold">Thời gian còn lại</span>
+                    <span id="timer-display" class="text-xl md:text-2xl font-mono font-black text-amber-400">30:00</span>
+                </div>
+                <div class="hidden lg:block text-xs bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700 text-slate-200 font-medium">
+                    Đã làm: <span id="answered-count" class="font-black text-amber-400">0</span>/20 câu
+                </div>
+                <button 
+                    id="toggle-timer-btn"
+                    onclick="toggleTimer()"
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold shadow-sm cursor-pointer transition"
+                >
+                    Tạm dừng
+                </button>
+                <button 
+                    id="submit-btn"
+                    onclick="handleSubmitClick()"
+                    class="py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-slate-700 text-slate-400 cursor-not-allowed opacity-75 transition"
+                >
+                    Nộp bài
+                </button>
+            </div>
+        </header>
+
+        <!-- SUB-HEADER / TAB -->
+        <div class="bg-slate-200 px-6 border-b border-slate-300">
+            <button class="py-3 px-6 font-bold text-slate-900 bg-white border-t-2 border-blue-600 rounded-t-xl text-xs md:text-sm uppercase tracking-wider">
+                SECTION II: LEXICO - GRAMMAR (20 QUESTIONS - B2/C1/C2)
+            </button>
+        </div>
+
+        <!-- MAIN QUESTIONS CONTENT -->
+        <main class="main-content custom-scrollbar">
+            <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
+                <div class="border-b pb-4 mb-6">
+                    <h2 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">SECTION II: LEXICO - GRAMMAR (7.0 POINTS)</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-1">
+                        Choose the best answer to each question. (3.0 points - 0.15/each)
+                    </p>
+                </div>
+
+                <div id="questions-container" class="space-y-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: CONFIRM SUBMISSION -->
+    <div id="end-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-100">
+            <h3 class="text-xl font-black text-slate-900 mb-2">Xác nhận nộp bài thi</h3>
+            <p class="mb-6 text-sm text-slate-600 leading-relaxed">
+                Bạn có chắc chắn muốn hoàn thành bài làm? Ngay sau khi nộp bài, hệ thống sẽ tự động lưu điểm vào Google Sheet APlus và mở đáp án phân tích chi tiết.
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button class="py-2.5 px-4 rounded-xl font-bold text-slate-600 hover:bg-slate-100 text-sm cursor-pointer transition" onclick="closeEndModal()">
+                    Xem lại bài
+                </button>
+                <button class="py-2.5 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md text-sm cursor-pointer transition" onclick="confirmSubmit()">
+                    Nộp bài & Xem đáp án
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DETAILED REPORT & ANNOTATED KEY -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col">
+            <div class="border-b pb-4 mb-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900">KẾT QUẢ BÀI THI & GIẢI THÍCH CHI TIẾT</h3>
+                    <p id="report-user-info" class="text-xs font-semibold text-slate-500 mt-1"></p>
+                    <span id="sync-status" class="inline-block mt-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        ⏳ Đang đồng bộ điểm số lên Google Sheet APlus...
+                    </span>
+                </div>
+                <div class="text-right bg-blue-50 border border-blue-200 px-5 py-2.5 rounded-2xl">
+                    <span class="text-[10px] font-extrabold text-blue-600 uppercase block tracking-wider">Tổng điểm</span>
+                    <span id="score-display" class="text-2xl font-black text-blue-700">0 / 20</span>
+                </div>
+            </div>
+
+            <div id="report-container" class="space-y-4 text-sm overflow-y-auto custom-scrollbar flex-grow pr-2"></div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t mt-4">
+                <button class="py-2.5 px-6 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white text-sm shadow cursor-pointer transition" onclick="resetSystem()">
+                    Hoàn thành & Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔗 APPS SCRIPT WEB APP URL (TÍCH HỢP SẴN THEO CẤU HÌNH CỦA THẦY HUY)
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // MASTER ANSWER KEYS (EXACT MATCH WITH PDF ANSWER KEY)
+        const CORRECT_ANSWERS = {
+            'q1': 'B', 'q2': 'C', 'q3': 'C', 'q4': 'A', 'q5': 'D',
+            'q6': 'B', 'q7': 'D', 'q8': 'D', 'q9': 'A', 'q10': 'D',
+            'q11': 'C', 'q12': 'A', 'q13': 'A', 'q14': 'A', 'q15': 'D',
+            'q16': 'A', 'q17': 'C', 'q18': 'D', 'q19': 'D', 'q20': 'B'
+        };
+
+        // B2-C1-C2 PEDAGOGICAL & ANNOTATED EXPLANATIONS
+        const EXPLANATIONS = {
+            'q1': '<b>Phrasal Verbs (B2-C1):</b> <b>come round</b> = <i>regain consciousness</i> (tỉnh lại, hồi tỉnh sau khi ngất). Phân biệt: <i>put off</i> (hoãn lại), <i>set up</i> (thành lập), <i>call off</i> (hủy bỏ). Dịch: Khi anh ấy cuối cùng tỉnh lại, anh ấy không thể nhớ chuyện gì đã xảy ra.',
+            'q2': '<b>Thì Tương lai hoàn thành (Future Perfect):</b> "<b>By then + S + will have + V3/ed</b>" biểu thị một hành động sẽ hoàn thành trước một thời điểm trong tương lai. Dịch: Cho đến lúc đó tôi sẽ thi đậu bằng lái xe. Tôi hy vọng vậy.',
+            'q3': '<b>Đảo ngữ với Not Only (Inversion):</b> "<b>Not only + Trợ động từ / Be + S...</b>". Chọn <b>are soft maples</b>. Dịch: Gỗ phong mềm không chỉ giòn hơn gỗ phong cứng mà chúng còn kém chịu đựng gió mạnh hơn.',
+            'q4': '<b>Đảo ngữ Câu điều kiện Loại 2:</b> "<b>Were I + (to V / N / Adj) = If I were...</b>". Chọn <b>Were I</b>. Dịch: Nếu tôi là bạn, tôi sẽ suy nghĩ kỹ về quyết định đó. Nó có thể là một nước đi tồi.',
+            'q5': '<b>Cấu trúc Động từ / Collocation:</b> "<b>blame sb FOR sth</b>" (đổ lỗi / quy trách nhiệm cho ai về việc gì). Phân biệt: <i>accuse sb OF</i>, <i>charge sb WITH</i>.',
+            'q6': '<b>Idiomatic Expressions:</b> <b>out of order</b> (bị hỏng hóc, không hoạt động). Phân biệt: <i>out of work</i> (thất nghiệp), <i>on duty</i> (đang trực/làm việc), <i>off work</i> (nghỉ làm).',
+            'q7': '<b>Mệnh đề quan hệ rút gọn / Rút gọn đại từ:</b> Khi đại từ quan hệ làm tân ngữ cho động từ "visit", ta có thể lược bỏ đại từ quan hệ. Dạng đầy đủ: "The first village (which/that) I visited" -> <b>I visited</b>.',
+            'q8': '<b>Cấu trúc So sánh So sánh đối tượng (Comparative Pronouns):</b> Dùng "<b>those of</b>" để thay thế cho danh từ số nhiều "fingerprints" ở đằng trước tránh lặp từ. Cấu trúc chuẩn: <b>different from those of any other person</b>.',
+            'q9': '<b>Ngôn ngữ Giao tiếp (Communication):</b> Đáp lại câu hỏi "Khi nào bạn có thể làm xong hết?", câu trả lời tự nhiên nhất là: "<b>How does next Monday sound?</b>" (Thứ Hai tuần tới thì thế nào?).',
+            'q10': '<b>Ngôn ngữ Giao tiếp (Communication):</b> Khi chủ nhà nói "Make yourself at home" (Tự nhiên như ở nhà nhé), khách đáp lại lịch sự: "<b>That\'s very kind. Thank you</b>" (Bạn thật tốt bụng. Cảm ơn nhé).',
+            'q11': '<b>Phrasal Verbs (C1):</b> <b>trigger off</b> = <i>cause sth to start / set off</i> (gây ra, châm ngòi cho cái gì nổ ra). Dịch: Cuốn sách nói rằng cuộc cách mạng đã được châm ngòi bởi vụ ám sát viên thống đốc bang.',
+            'q12': '<b>Collocation (C1):</b> <b>common knowledge</b> (kiến thức phổ thông / điều mà ai cũng biết). Dịch: Việc vợ chồng ông Thomas cãi nhau dữ dội vài lần một tuần là điều ai trong làng cũng biết.',
+            'q13': '<b>Sự hòa hợp Chủ ngữ & Cụm phân từ (Modifier Alignment):</b> Mệnh đề mở đầu "Once known as..." bổ nghĩa cho chủ ngữ chỉ vùng đất -> Chủ ngữ chính phải là "<b>North California</b>". Chọn A.',
+            'q14': '<b>Collocation / Word Choice:</b> <b>pursue one\'s interest/passion</b> (theo đuổi sở thích / đam mê cá nhân). Phân biệt: <i>chase</i> (đuổi bắt), <i>seek</i> (tìm kiếm), <i>catch</i> (nắm bắt).',
+            'q15': '<b>Collocation:</b> <b>go on a day trip</b> (đi tham quan / du lịch trong ngày). Dịch: Ngày mai chúng tôi sẽ có một chuyến đi chơi trong ngày ra đảo.',
+            'q16': '<b>Tính từ Mô tả (Adjectives):</b> <b>dull</b> = <i>boring / uninteresting</i> (tẻ nhạt, chán ngắt). Dịch: Đó là một buổi tối rất tẻ nhạt. Chẳng có chuyện gì thực sự xảy ra cả.',
+            'q17': '<b>Từ vựng Tính cách (Personality):</b> <b>reserved</b> = <i>slow to reveal emotion or opinion</i> (kín đáo, dè dặt, ít chia sẻ). Phân biệt: <i>talkative</i> (nói nhiều), <i>confident</i> (tự tin), <i>sociable</i> (hòa đồng).',
+            'q18': '<b>Phrasal Verb / Cấu trúc nâng cao (C1-C2):</b> <b>ingratiate oneself with sb</b> (nịnh bợ, lấy lòng ai). Dịch: Frank sẽ được yêu mến hơn ở văn phòng nếu anh ấy không cố gắng lấy lòng sếp nhiều đến thế.',
+            'q19': '<b>Danh từ làm Chủ ngữ (Noun Form):</b> Đứng đầu câu làm chủ ngữ cần một danh từ: <b>Exploration</b> (sự khám phá/thăm dò). Dịch: Việc khám phá hệ mặt trời đã bắt đầu vào thế kỷ 19.',
+            'q20': '<b>Tính từ Phân từ (-ing vs -ed):</b> <b>amusing</b> (thú vị, hài hước - dùng mô tả bản chất của con người/sự việc gây cười cho người khác). Chọn <b>amusing</b>.'
+        };
+
+        const QUESTIONS = [
+            { id: 'q1', num: 1, text: "When he finally ........ he couldn't remember what had happened.", opts: { A: "put off", B: "came round", C: "set up", D: "called off" } },
+            { id: 'q2', num: 2, text: "By then I ........ my driving test. I hope.", opts: { A: "pass", B: "will be passed", C: "will have passed", D: "have passed" } },
+            { id: 'q3', num: 3, text: "Not only ........ more brittle than hard maples, but they are also less able to withstand high winds.", opts: { A: "soft maples are", B: "they are soft maples", C: "are soft maples", D: "soft maples" } },
+            { id: 'q4', num: 4, text: "........ you, I'd think twice about that decision. It could be a bad move.", opts: { A: "Were I", B: "Should I be", C: "If I am", D: "If I had been" } },
+            { id: 'q5', num: 5, text: "The judge ........ the pedestrian for the accident.", opts: { A: "accused", B: "charged", C: "caught", D: "blamed" } },
+            { id: 'q6', num: 6, text: "She had to borrow her sister's car because hers was ........", opts: { A: "out of work", B: "out of order", C: "on duty", D: "off work" } },
+            { id: 'q7', num: 7, text: "The first village ........ was not far from the capital.", opts: { A: "that I visited to", B: "where I visited", C: "to which I visited", D: "I visited" } },
+            { id: 'q8', num: 8, text: "One's fingerprints are ........ other person.", opts: { A: "different from", B: "different from any", C: "differ from any", D: "different from those of any" } },
+            { id: 'q9', num: 9, text: '"When can you get it all done?" - "........"', opts: { A: "How does next Monday sound?", B: "Two hours ago", C: "I used to do it on Monday", D: "How much time do I need?" } },
+            { id: 'q10', num: 10, text: 'Anne: "Make yourself at home". - John: "........"', opts: { A: "Yes, can I help you", B: "Not at all. Don't mention it", C: "Thanks! Same to you", D: "That's very kind. Thank you" } },
+            { id: 'q11', num: 11, text: "The book says that the revolution was ........ off by the assassination of the state governor.", opts: { A: "launched", B: "cropped", C: "triggered", D: "prompted" } },
+            { id: 'q12', num: 12, text: "It is ........ knowledge in the village that Mr. and Mrs. Thomas quarrel violently several times a week.", opts: { A: "common", B: "important", C: "popular", D: "general" } },
+            { id: 'q13', num: 13, text: "Once known as the \"Golden State\" because of its gold miners, ........", opts: { A: "North California today mines fewer metallic minerals", B: "fewer metallic minerals are mined in North California today", C: "there are fewer metallic minerals mined in North California", D: "today in California fewer metallic minerals are mined" } },
+            { id: 'q14', num: 14, text: "A part time job gives me the freedom to ........ my own interest.", opts: { A: "pursue", B: "chase", C: "seek", D: "catch" } },
+            { id: 'q15', num: 15, text: "We are going on a day ........ to the island tomorrow.", opts: { A: "visit", B: "voyage", C: "journey", D: "trip" } },
+            { id: 'q16', num: 16, text: "It was a very ........ evening. Nothing really happened.", opts: { A: "dull", B: "fed up", C: "bored", D: "disinterested" } },
+            { id: 'q17', num: 17, text: "I don't think she will share her feelings with you. She's a ........ person.", opts: { A: "talkative", B: "confident", C: "reserved", D: "sociable" } },
+            { id: 'q18', num: 18, text: "Frank would be more popular in the office if he didn't try so hard to ........ himself with the boss.", opts: { A: "regard", B: "sympathise", C: "congratulate", D: "ingratiate" } },
+            { id: 'q19', num: 19, text: "........ of the solar system began in the 19th century.", opts: { A: "Explore", B: "Exploring", C: "Exploratory", D: "Exploration" } },
+            { id: 'q20', num: 20, text: "That's really an ........ man. He tells very good jokes.", opts: { A: "amused", B: "amusing", C: "amusedly", D: "amusingly" } }
+        ];
+
+        // GLOBAL CANDIDATE STATE
+        let candidate = {
+            code: 'HSG-01',
+            name: 'Phan Ngọc Huy',
+            answers: {},
+            timeLeft: 30 * 60,
+            timerRunning: false
+        };
+        let timerInterval = null;
+        let isTestStarted = false;
+
+        // DIRECT START & TRIGGER AUTO FULLSCREEN
+        function startTestDirectly() {
+            try {
+                const codeInput = document.getElementById('candidate-code').value.trim();
+                const nameInput = document.getElementById('full-name').value.trim();
+                const errorElem = document.getElementById('setup-error');
+
+                if (!codeInput || !nameInput) {
+                    errorElem.innerText = 'Vui lòng nhập đầy đủ Mã thí sinh và Họ tên.';
+                    errorElem.classList.remove('hidden');
+                    return;
+                }
+
+                errorElem.classList.add('hidden');
+                candidate.code = codeInput;
+                candidate.name = nameInput;
+
+                // KÍCH HOẠT FULLSCREEN AN TOÀN
+                requestFullScreenMode();
+
+                document.getElementById('setup-screen').style.setProperty('display', 'none', 'important');
+                document.getElementById('test-interface').classList.remove('hidden');
+                document.getElementById('header-user-info').innerText = candidate.code + ' | ' + candidate.name;
+
+                isTestStarted = true;
+                renderQuestions();
+                startTimer();
+                initAntiCheatProtection();
+            } catch (err) {
+                console.error("Lỗi khởi tạo bài thi:", err);
+            }
+        }
+
+        // SAFE FULLSCREEN REQUEST
+        function requestFullScreenMode() {
+            try {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log("Lỗi màn hình:", err));
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } catch (e) {
+                console.log("Fullscreen không hỗ trợ:", e);
+            }
+        }
+
+        function reEnterFullscreen() {
+            requestFullScreenMode();
+            document.getElementById('cheat-warning-overlay').classList.add('hidden');
+        }
+
+        // ANTI-CHEAT DETECTORS
+        function initAntiCheatProtection() {
+            document.addEventListener('keydown', function(e) {
+                if (!isTestStarted) return;
+                // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Tab
+                if (
+                    e.keyCode === 123 || 
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) ||
+                    e.keyCode === 9
+                ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            });
+
+            document.addEventListener('fullscreenchange', handleSecurityCheck);
+            document.addEventListener('webkitfullscreenchange', handleSecurityCheck);
+
+            window.addEventListener('blur', function() {
+                if (isTestStarted) {
+                    showCheatWarning("Hệ thống phát hiện bạn vừa rời khỏi màn hình làm bài thi (Chuyển Tab hoặc mở Ứng dụng khác)!");
+                }
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                if (isTestStarted && document.hidden) {
+                    showCheatWarning("Hệ thống phát hiện bạn đã ẩn cửa sổ bài thi!");
+                }
+            });
+        }
+
+        function handleSecurityCheck() {
+            if (!isTestStarted) return;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                showCheatWarning("Bạn vừa thoát khỏi chế độ Toàn màn hình. Vui lòng quay lại ngay để tiếp tục làm bài!");
+            }
+        }
+
+        function showCheatWarning(msg) {
+            document.getElementById('cheat-warning-msg').innerText = msg;
+            document.getElementById('cheat-warning-overlay').classList.remove('hidden');
+        }
+
+        // RENDER QUESTIONS CARDS
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            QUESTIONS.forEach(q => {
+                const qBox = document.createElement('div');
+                qBox.className = "p-4 md:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50";
+
+                let optionsHTML = '';
+                for (let key in q.opts) {
+                    const isChecked = candidate.answers[q.id] === key;
+                    optionsHTML += `
+                        <label class="opt-card flex items-center p-3.5 rounded-xl border cursor-pointer text-xs md:text-sm ${isChecked ? 'bg-blue-50 border-blue-500 text-blue-900 font-semibold shadow-sm' : 'bg-white border-slate-200 text-slate-700'}">
+                            <input 
+                                type="radio" 
+                                name="${q.id}" 
+                                value="${key}" 
+                                ${isChecked ? 'checked' : ''} 
+                                onchange="selectAnswer('${q.id}', '${key}')"
+                                class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 mr-3"
+                            />
+                            <span><strong class="mr-1.5">${key}.</strong> ${q.opts[key]}</span>
+                        </label>
+                    `;
+                }
+
+                qBox.innerHTML = `
+                    <p class="font-bold text-slate-900 text-sm md:text-base mb-3 leading-relaxed">
+                        <span class="text-blue-600 font-extrabold mr-1.5">${q.num}.</span> ${q.text}
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(qBox);
+            });
+        }
+
+        // SELECT ANSWER
+        function selectAnswer(qId, val) {
+            candidate.answers[qId] = val;
+            updateAnsweredCount();
+            renderQuestions();
+        }
+
+        // UPDATE ANSWERED COUNT & SUBMIT BUTTON STATE
+        function updateAnsweredCount() {
+            const count = Object.keys(candidate.answers).length;
+            document.getElementById('answered-count').innerText = count;
+
+            const submitBtn = document.getElementById('submit-btn');
+            if (count >= 20) {
+                submitBtn.className = "py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-blue-600 hover:bg-blue-500 cursor-pointer transition";
+            } else {
+                submitBtn.className = "py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-slate-700 text-slate-400 cursor-not-allowed opacity-75 transition";
+            }
+        }
+
+        // TIMER CONTROL
+        function startTimer() {
+            if (timerInterval) return;
+            candidate.timerRunning = true;
+            timerInterval = setInterval(() => {
+                if (candidate.timeLeft > 0) {
+                    candidate.timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    alert("Đã hết 30 phút làm bài! Hệ thống tự động chuyển sang trang kết quả.");
+                    confirmSubmit();
+                }
+            }, 1000);
+            document.getElementById('toggle-timer-btn').innerText = 'Tạm dừng';
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            candidate.timerRunning = false;
+            document.getElementById('toggle-timer-btn').innerText = 'Tiếp tục';
+        }
+
+        function toggleTimer() {
+            if (candidate.timerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const m = String(Math.floor(candidate.timeLeft / 60)).padStart(2, '0');
+            const s = String(candidate.timeLeft % 60).padStart(2, '0');
+            const display = document.getElementById('timer-display');
+            display.innerText = m + ':' + s;
+
+            if (candidate.timeLeft <= 180) {
+                display.className = "text-xl md:text-2xl font-mono font-black text-red-400 animate-pulse";
+            } else {
+                display.className = "text-xl md:text-2xl font-mono font-black text-amber-400";
+            }
+        }
+
+        // SUBMIT HANDLERS
+        function handleSubmitClick() {
+            const count = Object.keys(candidate.answers).length;
+            if (count < 20) {
+                alert("Bạn chưa hoàn thành đủ 20 câu hỏi (hiện tại: " + count + "/20 câu). Vui lòng hoàn thành tất cả các câu trước khi nộp bài.");
+                return;
+            }
+            pauseTimer();
+            document.getElementById('end-modal').classList.remove('hidden');
+        }
+
+        function closeEndModal() {
+            document.getElementById('end-modal').classList.add('hidden');
+        }
+
+        function confirmSubmit() {
+            pauseTimer();
+            closeEndModal();
+            isTestStarted = false;
+
+            // Calculate Score
+            let correctCount = 0;
+            QUESTIONS.forEach(q => {
+                if (candidate.answers[q.id] === CORRECT_ANSWERS[q.id]) {
+                    correctCount++;
+                }
+            });
+
+            const score10 = ((correctCount / 20) * 10).toFixed(1);
+
+            document.getElementById('score-display').innerText = correctCount + ' / 20';
+            document.getElementById('report-user-info').innerText = 'Thí sinh: ' + candidate.name + ' (' + candidate.code + ')';
+
+            // Build Annotated Report HTML
+            const reportContainer = document.getElementById('report-container');
+            reportContainer.innerHTML = '';
+
+            QUESTIONS.forEach(q => {
+                const userAns = candidate.answers[q.id] || 'Chưa chọn';
+                const correctAns = CORRECT_ANSWERS[q.id];
+                const isCorrect = userAns === correctAns;
+
+                let optBoxesHTML = '';
+                for (let key in q.opts) {
+                    let optBg = 'bg-white border-slate-200 text-slate-700';
+                    if (key === correctAns) {
+                        optBg = 'bg-emerald-600 text-white border-emerald-600 font-bold';
+                    } else if (key === userAns && !isCorrect) {
+                        optBg = 'bg-rose-500 text-white border-rose-500 font-bold';
+                    }
+                    optBoxesHTML += `
+                        <div class="p-2.5 rounded-xl border ${optBg}">
+                            ${key}. ${q.opts[key]}
+                        </div>
+                    `;
+                }
+
+                const item = document.createElement('div');
+                item.className = `p-4 md:p-5 rounded-2xl border ${isCorrect ? 'bg-emerald-50/50 border-emerald-200' : 'bg-rose-50/50 border-rose-200'}`;
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="font-bold text-slate-900 text-sm md:text-base">
+                            Câu ${q.num}: ${q.text}
+                        </p>
+                        <span class="text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider ${isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${isCorrect ? 'ĐÚNG' : 'SAI'}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
+                        ${optBoxesHTML}
+                    </div>
+
+                    <div class="text-xs bg-white p-3.5 rounded-xl border border-slate-200 space-y-1.5 shadow-sm">
+                        <p class="text-slate-600"><strong>Đáp án của bạn:</strong> <span class="${isCorrect ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'}">${userAns}</span></p>
+                        <p class="text-slate-600"><strong>Đáp án đúng:</strong> <span class="text-emerald-700 font-bold">${correctAns}</span></p>
+                        <p class="text-slate-800 mt-2 pt-2 border-t border-slate-100 leading-relaxed">
+                            💡 <strong>Giải thích chuyên sâu:</strong> ${EXPLANATIONS[q.id]}
+                        </p>
+                    </div>
+                `;
+                reportContainer.appendChild(item);
+            });
+
+            document.getElementById('report-modal').classList.remove('hidden');
+
+            // Auto-sync results to Google Sheets APlus
+            sendDataToGoogleSheet({
+                candidateCode: candidate.code,
+                candidateName: candidate.name,
+                testType: "HSG - Đề số 4 (Lexico-Grammar)",
+                correctCount: correctCount + "/20",
+                score: score10
+            });
+        }
+
+        // HÀM ĐẨY DATA VỀ GOOGLE SHEET APLUS
+        function sendDataToGoogleSheet(payload) {
+            const syncElem = document.getElementById('sync-status');
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                syncElem.innerText = "✅ Đã lưu kết quả thành công vào Google Sheet APlus!";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200";
+            }).catch(err => {
+                console.error("Lỗi đồng bộ:", err);
+                syncElem.innerText = "❌ Lỗi kết nối. Không thể ghi dữ liệu.";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200";
+            });
+        }
+
+        function resetSystem() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>

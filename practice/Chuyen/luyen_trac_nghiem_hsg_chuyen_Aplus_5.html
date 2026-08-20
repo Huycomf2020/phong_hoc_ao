@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUYỆN TRẮC NGHIỆM HSG-CHUYÊN - ĐỀ SỐ 5: LEXICO - GRAMMAR</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #1e293b;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none; /* Khóa bôi đen / copy text */
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            background-color: #f8fafc;
+        }
+        .header {
+            background-color: #0f172a;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 64px;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+        .opt-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .opt-card:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="custom-scrollbar" oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+
+    <!-- CẢNH BÁO CHUYỂN TAB / KHÔNG FULLSCREEN -->
+    <div id="cheat-warning-overlay" class="fixed inset-0 bg-red-950/90 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="bg-white p-8 rounded-2xl max-w-md shadow-2xl border border-red-200 space-y-4">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-3xl font-black">⚠️</div>
+            <h3 class="text-xl font-black text-slate-900">CẢNH BÁO VI PHẠM QUY CHẾ THI</h3>
+            <p id="cheat-warning-msg" class="text-xs font-semibold text-slate-600 leading-relaxed">
+                Hệ thống phát hiện bạn đã thoát chế độ Toàn màn hình hoặc chuyển sang Tab/Ứng dụng khác. Hành vi này đã được ghi nhận vào hệ thống giám sát.
+            </p>
+            <button onclick="reEnterFullscreen()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-red-500/30 border-0 cursor-pointer">
+                QUAY LẠI BÀI THI NGAY (FULLSCREEN)
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: LOGIN / SETUP -->
+    <div id="setup-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-6">
+                <span class="text-[11px] font-extrabold tracking-widest text-blue-600 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                    TRUNG TÂM NGOẠI NGỮ APLUS
+                </span>
+                <h1 class="text-2xl font-black text-slate-900 mt-3 leading-snug">
+                    LUYỆN TRẮC NGHIỆM HSG-CHUYÊN
+                </h1>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">ĐỀ SỐ 5: SECTION II - LEXICO - GRAMMAR (35 CÂU)</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate-code" class="block text-xs font-bold uppercase text-slate-600 mb-1">
+                        Mã số Thí sinh / Lớp
+                    </label>
+                    <input 
+                        type="text" 
+                        id="candidate-code"
+                        class="w-full border border-slate-300 rounded-xl shadow-sm p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold" 
+                        placeholder="Ví dụ: HSG11-01"
+                        value="HSG-01"
+                    />
+                </div>
+                <div>
+                    <label for="full-name" class="block text-xs font-bold uppercase text-slate-600 mb-1">
+                        Họ và Tên Thí sinh
+                    </label>
+                    <input 
+                        type="text" 
+                        id="full-name"
+                        class="w-full border border-slate-300 rounded-xl shadow-sm p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold" 
+                        placeholder="Ví dụ: Nguyễn Văn A"
+                        value="Phan Ngọc Huy"
+                    />
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-left">
+                    <p class="text-[11px] font-bold text-amber-800 flex items-center">
+                        <span class="mr-1.5">🔒</span> LƯU Ý BẢO MẬT BÀI THI:
+                    </p>
+                    <ul class="text-[10px] text-amber-700 mt-1 space-y-0.5 font-medium list-disc list-inside">
+                        <li>Hệ thống sẽ tự động chuyển sang chế độ <b>Toàn màn hình (Fullscreen)</b>.</li>
+                        <li>Khóa chuột phải, khóa phím F12, khóa sao chép dữ liệu.</li>
+                        <li>Nghiêm cấm chuyển Tab hoặc mở ứng dụng khác khi làm bài.</li>
+                    </ul>
+                </div>
+                
+                <p id="setup-error" class="text-red-500 text-xs text-center font-semibold hidden"></p>
+                
+                <button 
+                    type="button"
+                    id="btn-start-now"
+                    onclick="startTestDirectly()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-500/30 text-sm cursor-pointer border-0 mt-2 block text-center uppercase tracking-wide"
+                >
+                    BẮT ĐẦU LÀM BÀI (45 PHÚT)
+                </button>
+            </div>
+
+            <button 
+                type="button"
+                onclick="resetSystem()"
+                class="mt-4 text-xs text-slate-400 hover:text-red-500 underline mx-auto block cursor-pointer border-0 bg-transparent transition"
+            >
+                Xóa dữ liệu & Làm lại từ đầu
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN TEST INTERFACE -->
+    <div id="test-interface" class="app-container hidden">
+        <!-- HEADER -->
+        <header class="header flex justify-between items-center px-4 md:px-8">
+            <div class="flex items-center space-x-4">
+                <span class="text-lg md:text-xl font-extrabold tracking-tight text-blue-400">LUYỆN HSG-CHUYÊN (ĐỀ 5)</span>
+                <span id="header-user-info" class="hidden md:block text-xs font-semibold opacity-80 border-l border-slate-700 pl-4"></span>
+            </div>
+            <div class="flex items-center space-x-3 md:space-x-5">
+                <div class="text-right">
+                    <span class="block text-[10px] uppercase tracking-wider opacity-70 font-bold">Thời gian còn lại</span>
+                    <span id="timer-display" class="text-xl md:text-2xl font-mono font-black text-amber-400">45:00</span>
+                </div>
+                <div class="hidden lg:block text-xs bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700 text-slate-200 font-medium">
+                    Đã làm: <span id="answered-count" class="font-black text-amber-400">0</span>/35 câu
+                </div>
+                <button 
+                    id="toggle-timer-btn"
+                    onclick="toggleTimer()"
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold shadow-sm cursor-pointer transition"
+                >
+                    Tạm dừng
+                </button>
+                <button 
+                    id="submit-btn"
+                    onclick="handleSubmitClick()"
+                    class="py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-slate-700 text-slate-400 cursor-not-allowed opacity-75 transition"
+                >
+                    Nộp bài
+                </button>
+            </div>
+        </header>
+
+        <!-- SUB-HEADER / TAB -->
+        <div class="bg-slate-200 px-6 border-b border-slate-300">
+            <button class="py-3 px-6 font-bold text-slate-900 bg-white border-t-2 border-blue-600 rounded-t-xl text-xs md:text-sm uppercase tracking-wider">
+                SECTION II: LEXICO - GRAMMAR (35 QUESTIONS - B2/C1/C2)
+            </button>
+        </div>
+
+        <!-- MAIN QUESTIONS CONTENT -->
+        <main class="main-content custom-scrollbar">
+            <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
+                <div class="border-b pb-4 mb-6">
+                    <h2 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">SECTION II: LEXICO - GRAMMAR (7.0 POINTS)</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-1">
+                        Select the best option (A, B, C, or D) to complete each of the following tasks.
+                    </p>
+                </div>
+
+                <div id="questions-container" class="space-y-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: CONFIRM SUBMISSION -->
+    <div id="end-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-100">
+            <h3 class="text-xl font-black text-slate-900 mb-2">Xác nhận nộp bài thi</h3>
+            <p class="mb-6 text-sm text-slate-600 leading-relaxed">
+                Bạn có chắc chắn muốn hoàn thành bài làm? Ngay sau khi nộp bài, hệ thống sẽ tự động lưu điểm vào Google Sheet APlus và mở đáp án phân tích chi tiết.
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button class="py-2.5 px-4 rounded-xl font-bold text-slate-600 hover:bg-slate-100 text-sm cursor-pointer transition" onclick="closeEndModal()">
+                    Xem lại bài
+                </button>
+                <button class="py-2.5 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md text-sm cursor-pointer transition" onclick="confirmSubmit()">
+                    Nộp bài & Xem đáp án
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DETAILED REPORT & ANNOTATED KEY -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col">
+            <div class="border-b pb-4 mb-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-900">KẾT QUẢ BÀI THI & GIẢI THÍCH CHI TIẾT</h3>
+                    <p id="report-user-info" class="text-xs font-semibold text-slate-500 mt-1"></p>
+                    <span id="sync-status" class="inline-block mt-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        ⏳ Đang đồng bộ điểm số lên Google Sheet APlus...
+                    </span>
+                </div>
+                <div class="text-right bg-blue-50 border border-blue-200 px-5 py-2.5 rounded-2xl">
+                    <span class="text-[10px] font-extrabold text-blue-600 uppercase block tracking-wider">Tổng điểm</span>
+                    <span id="score-display" class="text-2xl font-black text-blue-700">0 / 35</span>
+                </div>
+            </div>
+
+            <div id="report-container" class="space-y-4 text-sm overflow-y-auto custom-scrollbar flex-grow pr-2"></div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t mt-4">
+                <button class="py-2.5 px-6 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white text-sm shadow cursor-pointer transition" onclick="resetSystem()">
+                    Hoàn thành & Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔗 APPS SCRIPT WEB APP URL (TÍCH HỢP SẴN THEO CẤU HÌNH CỦA THẦY HUY)
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        // MASTER ANSWER KEYS (EXACT MATCH WITH PDF ANSWER KEY)
+        const CORRECT_ANSWERS = {
+            'q21': 'C', 'q22': 'C', 'q23': 'A', 'q24': 'D', 'q25': 'B',
+            'q26': 'C', 'q27': 'C', 'q28': 'B', 'q29': 'D', 'q30': 'C',
+            'q31': 'C', 'q32': 'C', 'q33': 'B', 'q34': 'C', 'q35': 'D',
+            'q36': 'D', 'q37': 'B', 'q38': 'A', 'q39': 'A', 'q40': 'B',
+            'q41': 'D', 'q42': 'D', 'q43': 'D', 'q44': 'B', 'q45': 'A',
+            'q46': 'B', 'q47': 'B', 'q48': 'D', 'q49': 'B', 'q50': 'C',
+            'q51': 'B', 'q52': 'A', 'q53': 'B', 'q54': 'D', 'q55': 'C'
+        };
+
+        // B2-C1-C2 PEDAGOGICAL & ANNOTATED EXPLANATIONS
+        const EXPLANATIONS = {
+            'q21': '<b>Idiom (C1):</b> <b>make a go of sth</b> = <i>working hard to succeed</i> (nỗ lực làm gì để thành công). Dịch: Tôi không tin anh ấy sẽ thành công trong ngành kế toán.',
+            'q22': '<b>Từ vựng C1 / Đồng nghĩa:</b> <b>bewitching</b> = <i>exquisite / charming</i> (mê đắm, quyến rũ). Phân biệt: <i>hostile</i> (thù địch), <i>disgusting</i> (kinh tởm), <i>inscrutable</i> (bí hiểm).',
+            'q23': '<b>Phrasal Verb / Đồng nghĩa:</b> <b>tell sb off</b> = <i>reprimand sb</i> (mắng mỏ, khiển trách ai). Dịch: Giáo viên đã mắng anh ấy vì nói tục.',
+            'q24': '<b>Từ trái nghĩa (Antonyms):</b> <b>stressful</b> (căng thẳng) >< <b>relaxing</b> (thư giãn). Dịch: Phải làm việc theo thời hạn có thể là một trải nghiệm căng thẳng đối với sinh viên.',
+            'q25': '<b>Idiom Trái nghĩa:</b> <b>let the cat out of the bag</b> = <i>disclose the plan</i> (tiết lộ bí mật) >< <b>concealed the plan</b> (giấu kín kế hoạch). Dịch: James đã lỡ làm lộ bí mật vào phút chót.',
+            'q26': '<b>Phrasal Verb (B2):</b> <b>make up</b> (giải hòa, làm hòa sau khi cãi nhau). Phân biệt: <i>look down</i> (coi thường), <i>fall out</i> (cãi nhau), <i>bring up</i> (nuôi dưỡng/đề cập).',
+            'q27': '<b>Cụm Giới từ chỉ Nguyên nhân:</b> <b>on account of</b> = <i>because of / due to</i> (vì lý do). Dịch: Giám đốc đã nghỉ hưu sớm vì lý do sức khỏe kém.',
+            'q28': '<b>Quá khứ hoàn thành bị động (Past Perfect Passive):</b> "By the time + Quá khứ đơn, S + had/hadn\'t been V3/ed". Chọn <b>hadn\'t been sold</b> (bức tranh vẫn chưa bị bán).',
+            'q29': '<b>Đảo ngữ Câu điều kiện Loại 3 (Inversion Conditional Type 3):</b> "<b>Had + S + V3/ed, S + would/could + have + V3/ed</b>". Chọn <b>wouldn\'t have tried</b>.',
+            'q30': '<b>Collocation / Sinh học:</b> <b>species diversity</b> (sự đa dạng loài). Dịch: Con người phụ thuộc vào sự đa dạng loài để cung cấp thực phẩm, không khí sạch và nước.',
+            'q31': '<b>Idiom (C1):</b> <b>blow one\'s own trumpet</b> = khoe khoang, khoác hoác về tài năng của bản thân.',
+            'q32': '<b>Cụm từ chỉ Liên hệ / Đánh giá:</b> <b>With respect to</b> = <i>Regarding / In terms of</i> (Liên quan đến / Xét về). Dịch: Xét về nỗ lực và tài năng của bạn, chúng tôi băn khoăn liệu bạn có thể làm việc toàn thời gian cho chúng tôi.',
+            'q33': '<b>Phrasal Verb (B2):</b> <b>get along with sb</b> = <i>have a good relationship with sb</i> (hòa thuận, ăn ý với ai).',
+            'q34': '<b>Trật tự Tính từ (OSASCOMP):</b> Opinion (<i>lovely</i>) -> Age (<i>old</i>) -> Origin (<i>German</i>) -> Material (<i>glass</i>). Chọn <b>lovely old German glasses</b>.',
+            'q35': '<b>Cấu trúc Động từ:</b> <b>confide in sb</b> (tâm sự, tin tưởng giãi bày bí mật với ai). Phân biệt: <i>trust sb</i> (không đi với giới từ "in" theo nét nghĩa này).',
+            'q36': '<b>Collocation / Giới từ:</b> <b>be famous for sth</b> (nổi tiếng vì cái gì).',
+            'q37': '<b>Trật tự Cụm từ & Trạng từ:</b> "<b>quite well established by the age of five</b>" (được định hình tương đối rõ ràng trước 5 tuổi).',
+            'q38': '<b>Phrasal Verb (B2-C1):</b> <b>bring in a law</b> (ban hành / giới thiệu một đạo luật mới).',
+            'q39': '<b>Danh từ Chỉ Người (Noun of Agency):</b> <b>interviewer</b> (người phỏng vấn). Dịch: Đừng quên chào tạm biệt người phỏng vấn trước khi rời văn phòng.',
+            'q40': '<b>Collocation:</b> <b>pay a visit to somewhere</b> (thực hiện chuyến thăm đến đâu). Dịch: Tổng thống Mỹ Barack Obama đã có chuyến thăm chính thức tới Việt Nam vào tháng 5/2016.',
+            'q41': '<b>Phrasal Verb (B2):</b> <b>hand in</b> = <i>submit</i> (nộp đơn/biểu mẫu). Dịch: Thí sinh được yêu cầu nộp biểu mẫu cho cán bộ tuyển sinh trước ngày 25/7.',
+            'q42': '<b>Phân biệt Tính từ (Word Formation):</b> <b>respectable</b> (đáng kính, đáng khâm phục). Phân biệt: <i>respectful</i> (tôn trọng người khác), <i>respective</i> (lần lượt).',
+            'q43': '<b>Từ vựng / Động từ:</b> <b>ensure</b> (đảm bảo). Dịch: Ban giám hiệu trường đại học đang áp dụng các biện pháp mới để đảm bảo quá trình nhập học diễn ra suôn sẻ.',
+            'q44': '<b>Phrasal Verb:</b> <b>be held up</b> (bị kẹt, bị tắc nghẽn giao thông). Dịch: Xin lỗi vì tôi đến trễ. Tôi bị kẹt xe hơn một tiếng đồng hồ.',
+            'q45': '<b>Phrasal Verb:</b> <b>keep up with sb</b> (theo kịp, bắt kịp ai). Dịch: Cô ấy đã mệt và không thể theo kịp cả nhóm.',
+            'q46': '<b>Rút gọn Mệnh đề / Quá khứ phân từ làm Tính từ:</b> "<b>beautifully decorated walls</b>" (những bức tường được trang trí đẹp mắt - Dạng bị động Adv + V3/ed + N).',
+            'q47': '<b>Mệnh đề quan hệ với Đại từ Chỉ lượng:</b> "<b>all of whom</b>" (tất cả họ - thay thế cho danh từ chỉ người "brothers" làm tân ngữ sau giới từ).',
+            'q48': '<b>Thức Giả định (Subjunctive Mood):</b> <b>recommend that S + (should) + V-bare</b>. Động từ "be" ở dạng nguyên mẫu không chia.',
+            'q49': '<b>Tính từ Ghép chỉ Tính cách:</b> <b>narrow-minded</b> (hẹp hòi, thiển hiển, không chịu lắng nghe ý kiến người khác).',
+            'q50': '<b>Mệnh đề Rút gọn chỉ Mục đích / Thứ tự:</b> "the first state university + <b>to be V3/ed</b>" (trường đại học bang đầu tiên được kiểm soát bởi...). Dùng To-Infinitive bị động.',
+            'q51': '<b>Ngôn ngữ Giao tiếp (Banking/Currency Exchange):</b> Khi khách nói "Tôi muốn đổi tiền", nhân viên ngân hàng hỏi: "<b>Which currency?</b>" (Quý khách muốn đổi loại tiền tệ nào?).',
+            'q52': '<b>Ngôn ngữ Giao tiếp:</b> Khi hỏi "Đã có thông báo nào chưa?", đáp lại tự nhiên: "<b>Not yet</b>" (Chưa).',
+            'q53': '<b>Cụm từ Cố định (Business English):</b> <b>out of stock</b> (hết hàng trong kho). Dịch: Chúng tôi tiếc phải thông báo rằng nguyên vật liệu bạn đặt đã hết hàng.',
+            'q54': '<b>Idiom:</b> <b>keep your fingers crossed for me</b> (chúc tôi may mắn / cầu mong điều tốt đẹp cho tôi).',
+            'q55': '<b>Phân biệt Từ vựng (C1):</b> <b>emotional appeal</b> (lời khẩn cầu đầy cảm xúc/xúc động). Phân biệt: <i>sensational</i> (gây giật gân), <i>sentimental</i> (sến súa/suy tư).'
+        };
+
+        const QUESTIONS = [
+            // PART 3: CLOSEST IN MEANING
+            { id: 'q21', num: 21, text: "<i>[CLOSEST]</i> I can't see him ever <u>making a go of</u> accountancy.", opts: { A: "departing", B: "beginning to go", C: "working hard to succeed", D: "proceeding to work" } },
+            { id: 'q22', num: 22, text: "<i>[CLOSEST]</i> Jane has such <u>bewitching</u> smile that almost everyone seems to be fascinated by her.", opts: { A: "hostile", B: "disgusting", C: "exquisite", D: "inscrutable" } },
+            { id: 'q23', num: 23, text: "<i>[CLOSEST]</i> The teacher <u>told him off</u> for swearing.", opts: { A: "reprimanded him", B: "advised him", C: "blamed him", D: "complimented him" } },
+
+            // PART 4: OPPOSITE IN MEANING
+            { id: 'q24', num: 24, text: "<i>[OPPOSITE]</i> Having to work to a deadline can be a <u>stressful</u> experience for students.", opts: { A: "painful", B: "practical", C: "tense", D: "relaxing" } },
+            { id: 'q25', num: 25, text: "<i>[OPPOSITE]</i> Everyone was secretly rehearsing a surprise performance for Peter's proposal, but annoyingly James <u>let the cat out of the bag</u> at the last minute.", opts: { A: "disclosed the plan", B: "concealed the plan", C: "revised the plan", D: "abandoned the plan" } },
+
+            // PART 5: MULTIPLE CHOICE
+            { id: 'q26', num: 26, text: "I know we had an argument, but now I'd quite like to ........", opts: { A: "look down", B: "fall out", C: "make up", D: "bring up" } },
+            { id: 'q27', num: 27, text: "The director retired early ........ ill health.", opts: { A: "on behalf of", B: "ahead of", C: "on account of", D: "in front of" } },
+            { id: 'q28', num: 28, text: "Luckily, by the time we got there, the painting ........", opts: { A: "didn't sell", B: "hadn't been sold", C: "wasn't sold", D: "hadn't sold" } },
+            { id: 'q29', num: 29, text: "Had you known that the river was dangerous, he ........ to swim across it.", opts: { A: "would have tried", B: "would try", C: "will not try", D: "wouldn't have tried" } },
+            { id: 'q30', num: 30, text: "Humans depend on species ........ to provide food, clean air and water.", opts: { A: "separation", B: "division", C: "diversity", D: "difference" } },
+            { id: 'q31', num: 31, text: "I see John's boasting again. I've heard him telling everyone he's the best tennis player in the country. He is ........", opts: { A: "holding his tongue", B: "speaking too much", C: "blowing his own trumpet", D: "pulling my leg" } },
+            { id: 'q32', num: 32, text: "........ your effort and talent, we wonder if you can work full time for us.", opts: { A: "Regarding", B: "In regard of", C: "With respect to", D: "On behalf of" } },
+            { id: 'q33', num: 33, text: '"Do you ........ your new roommate, or do you two argue?"', opts: { A: "keep in touch with", B: "get along with", C: "on good terms with", D: "get used to" } },
+            { id: 'q34', num: 34, text: "We bought some ........", opts: { A: "German lovely old glasses", B: "German old lovely glasses", C: "lovely old German glasses", D: "old lovely German glasses" } },
+            { id: 'q35', num: 35, text: "Many Indian men said that it was unwise to ........ in their wives.", opts: { A: "trust", B: "hide", C: "declare", D: "confide" } },
+            { id: 'q36', num: 36, text: "This part of the country is famous ........ its beautiful landscapes and fine cuisine.", opts: { A: "about", B: "with", C: "of", D: "for" } },
+            { id: 'q37', num: 37, text: "Most psychologists agree that the basic structure of an individual's personality is ........", opts: { A: "by the age of five it is quite well established", B: "quite well established by the age of five", C: "well established quite by the age of five", D: "by the age of five and quite well established" } },
+            { id: 'q38', num: 38, text: "The Government has brought ........ a new law in an effort to prevent further environmental deterioration.", opts: { A: "in", B: "about", C: "up", D: "on" } },
+            { id: 'q39', num: 39, text: "Don't forget to say goodbye to the ........ before leaving the office.", opts: { A: "interviewer", B: "interviewing", C: "interviewee", D: "interview" } },
+            { id: 'q40', num: 40, text: "The US president Barack Obama ........ an official visit to Vietnam in May 2016, which is of great significance to the comprehensive bilateral partnership.", opts: { A: "delivered", B: "paid", C: "offered", D: "gave" } },
+            { id: 'q41', num: 41, text: "Candidates are requested to ........ the form to the admissions officer by July 25th.", opts: { A: "fill out", B: "show up", C: "pass over", D: "hand in" } },
+            { id: 'q42', num: 42, text: "The firefighters' single-minded devotion to the rescue of the victims of the fire was ........", opts: { A: "respecting", B: "respective", C: "respectful", D: "respectable" } },
+            { id: 'q43', num: 43, text: "The university administrations are introducing new measures to ........ that the enrolment process runs smoothly.", opts: { A: "maintain", B: "improve", C: "facilitate", D: "ensure" } },
+            { id: 'q44', num: 44, text: "Sorry for being late. I was ........ in the traffic for more than an hour.", opts: { A: "carried on", B: "held up", C: "put off", D: "taken after" } },
+            { id: 'q45', num: 45, text: "She was tired and couldn't keep ........ the group.", opts: { A: "up with", B: "up against", C: "on to", D: "out of" } },
+            { id: 'q46', num: 46, text: "There were large rooms with ........ in the house.", opts: { A: "beautifully decorating walls", B: "beautifully decorated walls", C: "beautiful walls decorating", D: "beautiful decorating walls" } },
+            { id: 'q47', num: 47, text: "Annie has three brothers, ........ are pilots.", opts: { A: "who all of them", B: "all of whom", C: "who they all", D: "that all of them" } },
+            { id: 'q48', num: 48, text: "Conservationists ........ that experiments on animals be stopped.", opts: { A: "banned", B: "complained", C: "said", D: "recommended" } },
+            { id: 'q49', num: 49, text: "His brother refuses to even listen to anyone else's point of view. He is very ........", opts: { A: "kind-hearted", B: "narrow-minded", C: "open-minded", D: "absent-minded" } },
+            { id: 'q50', num: 50, text: "In 1837 the University of Michigan became the first state university ........ by a board of regents elected by the voters of the state.", opts: { A: "being controlled", B: "it was controlled", C: "to be controlled", D: "under the control" } },
+            { id: 'q51', num: 51, text: 'Andy: "I\'d like to change some money." - Barbara: "........"', opts: { A: "Five tens, please.", B: "Which currency?", C: "You haven't signed it.", D: "What's your account number?" } },
+            { id: 'q52', num: 52, text: 'John: "Has an announcement been made about the eight o\'clock flight to Paris?" - Michael: "........"', opts: { A: "Not yet", B: "Yes, it was", C: "I don't think that", D: "Sorry, I don't" } },
+            { id: 'q53', num: 53, text: "We regret to inform you that the materials you ordered are ........", opts: { A: "out of work", B: "out of stock", C: "out of reach", D: "out of practice" } },
+            { id: 'q54', num: 54, text: "I'm going to an interview. I hope I get the job, please ........ for me.", opts: { A: "keep your fingers", B: "hold your fingers crossed", C: "hold your fingers", D: "keep your fingers crossed" } },
+            { id: 'q55', num: 55, text: "Sarah delivered a/an ........ appeal to the court and asked for mercy.", opts: { A: "sensational", B: "sentimental", C: "emotional", D: "affectionate" } }
+        ];
+
+        // GLOBAL CANDIDATE STATE
+        let candidate = {
+            code: 'HSG-01',
+            name: 'Phan Ngọc Huy',
+            answers: {},
+            timeLeft: 45 * 60,
+            timerRunning: false
+        };
+        let timerInterval = null;
+        let isTestStarted = false;
+
+        // DIRECT START & TRIGGER AUTO FULLSCREEN
+        function startTestDirectly() {
+            try {
+                const codeInput = document.getElementById('candidate-code').value.trim();
+                const nameInput = document.getElementById('full-name').value.trim();
+                const errorElem = document.getElementById('setup-error');
+
+                if (!codeInput || !nameInput) {
+                    errorElem.innerText = 'Vui lòng nhập đầy đủ Mã thí sinh và Họ tên.';
+                    errorElem.classList.remove('hidden');
+                    return;
+                }
+
+                errorElem.classList.add('hidden');
+                candidate.code = codeInput;
+                candidate.name = nameInput;
+
+                // KÍCH HOẠT FULLSCREEN AN TOÀN
+                requestFullScreenMode();
+
+                document.getElementById('setup-screen').style.setProperty('display', 'none', 'important');
+                document.getElementById('test-interface').classList.remove('hidden');
+                document.getElementById('header-user-info').innerText = candidate.code + ' | ' + candidate.name;
+
+                isTestStarted = true;
+                renderQuestions();
+                startTimer();
+                initAntiCheatProtection();
+            } catch (err) {
+                console.error("Lỗi khởi tạo bài thi:", err);
+            }
+        }
+
+        // SAFE FULLSCREEN REQUEST
+        function requestFullScreenMode() {
+            try {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log("Lỗi màn hình:", err));
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } catch (e) {
+                console.log("Fullscreen không hỗ trợ:", e);
+            }
+        }
+
+        function reEnterFullscreen() {
+            requestFullScreenMode();
+            document.getElementById('cheat-warning-overlay').classList.add('hidden');
+        }
+
+        // ANTI-CHEAT DETECTORS
+        function initAntiCheatProtection() {
+            document.addEventListener('keydown', function(e) {
+                if (!isTestStarted) return;
+                // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Tab
+                if (
+                    e.keyCode === 123 || 
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) ||
+                    e.keyCode === 9
+                ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            });
+
+            document.addEventListener('fullscreenchange', handleSecurityCheck);
+            document.addEventListener('webkitfullscreenchange', handleSecurityCheck);
+
+            window.addEventListener('blur', function() {
+                if (isTestStarted) {
+                    showCheatWarning("Hệ thống phát hiện bạn vừa rời khỏi màn hình làm bài thi (Chuyển Tab hoặc mở Ứng dụng khác)!");
+                }
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                if (isTestStarted && document.hidden) {
+                    showCheatWarning("Hệ thống phát hiện bạn đã ẩn cửa sổ bài thi!");
+                }
+            });
+        }
+
+        function handleSecurityCheck() {
+            if (!isTestStarted) return;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                showCheatWarning("Bạn vừa thoát khỏi chế độ Toàn màn hình. Vui lòng quay lại ngay để tiếp tục làm bài!");
+            }
+        }
+
+        function showCheatWarning(msg) {
+            document.getElementById('cheat-warning-msg').innerText = msg;
+            document.getElementById('cheat-warning-overlay').classList.remove('hidden');
+        }
+
+        // RENDER QUESTIONS CARDS
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            QUESTIONS.forEach(q => {
+                const qBox = document.createElement('div');
+                qBox.className = "p-4 md:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50";
+
+                let optionsHTML = '';
+                for (let key in q.opts) {
+                    const isChecked = candidate.answers[q.id] === key;
+                    optionsHTML += `
+                        <label class="opt-card flex items-center p-3.5 rounded-xl border cursor-pointer text-xs md:text-sm ${isChecked ? 'bg-blue-50 border-blue-500 text-blue-900 font-semibold shadow-sm' : 'bg-white border-slate-200 text-slate-700'}">
+                            <input 
+                                type="radio" 
+                                name="${q.id}" 
+                                value="${key}" 
+                                ${isChecked ? 'checked' : ''} 
+                                onchange="selectAnswer('${q.id}', '${key}')"
+                                class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 mr-3"
+                            />
+                            <span><strong class="mr-1.5">${key}.</strong> ${q.opts[key]}</span>
+                        </label>
+                    `;
+                }
+
+                qBox.innerHTML = `
+                    <p class="font-bold text-slate-900 text-sm md:text-base mb-3 leading-relaxed">
+                        <span class="text-blue-600 font-extrabold mr-1.5">${q.num}.</span> ${q.text}
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(qBox);
+            });
+        }
+
+        // SELECT ANSWER
+        function selectAnswer(qId, val) {
+            candidate.answers[qId] = val;
+            updateAnsweredCount();
+            renderQuestions();
+        }
+
+        // UPDATE ANSWERED COUNT & SUBMIT BUTTON STATE
+        function updateAnsweredCount() {
+            const count = Object.keys(candidate.answers).length;
+            document.getElementById('answered-count').innerText = count;
+
+            const submitBtn = document.getElementById('submit-btn');
+            if (count >= 35) {
+                submitBtn.className = "py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-blue-600 hover:bg-blue-500 cursor-pointer transition";
+            } else {
+                submitBtn.className = "py-1.5 px-3 md:px-4 rounded-xl text-xs md:text-sm font-bold text-white shadow-sm bg-slate-700 text-slate-400 cursor-not-allowed opacity-75 transition";
+            }
+        }
+
+        // TIMER CONTROL
+        function startTimer() {
+            if (timerInterval) return;
+            candidate.timerRunning = true;
+            timerInterval = setInterval(() => {
+                if (candidate.timeLeft > 0) {
+                    candidate.timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    alert("Đã hết 45 phút làm bài! Hệ thống tự động chuyển sang trang kết quả.");
+                    confirmSubmit();
+                }
+            }, 1000);
+            document.getElementById('toggle-timer-btn').innerText = 'Tạm dừng';
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            candidate.timerRunning = false;
+            document.getElementById('toggle-timer-btn').innerText = 'Tiếp tục';
+        }
+
+        function toggleTimer() {
+            if (candidate.timerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const m = String(Math.floor(candidate.timeLeft / 60)).padStart(2, '0');
+            const s = String(candidate.timeLeft % 60).padStart(2, '0');
+            const display = document.getElementById('timer-display');
+            display.innerText = m + ':' + s;
+
+            if (candidate.timeLeft <= 300) {
+                display.className = "text-xl md:text-2xl font-mono font-black text-red-400 animate-pulse";
+            } else {
+                display.className = "text-xl md:text-2xl font-mono font-black text-amber-400";
+            }
+        }
+
+        // SUBMIT HANDLERS
+        function handleSubmitClick() {
+            const count = Object.keys(candidate.answers).length;
+            if (count < 35) {
+                alert("Bạn chưa hoàn thành đủ 35 câu hỏi (hiện tại: " + count + "/35 câu). Vui lòng hoàn thành tất cả các câu trước khi nộp bài.");
+                return;
+            }
+            pauseTimer();
+            document.getElementById('end-modal').classList.remove('hidden');
+        }
+
+        function closeEndModal() {
+            document.getElementById('end-modal').classList.add('hidden');
+        }
+
+        function confirmSubmit() {
+            pauseTimer();
+            closeEndModal();
+            isTestStarted = false;
+
+            // Calculate Score
+            let correctCount = 0;
+            QUESTIONS.forEach(q => {
+                if (candidate.answers[q.id] === CORRECT_ANSWERS[q.id]) {
+                    correctCount++;
+                }
+            });
+
+            const score10 = ((correctCount / 35) * 10).toFixed(1);
+
+            document.getElementById('score-display').innerText = correctCount + ' / 35';
+            document.getElementById('report-user-info').innerText = 'Thí sinh: ' + candidate.name + ' (' + candidate.code + ')';
+
+            // Build Annotated Report HTML
+            const reportContainer = document.getElementById('report-container');
+            reportContainer.innerHTML = '';
+
+            QUESTIONS.forEach(q => {
+                const userAns = candidate.answers[q.id] || 'Chưa chọn';
+                const correctAns = CORRECT_ANSWERS[q.id];
+                const isCorrect = userAns === correctAns;
+
+                let optBoxesHTML = '';
+                for (let key in q.opts) {
+                    let optBg = 'bg-white border-slate-200 text-slate-700';
+                    if (key === correctAns) {
+                        optBg = 'bg-emerald-600 text-white border-emerald-600 font-bold';
+                    } else if (key === userAns && !isCorrect) {
+                        optBg = 'bg-rose-500 text-white border-rose-500 font-bold';
+                    }
+                    optBoxesHTML += `
+                        <div class="p-2.5 rounded-xl border ${optBg}">
+                            ${key}. ${q.opts[key]}
+                        </div>
+                    `;
+                }
+
+                const item = document.createElement('div');
+                item.className = `p-4 md:p-5 rounded-2xl border ${isCorrect ? 'bg-emerald-50/50 border-emerald-200' : 'bg-rose-50/50 border-rose-200'}`;
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="font-bold text-slate-900 text-sm md:text-base">
+                            Câu ${q.num}: ${q.text}
+                        </p>
+                        <span class="text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider ${isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${isCorrect ? 'ĐÚNG' : 'SAI'}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-xs">
+                        ${optBoxesHTML}
+                    </div>
+
+                    <div class="text-xs bg-white p-3.5 rounded-xl border border-slate-200 space-y-1.5 shadow-sm">
+                        <p class="text-slate-600"><strong>Đáp án của bạn:</strong> <span class="${isCorrect ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'}">${userAns}</span></p>
+                        <p class="text-slate-600"><strong>Đáp án đúng:</strong> <span class="text-emerald-700 font-bold">${correctAns}</span></p>
+                        <p class="text-slate-800 mt-2 pt-2 border-t border-slate-100 leading-relaxed">
+                            💡 <strong>Giải thích chuyên sâu:</strong> ${EXPLANATIONS[q.id]}
+                        </p>
+                    </div>
+                `;
+                reportContainer.appendChild(item);
+            });
+
+            document.getElementById('report-modal').classList.remove('hidden');
+
+            // Auto-sync results to Google Sheets APlus
+            sendDataToGoogleSheet({
+                candidateCode: candidate.code,
+                candidateName: candidate.name,
+                testType: "HSG - Đề số 5 (Part 3-5: 35 câu Lexico-Grammar)",
+                correctCount: correctCount + "/35",
+                score: score10
+            });
+        }
+
+        // HÀM ĐẨY DATA VỀ GOOGLE SHEET APLUS
+        function sendDataToGoogleSheet(payload) {
+            const syncElem = document.getElementById('sync-status');
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                syncElem.innerText = "✅ Đã lưu kết quả thành công vào Google Sheet APlus!";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200";
+            }).catch(err => {
+                console.error("Lỗi đồng bộ:", err);
+                syncElem.innerText = "❌ Lỗi kết nối. Không thể ghi dữ liệu.";
+                syncElem.className = "inline-block mt-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200";
+            });
+        }
+
+        function resetSystem() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
