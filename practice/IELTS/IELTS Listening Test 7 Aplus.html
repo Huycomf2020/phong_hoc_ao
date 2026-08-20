@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APLUS - IELTS Listening Mock Test 6</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & Babel CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+    
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .aplus-brand {
+      color: #0f5132;
+      font-weight: 900;
+      font-size: 1.35rem;
+      letter-spacing: -0.5px;
+    }
+
+    .header-top {
+      height: 54px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .part-header-banner {
+      background-color: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0.5rem 1.5rem;
+      font-size: 0.95rem;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .main-workspace {
+      flex: 1;
+      overflow-y: auto;
+      background: #f8fafc;
+      padding: 1.5rem;
+    }
+
+    .listening-container {
+      max-width: 920px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      padding: 2rem 2.5rem;
+    }
+
+    .test-footer {
+      height: 62px;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .nav-part-btn {
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4b5563;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .nav-part-btn.active {
+      color: #0f5132;
+      background-color: #e8f5e9;
+      box-shadow: inset 0 0 0 1px #a7f3d0;
+    }
+
+    .q-square {
+      width: 25px;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid #cbd5e1;
+      border-radius: 3px;
+      background: #fff;
+      color: #334155;
+      cursor: pointer;
+      margin: 0 1.5px;
+      transition: all 0.1s;
+    }
+
+    .q-square:hover {
+      border-color: #0f5132;
+      color: #0f5132;
+    }
+
+    .q-square.answered {
+      background-color: #0f5132;
+      color: #ffffff;
+      font-weight: 700;
+      border-color: #0f5132;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .idp-radio-label {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 4px;
+    }
+    .idp-radio-label:hover {
+      background-color: #f1f5f9;
+    }
+    .idp-radio-label input[type="radio"],
+    .idp-radio-label input[type="checkbox"] {
+      margin-right: 12px;
+      accent-color: #0f5132;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .fill-input {
+      border-bottom: 2px solid #64748b;
+      background-color: #f8fafc;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      padding: 2px 8px;
+      font-weight: 600;
+      color: #0f5132;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .fill-input:focus {
+      border-bottom-color: #0f5132;
+      background-color: #ecfdf5;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+    const AUDIO_SOURCE = "https://audio.jukehost.co.uk/01a00377-5da1-7088-967b-d6b68c88a9ad.mp3";
+
+    // Đáp án chuẩn 40 câu Listening TEST 6
+    const LISTENING_ANSWERS = {
+      // Part 1
+      q1: ["fish"],
+      q2: ["roof"],
+      q3: ["spanish"],
+      q4: ["vegetarian"],
+      q5: ["audley"],
+      q6: ["hotel"],
+      q7: ["reviews"],
+      q8: ["local"],
+      q9: ["30", "thirty"],
+      q10: ["average"],
+      // Part 2
+      q11: ["A"],
+      q12: ["B"],
+      q13: ["C"],
+      q14: ["A"],
+      q15: ["B"],
+      q16: ["C"],
+      q17_18: ["A", "E"], // in either order
+      q19_20: ["C", "E"], // in either order
+      // Part 3
+      q21_22: ["C", "E"], // in either order
+      q23_24: ["A", "C"], // in either order
+      q25_26: ["A", "B"], // in either order
+      q27: ["A"],
+      q28: ["B"],
+      q29: ["A"],
+      q30: ["C"],
+      // Part 4
+      q31: ["factories", "factory"],
+      q32: ["dead"],
+      q33: ["whale"],
+      q34: ["apartments", "apartment"],
+      q35: ["park"],
+      q36: ["art"],
+      q37: ["beaches", "beach"],
+      q38: ["ferry"],
+      q39: ["bikes", "bike", "bicycles", "bicycle"],
+      q40: ["drone", "drones"]
+    };
+
+    const calculateIELTSListeningBand = (correct) => {
+      if (correct >= 39) return "9.0";
+      if (correct >= 37) return "8.5";
+      if (correct >= 35) return "8.0";
+      if (correct >= 32) return "7.5";
+      if (correct >= 30) return "7.0";
+      if (correct >= 26) return "6.5";
+      if (correct >= 23) return "6.0";
+      if (correct >= 18) return "5.5";
+      if (correct >= 16) return "5.0";
+      if (correct >= 13) return "4.5";
+      if (correct >= 10) return "4.0";
+      if (correct >= 8)  return "3.5";
+      if (correct >= 6)  return "3.0";
+      if (correct >= 4)  return "2.5";
+      return "2.0";
+    };
+
+    const normalizeStr = (str) => {
+      return String(str || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    };
+
+    const checkSingleAnswer = (val, acceptedList) => {
+      if (!val) return false;
+      const norm = normalizeStr(val);
+      return acceptedList.some(item => normalizeStr(item) === norm);
+    };
+
+    // Màn hình khởi động / Đăng nhập
+    const SetupScreen = ({ onStartTest }) => {
+      const [code, setCode] = useState('');
+      const [name, setName] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = () => {
+        if (!code.trim() || !name.trim()) {
+          setError('Vui lòng nhập đầy đủ Mã thí sinh/Lớp và Họ tên.');
+          return;
+        }
+        onStartTest(code, name);
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-100 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-[#0f5132]">
+            <h2 className="text-xl font-bold text-center text-[#0f5132] mb-1">APLUS LANGUAGE CENTER</h2>
+            <h1 className="text-2xl font-black text-center text-slate-800 mb-2">IELTS LISTENING MOCK TEST 6</h1>
+            <p className="text-xs text-slate-500 mb-4 text-center font-medium">Cambridge IELTS Format Simulation</p>
+            
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800 mb-5 leading-relaxed">
+              🎧 <strong>Lưu ý:</strong> Vui lòng đeo tai nghe, kiểm tra âm lượng trước khi bắt đầu. Bài thi gồm 4 phần (40 câu), thời gian làm bài khoảng 35-40 phút.
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700">Mã số Thí sinh / Lớp</label>
+                <input 
+                  type="text" 
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="mt-1 block w-full border border-slate-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132] outline-none" 
+                  placeholder="Ví dụ: APLUS006"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700">Họ và Tên Thí sinh</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1 block w-full border border-slate-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132] outline-none" 
+                  placeholder="Ví dụ: Nguyen Van A"
+                />
+              </div>
+            </div>
+            
+            {error && <p className="text-red-500 text-xs mt-3 text-center font-medium">{error}</p>}
+            
+            <button 
+              onClick={handleSubmit}
+              className="mt-6 w-full bg-[#0f5132] text-white py-3 rounded-md font-bold hover:bg-[#0b3d26] transition-colors shadow-md text-sm uppercase tracking-wide"
+            >
+              BẮT ĐẦU BÀI THI LISTENING
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // App Component Chính
+    const App = () => {
+      const [appState, setAppState] = useState('setup');
+      const [candidate, setCandidate] = useState({ code: '', name: '' });
+      const [answers, setAnswers] = useState({});
+      const [currentPart, setCurrentPart] = useState(1);
+      const [timeLeft, setTimeLeft] = useState(35 * 60);
+      const [warningCount, setWarningCount] = useState(0);
+      const [isSubmitted, setIsSubmitted] = useState(false);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [submitStatus, setSubmitStatus] = useState('');
+      const audioRef = useRef(null);
+
+      // Chống copy, context menu
+      useEffect(() => {
+        const handleContextMenu = (e) => e.preventDefault();
+        const handleSelectStart = (e) => e.preventDefault();
+        const handleCopy = (e) => e.preventDefault();
+
+        document.addEventListener('contextmenu', handleContextMenu);
+        document.addEventListener('selectstart', handleSelectStart);
+        document.addEventListener('copy', handleCopy);
+
+        return () => {
+          document.removeEventListener('contextmenu', handleContextMenu);
+          document.removeEventListener('selectstart', handleSelectStart);
+          document.removeEventListener('copy', handleCopy);
+        };
+      }, []);
+
+      // Bắt vi phạm tab và fullscreen
+      useEffect(() => {
+        if (appState !== 'testing' || isSubmitted) return;
+
+        const handleVisibilityChange = () => {
+          if (document.hidden) {
+            setWarningCount(prev => {
+              const newCount = prev + 1;
+              alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn vừa chuyển tab hoặc rời khỏi bài thi!`);
+              return newCount;
+            });
+          }
+        };
+
+        const handleFullscreenChange = () => {
+          if (!document.fullscreenElement) {
+            setWarningCount(prev => {
+              const newCount = prev + 1;
+              alert(`⚠️ CẢNH BÁO VI PHẠM (${newCount}): Bạn đã thoát khỏi chế độ Toàn màn hình!`);
+              return newCount;
+            });
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+        return () => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+      }, [appState, isSubmitted]);
+
+      // Bộ đếm thời gian
+      useEffect(() => {
+        if (appState !== 'testing' || isSubmitted) return;
+        const timer = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              handleSubmitTest();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      }, [appState, isSubmitted]);
+
+      const handleStartTest = (code, name) => {
+        setCandidate({ code, name });
+        setAppState('testing');
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        }
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch(e => console.log('Autoplay blocked:', e));
+          }
+        }, 500);
+      };
+
+      const handleAnswerChange = (qId, val) => {
+        setAnswers(prev => ({ ...prev, [qId]: val }));
+      };
+
+      const handleMultipleChoiceToggle = (qA, qB, letter) => {
+        const currentA = answers[qA] || '';
+        const currentB = answers[qB] || '';
+        
+        if (currentA === letter) {
+          setAnswers(prev => ({ ...prev, [qA]: '' }));
+        } else if (currentB === letter) {
+          setAnswers(prev => ({ ...prev, [qB]: '' }));
+        } else {
+          if (!currentA) {
+            setAnswers(prev => ({ ...prev, [qA]: letter }));
+          } else if (!currentB) {
+            setAnswers(prev => ({ ...prev, [qB]: letter }));
+          } else {
+            setAnswers(prev => ({ ...prev, [qB]: letter }));
+          }
+        }
+      };
+
+      const isAnswered = (qNum) => {
+        const val = answers[`q${qNum}`];
+        return val && String(val).trim() !== '';
+      };
+
+      const countPartAnswered = (start, end) => {
+        let cnt = 0;
+        for (let i = start; i <= end; i++) {
+          if (isAnswered(i)) cnt++;
+        }
+        return cnt;
+      };
+
+      // Đánh giá và chấm điểm
+      const gradeAllQuestions = () => {
+        let correctCount = 0;
+        let results = {};
+
+        // Part 1: 1-10
+        for (let i = 1; i <= 10; i++) {
+          const key = `q${i}`;
+          const correct = checkSingleAnswer(answers[key], LISTENING_ANSWERS[key]);
+          results[key] = { isCorrect: correct, answerGiven: answers[key] || '', standard: LISTENING_ANSWERS[key].join(' / ') };
+          if (correct) correctCount++;
+        }
+
+        // Part 2: 11-16
+        for (let i = 11; i <= 16; i++) {
+          const key = `q${i}`;
+          const correct = checkSingleAnswer(answers[key], LISTENING_ANSWERS[key]);
+          results[key] = { isCorrect: correct, answerGiven: answers[key] || '', standard: LISTENING_ANSWERS[key][0] };
+          if (correct) correctCount++;
+        }
+
+        // Part 2: 17 & 18 (Pair)
+        const p2_1718 = [answers['q17'], answers['q18']].filter(Boolean).map(x => x.toUpperCase());
+        const t1718 = LISTENING_ANSWERS['q17_18'];
+        const q17_correct = p2_1718.includes(t1718[0]);
+        const q18_correct = p2_1718.includes(t1718[1]) && p2_1718.length > 1 && (p2_1718[0] !== p2_1718[1]);
+        results['q17'] = { isCorrect: q17_correct, answerGiven: answers['q17'] || '', standard: 'A / E' };
+        results['q18'] = { isCorrect: q18_correct, answerGiven: answers['q18'] || '', standard: 'A / E' };
+        if (q17_correct) correctCount++;
+        if (q18_correct) correctCount++;
+
+        // Part 2: 19 & 20 (Pair)
+        const p2_1920 = [answers['q19'], answers['q20']].filter(Boolean).map(x => x.toUpperCase());
+        const t1920 = LISTENING_ANSWERS['q19_20'];
+        const q19_correct = p2_1920.includes(t1920[0]);
+        const q20_correct = p2_1920.includes(t1920[1]) && p2_1920.length > 1 && (p2_1920[0] !== p2_1920[1]);
+        results['q19'] = { isCorrect: q19_correct, answerGiven: answers['q19'] || '', standard: 'C / E' };
+        results['q20'] = { isCorrect: q20_correct, answerGiven: answers['q20'] || '', standard: 'C / E' };
+        if (q19_correct) correctCount++;
+        if (q20_correct) correctCount++;
+
+        // Part 3: 21 & 22 (Pair)
+        const p3_2122 = [answers['q21'], answers['q22']].filter(Boolean).map(x => x.toUpperCase());
+        const t2122 = LISTENING_ANSWERS['q21_22'];
+        const q21_correct = p3_2122.includes(t2122[0]);
+        const q22_correct = p3_2122.includes(t2122[1]) && p3_2122.length > 1 && (p3_2122[0] !== p3_2122[1]);
+        results['q21'] = { isCorrect: q21_correct, answerGiven: answers['q21'] || '', standard: 'C / E' };
+        results['q22'] = { isCorrect: q22_correct, answerGiven: answers['q22'] || '', standard: 'C / E' };
+        if (q21_correct) correctCount++;
+        if (q22_correct) correctCount++;
+
+        // Part 3: 23 & 24 (Pair)
+        const p3_2324 = [answers['q23'], answers['q24']].filter(Boolean).map(x => x.toUpperCase());
+        const t2324 = LISTENING_ANSWERS['q23_24'];
+        const q23_correct = p3_2324.includes(t2324[0]);
+        const q24_correct = p3_2324.includes(t2324[1]) && p3_2324.length > 1 && (p3_2324[0] !== p3_2324[1]);
+        results['q23'] = { isCorrect: q23_correct, answerGiven: answers['q23'] || '', standard: 'A / C' };
+        results['q24'] = { isCorrect: q24_correct, answerGiven: answers['q24'] || '', standard: 'A / C' };
+        if (q23_correct) correctCount++;
+        if (q24_correct) correctCount++;
+
+        // Part 3: 25 & 26 (Pair)
+        const p3_2526 = [answers['q25'], answers['q26']].filter(Boolean).map(x => x.toUpperCase());
+        const t2526 = LISTENING_ANSWERS['q25_26'];
+        const q25_correct = p3_2526.includes(t2526[0]);
+        const q26_correct = p3_2526.includes(t2526[1]) && p3_2526.length > 1 && (p3_2526[0] !== p3_2526[1]);
+        results['q25'] = { isCorrect: q25_correct, answerGiven: answers['q25'] || '', standard: 'A / B' };
+        results['q26'] = { isCorrect: q26_correct, answerGiven: answers['q26'] || '', standard: 'A / B' };
+        if (q25_correct) correctCount++;
+        if (q26_correct) correctCount++;
+
+        // Part 3: 27-30
+        for (let i = 27; i <= 30; i++) {
+          const key = `q${i}`;
+          const correct = checkSingleAnswer(answers[key], LISTENING_ANSWERS[key]);
+          results[key] = { isCorrect: correct, answerGiven: answers[key] || '', standard: LISTENING_ANSWERS[key][0] };
+          if (correct) correctCount++;
+        }
+
+        // Part 4: 31-40
+        for (let i = 31; i <= 40; i++) {
+          const key = `q${i}`;
+          const correct = checkSingleAnswer(answers[key], LISTENING_ANSWERS[key]);
+          results[key] = { isCorrect: correct, answerGiven: answers[key] || '', standard: LISTENING_ANSWERS[key].join(' / ') };
+          if (correct) correctCount++;
+        }
+
+        return { correctCount, results };
+      };
+
+      const handleSubmitTest = async () => {
+        let answeredTotal = 0;
+        for (let i = 1; i <= 40; i++) {
+          if (isAnswered(i)) answeredTotal++;
+        }
+
+        if (answeredTotal < 40 && !confirm(`Bạn mới hoàn thành ${answeredTotal}/40 câu. Bạn có chắc chắn muốn nộp bài?`)) {
+          return;
+        }
+
+        setIsSubmitted(true);
+        setIsSubmitting(true);
+
+        const { correctCount } = gradeAllQuestions();
+        const bandScore = calculateIELTSListeningBand(correctCount);
+
+        const payload = {
+          sheetName: "IELTS LISTENING",
+          testType: "IELTS MOCK TEST 6",
+          candidateCode: candidate.code,
+          candidateName: candidate.name,
+          correctCount: `${correctCount}/40`,
+          score: bandScore,
+          warningCount: warningCount
+        };
+
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          setSubmitStatus('✅ Đã lưu kết quả bài thi thành công!');
+        } catch (err) {
+          setSubmitStatus('⚠️ Không thể kết nối API tự động. Vui lòng chụp lại bảng điểm này gửi giáo viên!');
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+
+      if (appState === 'setup') {
+        return <SetupScreen onStartTest={handleStartTest} />;
+      }
+
+      const { correctCount, results } = gradeAllQuestions();
+
+      return (
+        <div className="h-screen flex flex-col">
+          {/* Header */}
+          <header className="header-top">
+            <div className="flex items-center space-x-6">
+              <div className="aplus-brand">APLUS</div>
+              <div className="text-xs text-slate-600">
+                Test taker ID: <span className="font-semibold text-slate-800">{candidate.code} ({candidate.name})</span>
+              </div>
+            </div>
+
+            {/* Audio Bar */}
+            <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full shadow-inner">
+              <span className="text-xs font-bold text-slate-700 flex items-center">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping mr-2 inline-block"></span>
+                Audio:
+              </span>
+              <audio 
+                ref={audioRef}
+                controls 
+                className="h-8 max-w-[280px] md:max-w-[360px]"
+                src={AUDIO_SOURCE}
+              >
+                Your browser does not support audio.
+              </audio>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <div className="font-bold text-sm text-[#0f5132] bg-emerald-50 px-3 py-1 rounded border border-emerald-200">
+                ⏱️ {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+              </div>
+
+              {warningCount > 0 && (
+                <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold border border-red-300">
+                  Cảnh báo: {warningCount}
+                </span>
+              )}
+
+              <button 
+                onClick={handleSubmitTest}
+                className="bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs font-bold px-4 py-2 rounded shadow-sm transition-colors uppercase tracking-wider"
+              >
+                Submit
+              </button>
+            </div>
+          </header>
+
+          {/* Part Banner Header */}
+          <div className="part-header-banner">
+            <div className="font-semibold text-slate-800">
+              IELTS Listening — Part {currentPart}
+              <span className="text-xs text-slate-500 font-normal ml-2">
+                {currentPart === 1 && 'Questions 1–10 (Restaurant Recommendation Notes)'}
+                {currentPart === 2 && 'Questions 11–20 (Pottery Class & Workshop)'}
+                {currentPart === 3 && 'Questions 21–30 (Discussion on Loneliness)'}
+                {currentPart === 4 && 'Questions 31–40 (Reclaiming Urban Rivers)'}
+              </span>
+            </div>
+            <div className="text-xs text-slate-500 font-medium">
+              Part {currentPart} Progress: {
+                currentPart === 1 ? countPartAnswered(1, 10) + '/10' :
+                currentPart === 2 ? countPartAnswered(11, 20) + '/10' :
+                currentPart === 3 ? countPartAnswered(21, 30) + '/10' :
+                countPartAnswered(31, 40) + '/10'
+              } answered
+            </div>
+          </div>
+
+          {/* Questions Container */}
+          <div className="main-workspace custom-scrollbar">
+            <div className="listening-container">
+              
+              {/* PART 1 */}
+              {currentPart === 1 && (
+                <div>
+                  <div className="border-b pb-3 mb-6">
+                    <h2 className="text-xl font-bold text-slate-900">PART 1: Questions 1 – 10</h2>
+                    <p className="text-sm text-slate-600 mt-1 font-medium">Complete the notes below.</p>
+                    <p className="text-sm font-semibold text-red-700">Write ONE WORD ONLY for each answer.</p>
+                  </div>
+
+                  <div className="overflow-x-auto border border-slate-300 rounded-lg shadow-sm">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-slate-100 text-slate-800 border-b border-slate-300 text-left font-bold">
+                          <th className="p-3 border-r border-slate-300 w-1/4">Name of restaurant</th>
+                          <th className="p-3 border-r border-slate-300 w-1/4">Location</th>
+                          <th className="p-3 border-r border-slate-300 w-1/4">Reason for recommendation</th>
+                          <th className="p-3 w-1/4">Other comments</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-300 text-slate-800">
+                        <tr>
+                          <td className="p-3 border-r border-slate-300 font-bold">The Junction</td>
+                          <td className="p-3 border-r border-slate-300">Greyson Street near the station</td>
+                          <td className="p-3 border-r border-slate-300">
+                            Good for people who are especially keen on <br/>
+                            <span className="font-bold mr-1 text-slate-700">1</span>
+                            <input 
+                              type="text"
+                              className="fill-input w-28 text-sm"
+                              value={answers['q1'] || ''}
+                              onChange={(e) => handleAnswerChange('q1', e.target.value)}
+                            />
+                          </td>
+                          <td className="p-3 space-y-2">
+                            <p>– Quite expensive</p>
+                            <p>
+                              – The <span className="font-bold mr-1 text-slate-700">2</span>
+                              <input 
+                                type="text"
+                                className="fill-input w-28 text-sm"
+                                value={answers['q2'] || ''}
+                                onChange={(e) => handleAnswerChange('q2', e.target.value)}
+                              />
+                              &nbsp;is a good place for a drink
+                            </p>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="p-3 border-r border-slate-300 font-bold">Paloma</td>
+                          <td className="p-3 border-r border-slate-300">In Bow Street next to the cinema</td>
+                          <td className="p-3 border-r border-slate-300">
+                            <span className="font-bold mr-1 text-slate-700">3</span>
+                            <input 
+                              type="text"
+                              className="fill-input w-28 text-sm"
+                              value={answers['q3'] || ''}
+                              onChange={(e) => handleAnswerChange('q3', e.target.value)}
+                            />
+                            &nbsp;food good for sharing
+                          </td>
+                          <td className="p-3 space-y-2">
+                            <p>– Staff are very friendly.</p>
+                            <p>– Need to pay £50 deposit.</p>
+                            <p>
+                              – A limited selection of <br/>
+                              <span className="font-bold mr-1 text-slate-700">4</span>
+                              <input 
+                                type="text"
+                                className="fill-input w-28 text-sm"
+                                value={answers['q4'] || ''}
+                                onChange={(e) => handleAnswerChange('q4', e.target.value)}
+                              />
+                              &nbsp;food on the menu
+                            </p>
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td className="p-3 border-r border-slate-300 font-bold">
+                            The <span className="font-bold mr-1 text-slate-700">5</span>
+                            <input 
+                              type="text"
+                              className="fill-input w-28 text-sm"
+                              value={answers['q5'] || ''}
+                              onChange={(e) => handleAnswerChange('q5', e.target.value)}
+                            />
+                          </td>
+                          <td className="p-3 border-r border-slate-300">
+                            At the top of a <br/>
+                            <span className="font-bold mr-1 text-slate-700">6</span>
+                            <input 
+                              type="text"
+                              className="fill-input w-28 text-sm"
+                              value={answers['q6'] || ''}
+                              onChange={(e) => handleAnswerChange('q6', e.target.value)}
+                            />
+                          </td>
+                          <td className="p-3 border-r border-slate-300 space-y-2">
+                            <p>– A famous chef</p>
+                            <p>
+                              – All the <span className="font-bold mr-1 text-slate-700">7</span>
+                              <input 
+                                type="text"
+                                className="fill-input w-24 text-sm"
+                                value={answers['q7'] || ''}
+                                onChange={(e) => handleAnswerChange('q7', e.target.value)}
+                              />
+                              &nbsp;are very good
+                            </p>
+                            <p>
+                              – Only uses <span className="font-bold mr-1 text-slate-700">8</span>
+                              <input 
+                                type="text"
+                                className="fill-input w-24 text-sm"
+                                value={answers['q8'] || ''}
+                                onChange={(e) => handleAnswerChange('q8', e.target.value)}
+                              />
+                              &nbsp;ingredients
+                            </p>
+                          </td>
+                          <td className="p-3 space-y-2">
+                            <p>
+                              – Set lunch costs £<span className="font-bold mr-1 text-slate-700">9</span>
+                              <input 
+                                type="text"
+                                className="fill-input w-20 text-sm"
+                                value={answers['q9'] || ''}
+                                onChange={(e) => handleAnswerChange('q9', e.target.value)}
+                              />
+                              &nbsp;per person
+                            </p>
+                            <p>
+                              – Portions probably of <br/>
+                              <span className="font-bold mr-1 text-slate-700">10</span>
+                              <input 
+                                type="text"
+                                className="fill-input w-24 text-sm"
+                                value={answers['q10'] || ''}
+                                onChange={(e) => handleAnswerChange('q10', e.target.value)}
+                              />
+                              &nbsp;size
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* PART 2 */}
+              {currentPart === 2 && (
+                <div>
+                  <div className="border-b pb-3 mb-6">
+                    <h2 className="text-xl font-bold text-slate-900">PART 2: Questions 11 – 20</h2>
+                  </div>
+
+                  {/* Questions 11 - 16 */}
+                  <div className="mb-8">
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 11 – 16</p>
+                      <p className="text-xs text-slate-600">Choose the correct letter, <strong>A</strong>, <strong>B</strong> or <strong>C</strong>.</p>
+                    </div>
+
+                    <div className="space-y-6">
+                      {[
+                        {
+                          num: 11,
+                          q: "11. Heather says pottery differs from other art forms because",
+                          opts: [
+                            { letter: 'A', text: 'it lasts longer in the ground.' },
+                            { letter: 'B', text: 'it is practised by more people.' },
+                            { letter: 'C', text: 'it can be repaired more easily.' }
+                          ]
+                        },
+                        {
+                          num: 12,
+                          q: "12. Archaeologists sometimes identify the use of ancient pottery from",
+                          opts: [
+                            { letter: 'A', text: 'the clay it was made with.' },
+                            { letter: 'B', text: 'the marks that are on it.' },
+                            { letter: 'C', text: 'the basic shape of it.' }
+                          ]
+                        },
+                        {
+                          num: 13,
+                          q: "13. Some people join Heather's pottery class because they want to",
+                          opts: [
+                            { letter: 'A', text: 'create an item that looks very old.' },
+                            { letter: 'B', text: 'find something that they are good at.' },
+                            { letter: 'C', text: 'make something that will outlive them.' }
+                          ]
+                        },
+                        {
+                          num: 14,
+                          q: "14. What does Heather value most about being a potter?",
+                          opts: [
+                            { letter: 'A', text: 'its calming effect' },
+                            { letter: 'B', text: 'its messy nature' },
+                            { letter: 'C', text: 'its physical benefits' }
+                          ]
+                        },
+                        {
+                          num: 15,
+                          q: "15. Most of the visitors to Edelman Pottery",
+                          opts: [
+                            { letter: 'A', text: 'bring friends to join courses.' },
+                            { letter: 'B', text: 'have never made a pot before.' },
+                            { letter: 'C', text: 'try to learn techniques too quickly.' }
+                          ]
+                        },
+                        {
+                          num: 16,
+                          q: "16. Heather reminds her visitors that they should",
+                          opts: [
+                            { letter: 'A', text: 'put on their aprons.' },
+                            { letter: 'B', text: 'change their clothes.' },
+                            { letter: 'C', text: 'take off their jewellery.' }
+                          ]
+                        }
+                      ].map(item => (
+                        <div key={item.num} className="border-b pb-4">
+                          <p className="text-sm font-semibold text-slate-800 mb-2">{item.q}</p>
+                          <div className="space-y-1">
+                            {item.opts.map(opt => (
+                              <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                                <input 
+                                  type="radio" 
+                                  name={`q${item.num}`} 
+                                  value={opt.letter}
+                                  checked={answers[`q${item.num}`] === opt.letter}
+                                  onChange={() => handleAnswerChange(`q${item.num}`, opt.letter)}
+                                />
+                                <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Questions 17 and 18 */}
+                  <div className="mb-8">
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 17 and 18</p>
+                      <p className="text-xs text-slate-600">Choose <strong>TWO</strong> letters, <strong>A–E</strong>.</p>
+                    </div>
+
+                    <p className="text-sm font-semibold text-slate-800 mb-3">
+                      Which <strong>TWO</strong> things does Heather explain about kilns?
+                    </p>
+
+                    <div className="space-y-1 bg-slate-50 p-3 rounded-lg border mb-4">
+                      {[
+                        { letter: 'A', text: 'what their function is' },
+                        { letter: 'B', text: 'when they were invented' },
+                        { letter: 'C', text: 'ways of keeping them safe' },
+                        { letter: 'D', text: 'where to put one in your home' },
+                        { letter: 'E', text: 'what some people use instead of one' }
+                      ].map(opt => {
+                        const isChecked = answers['q17'] === opt.letter || answers['q18'] === opt.letter;
+                        return (
+                          <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => handleMultipleChoiceToggle('q17', 'q18', opt.letter)}
+                            />
+                            <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center space-x-6 text-xs text-slate-600 font-medium">
+                      <span>Question 17 selected: <strong className="text-[#0f5132] text-sm">{answers['q17'] || '—'}</strong></span>
+                      <span>Question 18 selected: <strong className="text-[#0f5132] text-sm">{answers['q18'] || '—'}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Questions 19 and 20 */}
+                  <div>
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 19 and 20</p>
+                      <p className="text-xs text-slate-600">Choose <strong>TWO</strong> letters, <strong>A–E</strong>.</p>
+                    </div>
+
+                    <p className="text-sm font-semibold text-slate-800 mb-3">
+                      Which <strong>TWO</strong> points does Heather make about a potter's tools?
+                    </p>
+
+                    <div className="space-y-1 bg-slate-50 p-3 rounded-lg border mb-4">
+                      {[
+                        { letter: 'A', text: 'Some are hard to hold.' },
+                        { letter: 'B', text: 'Some are worth buying.' },
+                        { letter: 'C', text: 'Some are essential items.' },
+                        { letter: 'D', text: 'Some have memorable names.' },
+                        { letter: 'E', text: 'Some are available for use by participants.' }
+                      ].map(opt => {
+                        const isChecked = answers['q19'] === opt.letter || answers['q20'] === opt.letter;
+                        return (
+                          <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => handleMultipleChoiceToggle('q19', 'q20', opt.letter)}
+                            />
+                            <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center space-x-6 text-xs text-slate-600 font-medium">
+                      <span>Question 19 selected: <strong className="text-[#0f5132] text-sm">{answers['q19'] || '—'}</strong></span>
+                      <span>Question 20 selected: <strong className="text-[#0f5132] text-sm">{answers['q20'] || '—'}</strong></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PART 3 */}
+              {currentPart === 3 && (
+                <div>
+                  <div className="border-b pb-3 mb-6">
+                    <h2 className="text-xl font-bold text-slate-900">PART 3: Questions 21 – 30</h2>
+                  </div>
+
+                  {/* Questions 21 and 22 */}
+                  <div className="mb-8">
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 21 and 22</p>
+                      <p className="text-xs text-slate-600">Choose <strong>TWO</strong> letters, <strong>A–E</strong>.</p>
+                    </div>
+
+                    <p className="text-sm font-semibold text-slate-800 mb-3">
+                      Which <strong>TWO</strong> things do the students both believe are responsible for the increase in loneliness?
+                    </p>
+
+                    <div className="space-y-1 bg-slate-50 p-3 rounded-lg border mb-4">
+                      {[
+                        { letter: 'A', text: 'social media' },
+                        { letter: 'B', text: 'smaller nuclear families' },
+                        { letter: 'C', text: 'urban design' },
+                        { letter: 'D', text: 'longer lifespans' },
+                        { letter: 'E', text: 'a mobile workforce' }
+                      ].map(opt => {
+                        const isChecked = answers['q21'] === opt.letter || answers['q22'] === opt.letter;
+                        return (
+                          <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => handleMultipleChoiceToggle('q21', 'q22', opt.letter)}
+                            />
+                            <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center space-x-6 text-xs text-slate-600 font-medium">
+                      <span>Question 21 selected: <strong className="text-[#0f5132] text-sm">{answers['q21'] || '—'}</strong></span>
+                      <span>Question 22 selected: <strong className="text-[#0f5132] text-sm">{answers['q22'] || '—'}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Questions 23 and 24 */}
+                  <div className="mb-8">
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 23 and 24</p>
+                      <p className="text-xs text-slate-600">Choose <strong>TWO</strong> letters, <strong>A–E</strong>.</p>
+                    </div>
+
+                    <p className="text-sm font-semibold text-slate-800 mb-3">
+                      Which <strong>TWO</strong> health risks associated with loneliness do the students agree are based on solid evidence?
+                    </p>
+
+                    <div className="space-y-1 bg-slate-50 p-3 rounded-lg border mb-4">
+                      {[
+                        { letter: 'A', text: 'a weakened immune system' },
+                        { letter: 'B', text: 'dementia' },
+                        { letter: 'C', text: 'cancer' },
+                        { letter: 'D', text: 'obesity' },
+                        { letter: 'E', text: 'cardiovascular disease' }
+                      ].map(opt => {
+                        const isChecked = answers['q23'] === opt.letter || answers['q24'] === opt.letter;
+                        return (
+                          <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => handleMultipleChoiceToggle('q23', 'q24', opt.letter)}
+                            />
+                            <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center space-x-6 text-xs text-slate-600 font-medium">
+                      <span>Question 23 selected: <strong className="text-[#0f5132] text-sm">{answers['q23'] || '—'}</strong></span>
+                      <span>Question 24 selected: <strong className="text-[#0f5132] text-sm">{answers['q24'] || '—'}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Questions 25 and 26 */}
+                  <div className="mb-8">
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 25 and 26</p>
+                      <p className="text-xs text-slate-600">Choose <strong>TWO</strong> letters, <strong>A–E</strong>.</p>
+                    </div>
+
+                    <p className="text-sm font-semibold text-slate-800 mb-3">
+                      Which <strong>TWO</strong> opinions do both the students express about the evolutionary theory of loneliness?
+                    </p>
+
+                    <div className="space-y-1 bg-slate-50 p-3 rounded-lg border mb-4">
+                      {[
+                        { letter: 'A', text: 'It has little practical relevance.' },
+                        { letter: 'B', text: 'It needs further investigation.' },
+                        { letter: 'C', text: 'It is misleading.' },
+                        { letter: 'D', text: 'It should be more widely accepted.' },
+                        { letter: 'E', text: 'It is difficult to understand.' }
+                      ].map(opt => {
+                        const isChecked = answers['q25'] === opt.letter || answers['q26'] === opt.letter;
+                        return (
+                          <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={() => handleMultipleChoiceToggle('q25', 'q26', opt.letter)}
+                            />
+                            <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center space-x-6 text-xs text-slate-600 font-medium">
+                      <span>Question 25 selected: <strong className="text-[#0f5132] text-sm">{answers['q25'] || '—'}</strong></span>
+                      <span>Question 26 selected: <strong className="text-[#0f5132] text-sm">{answers['q26'] || '—'}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Questions 27 - 30 */}
+                  <div>
+                    <div className="bg-emerald-50 border-l-4 border-[#0f5132] p-3 mb-4 rounded-r">
+                      <p className="font-bold text-sm text-slate-800">Questions 27 – 30</p>
+                      <p className="text-xs text-slate-600">Loneliness and mental health. Choose the correct letter, <strong>A</strong>, <strong>B</strong> or <strong>C</strong>.</p>
+                    </div>
+
+                    <div className="space-y-6">
+                      {[
+                        {
+                          num: 27,
+                          q: "27. When comparing loneliness to depression, the students",
+                          opts: [
+                            { letter: 'A', text: 'doubt that there will ever be a medical cure for loneliness.' },
+                            { letter: 'B', text: 'claim that the link between loneliness and mental health is overstated.' },
+                            { letter: 'C', text: 'express frustration that loneliness is not taken more seriously.' }
+                          ]
+                        },
+                        {
+                          num: 28,
+                          q: "28. Why do the students decide to start their presentation with an example from their own experience?",
+                          opts: [
+                            { letter: 'A', text: 'to explain how difficult loneliness can be' },
+                            { letter: 'B', text: 'to highlight a situation that most students will recognise' },
+                            { letter: 'C', text: 'to emphasise that feeling lonely is more common for men than women' }
+                          ]
+                        },
+                        {
+                          num: 29,
+                          q: "29. The students agree that talking to strangers is a good strategy for dealing with loneliness because",
+                          opts: [
+                            { letter: 'A', text: 'it creates a sense of belonging.' },
+                            { letter: 'B', text: 'it builds self-confidence.' },
+                            { letter: 'C', text: 'it makes people feel more positive.' }
+                          ]
+                        },
+                        {
+                          num: 30,
+                          q: "30. The students find it difficult to understand why solitude is considered to be",
+                          opts: [
+                            { letter: 'A', text: 'similar to loneliness.' },
+                            { letter: 'B', text: 'necessary for mental health.' },
+                            { letter: 'C', text: 'an enjoyable experience.' }
+                          ]
+                        }
+                      ].map(item => (
+                        <div key={item.num} className="border-b pb-4">
+                          <p className="text-sm font-semibold text-slate-800 mb-2">{item.q}</p>
+                          <div className="space-y-1">
+                            {item.opts.map(opt => (
+                              <label key={opt.letter} className="idp-radio-label text-sm text-slate-700">
+                                <input 
+                                  type="radio" 
+                                  name={`q${item.num}`} 
+                                  value={opt.letter}
+                                  checked={answers[`q${item.num}`] === opt.letter}
+                                  onChange={() => handleAnswerChange(`q${item.num}`, opt.letter)}
+                                />
+                                <span><strong>{opt.letter}.</strong> {opt.text}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PART 4 */}
+              {currentPart === 4 && (
+                <div>
+                  <div className="border-b pb-3 mb-6">
+                    <h2 className="text-xl font-bold text-slate-900">PART 4: Questions 31 – 40</h2>
+                    <p className="text-sm text-slate-600 mt-1 font-medium">Complete the notes below.</p>
+                    <p className="text-sm font-semibold text-red-700">Write ONE WORD ONLY for each answer.</p>
+                  </div>
+
+                  <div className="bg-slate-50 p-6 rounded-lg border border-slate-300 leading-relaxed text-sm text-slate-800 space-y-6">
+                    <h3 className="text-center font-bold text-base text-slate-900 border-b border-slate-300 pb-2 uppercase tracking-wide">
+                      Reclaiming urban rivers
+                    </h3>
+
+                    <div>
+                      <h4 className="font-bold text-slate-900 mb-2">Historical background</h4>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li>Nearly all major cities were built on a river.</li>
+                        <li>Rivers were traditionally used by city dwellers for transport, fishing and recreation.</li>
+                        <li>
+                          Industrial development and rising populations later led to:
+                          <ul className="list-[circle] pl-6 mt-1 space-y-1.5">
+                            <li>more sewage from houses being discharged into the river</li>
+                            <li className="flex items-center flex-wrap">
+                              <span>pollution from</span>
+                              <span className="font-bold mx-2 text-slate-700">31</span>
+                              <input 
+                                type="text" 
+                                className="fill-input w-36 text-sm"
+                                value={answers['q31'] || ''}
+                                onChange={(e) => handleAnswerChange('q31', e.target.value)}
+                              />
+                              <span>on the river bank.</span>
+                            </li>
+                          </ul>
+                        </li>
+                        <li className="flex items-center flex-wrap">
+                          <span>In 1957, the River Thames in London was declared biologically</span>
+                          <span className="font-bold mx-2 text-slate-700">32</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q32'] || ''}
+                            onChange={(e) => handleAnswerChange('q32', e.target.value)}
+                          />
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-300">
+                      <h4 className="font-bold text-slate-900 mb-2">Recent improvements</h4>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li className="flex items-center flex-wrap">
+                          <span>Seals and even a</span>
+                          <span className="font-bold mx-2 text-slate-700">33</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q33'] || ''}
+                            onChange={(e) => handleAnswerChange('q33', e.target.value)}
+                          />
+                          <span>have been seen in the River Thames.</span>
+                        </li>
+                        <li className="flex items-center flex-wrap">
+                          <span>Riverside warehouses are converted to restaurants and</span>
+                          <span className="font-bold mx-2 text-slate-700">34</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q34'] || ''}
+                            onChange={(e) => handleAnswerChange('q34', e.target.value)}
+                          />
+                        </li>
+                        <li>
+                          In Los Angeles, there are plans to:
+                          <ul className="list-[circle] pl-6 mt-1 space-y-1.5">
+                            <li className="flex items-center flex-wrap">
+                              <span>build a riverside</span>
+                              <span className="font-bold mx-2 text-slate-700">35</span>
+                              <input 
+                                type="text" 
+                                className="fill-input w-36 text-sm"
+                                value={answers['q35'] || ''}
+                                onChange={(e) => handleAnswerChange('q35', e.target.value)}
+                              />
+                            </li>
+                            <li className="flex items-center flex-wrap">
+                              <span>display</span>
+                              <span className="font-bold mx-2 text-slate-700">36</span>
+                              <input 
+                                type="text" 
+                                className="fill-input w-36 text-sm"
+                                value={answers['q36'] || ''}
+                                onChange={(e) => handleAnswerChange('q36', e.target.value)}
+                              />
+                              <span>projects.</span>
+                            </li>
+                          </ul>
+                        </li>
+                        <li className="flex items-center flex-wrap">
+                          <span>In Paris,</span>
+                          <span className="font-bold mx-2 text-slate-700">37</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q37'] || ''}
+                            onChange={(e) => handleAnswerChange('q37', e.target.value)}
+                          />
+                          <span>are created on the sides of the river every summer.</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-300">
+                      <h4 className="font-bold text-slate-900 mb-2">Transport possibilities</h4>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li className="flex items-center flex-wrap">
+                          <span>Over 2 billion passengers already travel by</span>
+                          <span className="font-bold mx-2 text-slate-700">38</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q38'] || ''}
+                            onChange={(e) => handleAnswerChange('q38', e.target.value)}
+                          />
+                          <span>in cities round the world.</span>
+                        </li>
+                        <li>Changes in shopping habits mean the number of deliveries that are made is increasing.</li>
+                        <li className="flex items-center flex-wrap">
+                          <span>Instead of road transport, goods could be transported by large freight barges and electric</span>
+                          <span className="font-bold mx-2 text-slate-700">39</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q39'] || ''}
+                            onChange={(e) => handleAnswerChange('q39', e.target.value)}
+                          />
+                          <span className="mx-2">or in future, by</span>
+                          <span className="font-bold mr-2 text-slate-700">40</span>
+                          <input 
+                            type="text" 
+                            className="fill-input w-36 text-sm"
+                            value={answers['q40'] || ''}
+                            onChange={(e) => handleAnswerChange('q40', e.target.value)}
+                          />
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+
+          {/* Footer Nav Bar */}
+          <footer className="test-footer">
+            {/* Part 1 */}
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={() => setCurrentPart(1)}
+                className={`nav-part-btn ${currentPart === 1 ? 'active' : ''}`}
+              >
+                Part 1 <span className="text-xs text-slate-400 font-normal">({countPartAnswered(1, 10)}/10)</span>
+              </button>
+              <div className="hidden lg:flex items-center">
+                {[1,2,3,4,5,6,7,8,9,10].map(q => (
+                  <span 
+                    key={q} 
+                    className={`q-square ${isAnswered(q) ? 'answered' : ''}`}
+                    onClick={() => setCurrentPart(1)}
+                  >
+                    {q}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Part 2 */}
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={() => setCurrentPart(2)}
+                className={`nav-part-btn ${currentPart === 2 ? 'active' : ''}`}
+              >
+                Part 2 <span className="text-xs text-slate-400 font-normal">({countPartAnswered(11, 20)}/10)</span>
+              </button>
+              <div className="hidden lg:flex items-center">
+                {[11,12,13,14,15,16,17,18,19,20].map(q => (
+                  <span 
+                    key={q} 
+                    className={`q-square ${isAnswered(q) ? 'answered' : ''}`}
+                    onClick={() => setCurrentPart(2)}
+                  >
+                    {q}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Part 3 */}
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={() => setCurrentPart(3)}
+                className={`nav-part-btn ${currentPart === 3 ? 'active' : ''}`}
+              >
+                Part 3 <span className="text-xs text-slate-400 font-normal">({countPartAnswered(21, 30)}/10)</span>
+              </button>
+              <div className="hidden lg:flex items-center">
+                {[21,22,23,24,25,26,27,28,29,30].map(q => (
+                  <span 
+                    key={q} 
+                    className={`q-square ${isAnswered(q) ? 'answered' : ''}`}
+                    onClick={() => setCurrentPart(3)}
+                  >
+                    {q}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Part 4 */}
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={() => setCurrentPart(4)}
+                className={`nav-part-btn ${currentPart === 4 ? 'active' : ''}`}
+              >
+                Part 4 <span className="text-xs text-slate-400 font-normal">({countPartAnswered(31, 40)}/10)</span>
+              </button>
+              <div className="hidden lg:flex items-center">
+                {[31,32,33,34,35,36,37,38,39,40].map(q => (
+                  <span 
+                    key={q} 
+                    className={`q-square ${isAnswered(q) ? 'answered' : ''}`}
+                    onClick={() => setCurrentPart(4)}
+                  >
+                    {q}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Prev/Next arrows */}
+            <div className="flex items-center space-x-1">
+              <button 
+                onClick={() => setCurrentPart(prev => Math.max(1, prev - 1))}
+                className="px-2.5 py-1 text-sm border rounded bg-white hover:bg-slate-100 font-bold"
+              >
+                ←
+              </button>
+              <button 
+                onClick={() => setCurrentPart(prev => Math.min(4, prev + 1))}
+                className="px-2.5 py-1 text-sm border rounded bg-white hover:bg-slate-100 font-bold"
+              >
+                →
+              </button>
+            </div>
+          </footer>
+
+          {/* Result Modal */}
+          {isSubmitted && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <h2 className="text-2xl font-bold text-[#0f5132] border-b pb-2 mb-4">KẾT QUẢ BÀI THI IELTS LISTENING</h2>
+                
+                {isSubmitting && (
+                  <div className="p-3 bg-blue-50 text-blue-700 rounded mb-4 text-center font-medium animate-pulse">
+                    🔄 Đang gửi điểm lên hệ thống...
+                  </div>
+                )}
+                {submitStatus && (
+                  <div className="p-3 bg-green-50 text-green-800 rounded mb-4 text-center font-bold">
+                    {submitStatus}
+                  </div>
+                )}
+
+                <div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-lg text-center mb-6 border">
+                    <div>
+                      <span className="block text-xs text-slate-500">MÃ THÍ SINH</span>
+                      <span className="font-bold text-base text-slate-800">{candidate.code}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-slate-500">HỌ TÊN</span>
+                      <span className="font-bold text-base text-slate-800">{candidate.name}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-slate-500">SỐ CÂU ĐÚNG</span>
+                      <span className="font-bold text-xl text-green-600">{correctCount} / 40</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-slate-500">BAND SCORE</span>
+                      <span className="font-black text-2xl text-[#0f5132]">{calculateIELTSListeningBand(correctCount)}</span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-bold text-base text-slate-800 mb-3">Chi Tiết Đáp Án:</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs max-h-[280px] overflow-y-auto pr-1">
+                    {Array.from({ length: 40 }, (_, idx) => {
+                      const qKey = `q${idx + 1}`;
+                      const res = results[qKey] || { isCorrect: false, answerGiven: '', standard: '' };
+                      return (
+                        <div 
+                          key={qKey} 
+                          className={`p-2 border rounded ${res.isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}
+                        >
+                          <span className="font-bold">Câu {idx + 1}:</span> {res.answerGiven || '(chưa làm)'}
+                          <br/>
+                          <span className="text-slate-600">Đáp án: <strong>{res.standard}</strong></span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="mt-6 w-full bg-[#0f5132] text-white py-2.5 rounded font-bold hover:bg-[#0b3d26] transition-colors"
+                >
+                  Đóng & Làm Lại Bài Thi
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
