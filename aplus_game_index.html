@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplus English Adventure - PHÒNG HỌC ẢO APLUS</title>
+    <link rel="icon" type="image/png" href="../../images/aplus.png">
+    <link rel="shortcut icon" type="image/png" href="../../images/aplus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; font-family: 'Nunito', sans-serif; background-color: #0d1117; color: #ffffff; overflow-x: hidden; }
+        .bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; }
+        .bg-video { width: 100%; height: 100%; object-fit: cover; filter: blur(3px) brightness(1.0) opacity(1.0); transform: scale(1.05); transition: transform 0.1s ease-out; }
+        .bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(16, 37, 28, 0.4) 0%, rgba(5, 12, 9, 0.85) 100%); pointer-events: none; }
+        .scene-container { position: relative; width: 100%; min-height: 100vh; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+        
+        header { width: 100%; padding: 25px 50px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent); }
+        .logo-container { display: flex; align-items: center; gap: 15px; text-decoration: none; }
+        .logo-icon { width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; }
+        h1.header-title { font-family: 'Montserrat', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 1.5px; background: linear-gradient(90deg, #ffffff, #a7f3d0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .nav-links { display: flex; gap: 15px; }
+        .nav-btn { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 18px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
+        .nav-btn:hover, .nav-btn.active { background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #a7f3d0; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        
+        .main-content { width: 100%; max-width: 1200px; padding: 20px 30px 50px 30px; margin: auto 0; z-index: 5; }
+        
+        /* Hero Section */
+        .game-hero { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 24px; padding: 35px; margin-bottom: 30px; display: flex; gap: 30px; flex-wrap: wrap; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .hero-left { flex: 1; min-width: 300px; }
+        .hero-right { width: 320px; background: rgba(0, 0, 0, 0.3); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .game-badge { display: inline-block; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 12px; }
+        .game-title { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 800; color: #ffffff; margin-bottom: 10px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .game-tagline { font-size: 18px; color: #a7f3d0; font-weight: 600; margin-bottom: 20px; }
+        
+        /* Download Buttons */
+        .download-group { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 25px; }
+        .btn-dl { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 14px; text-decoration: none; font-weight: 700; font-size: 15px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .btn-exe { background: linear-gradient(135deg, #10b981, #047857); color: #ffffff; border: 1px solid #34d399; }
+        .btn-exe:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
+        .btn-apk { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #ffffff; border: 1px solid #60a5fa; }
+        .btn-apk:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+        .btn-ios { background: rgba(255, 255, 255, 0.08); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.15); cursor: not-allowed; }
+        
+        /* Info Table */
+        .info-list { display: flex; flex-direction: column; gap: 12px; font-size: 14px; }
+        .info-item { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px; }
+        .info-label { color: #94a3b8; font-weight: 600; }
+        .info-val { color: #ffffff; font-weight: 700; text-align: right; }
+        
+        /* Screenshot Gallery */
+        .section-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; margin: 35px 0 20px 0; display: flex; align-items: center; gap: 10px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .gallery-item { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 14px; overflow: hidden; transition: all 0.3s ease; text-align: center; }
+        .gallery-item:hover { transform: translateY(-5px); border-color: #10b981; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2); }
+        .gallery-item img { width: 100%; height: 140px; object-fit: cover; display: block; }
+        .gallery-caption { padding: 10px; font-size: 13px; font-weight: 700; color: #a7f3d0; background: rgba(0, 0, 0, 0.4); }
+        
+        /* Content Cards */
+        .content-card { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 18px; padding: 25px; margin-bottom: 25px; line-height: 1.6; color: #cbd5e1; }
+        .content-card h3 { color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 18px; margin-bottom: 12px; font-weight: 700; border-left: 4px solid #10b981; padding-left: 10px; }
+        .content-card p { margin-bottom: 12px; }
+        .feature-list, .editions-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 15px; }
+        .feature-list li, .editions-list li { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px 15px; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .feature-list li i, .editions-list li i { color: #10b981; font-size: 16px; }
+        
+        /* Language Divider */
+        .lang-divider { text-align: center; margin: 40px 0; position: relative; }
+        .lang-divider::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(255, 255, 255, 0.15); }
+        .lang-title { position: relative; display: inline-block; background: #0d1117; padding: 6px 20px; border-radius: 20px; font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        footer { padding: 20px; z-index: 10; text-align: center; font-size: 13px; color: rgba(255, 255, 255, 0.5); background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent); width: 100%; }
+        @media (max-width: 768px) { header { padding: 15px 20px; } h1.header-title { font-size: 18px; } .game-title { font-size: 26px; } .game-hero { padding: 20px; } .hero-right { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="bg-container">
+        <video class="bg-video" autoplay loop muted playsinline><source src="../../images/background.mp4" type="video/mp4"></video>
+        <div class="bg-overlay"></div>
+    </div>
+    <div class="scene-container">
+        <header>
+            <a href="../../index.html" class="logo-container">
+                <div class="logo-icon"><img src="../../images/aplus.png" alt="Aplus Logo" style="width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));"></div>
+                <h1 class="header-title">PHÒNG HỌC ẢO APLUS</h1>
+            </a>
+            <nav class="nav-links">
+                <a href="../../index.html" class="nav-btn"><i class="fa-solid fa-house"></i> Trang Chủ</a>
+                <a href="../../knowledge/knowledge_index.html" class="nav-btn"><i class="fa-solid fa-book-open"></i> Kiến Thức</a>
+                <a href="aplus_game_index.html" class="nav-btn active"><i class="fa-solid fa-gamepad"></i> Game Aplus</a>
+            </nav>
+        </header>
+
+        <div class="main-content">
+            <!-- Hero Section -->
+            <div class="game-hero">
+                <div class="hero-left">
+                    <span class="game-badge"><i class="fa-solid fa-gamepad"></i> GAME PHIÊU LƯU GIÁO DỤC</span>
+                    <h2 class="game-title">APLUS ENGLISH ADVENTURE</h2>
+                    <p class="game-tagline">Học mà chơi – Chơi mà học – Chinh phục thử thách cùng Aplus!</p>
+                    <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">
+                        Aplus English Adventure là trò chơi phiêu lưu giáo dục dành cho học sinh, giúp người chơi rèn luyện Tiếng Anh và củng cố kiến thức thông qua những thử thách hấp dẫn. Đồng hành cùng cậu bé Aplus vượt qua 10 màn chơi đầy màu sắc để giải cứu công chúa!
+                    </p>
+                    
+                    <div class="download-group">
+                        <a href="#" class="btn-dl btn-exe"><i class="fa-brands fa-windows fa-lg"></i> Bản Windows (.EXE)</a>
+                        <a href="#" class="btn-dl btn-apk"><i class="fa-brands fa-android fa-lg"></i> Bản Android (.APK)</a>
+                        <a href="#" class="btn-dl btn-ios"><i class="fa-brands fa-apple fa-lg"></i> Bản iOS (Đang cập nhật)</a>
+                    </div>
+                </div>
+
+                <div class="hero-right">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label"><i class="fa-solid fa-code-branch"></i> Phiên bản</span>
+                            <span class="info-val">Version 1.0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label"><i class="fa-solid fa-calendar-days"></i> Ngày phát hành</span>
+                            <span class="info-val">08/2026</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label"><i class="fa-solid fa-building"></i> Nhà sản xuất</span>
+                            <span class="info-val">Aplus</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label"><i class="fa-solid fa-code"></i> Tác giả</span>
+                            <span class="info-val">huycomf@gmail.com</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label"><i class="fa-solid fa-globe"></i> Website</span>
+                            <span class="info-val">aplusflc.com</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label"><i class="fa-solid fa-laptop-code"></i> Hỗ trợ OS</span>
+                            <span class="info-val">Windows 7/8/10, Android</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot Gallery -->
+            <div class="section-title"><i class="fa-solid fa-images" style="color: #10b981;"></i> Hình Ảnh Trong Game</div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="../../images/select.png" alt="Chọn Màn Chơi">
+                    <div class="gallery-caption">Select Level</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../../images/Tieng_Anh_10.png" alt="Tiếng Anh 10">
+                    <div class="gallery-caption">Tiếng Anh 10</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../../images/lv8.png" alt="Màn 8">
+                    <div class="gallery-caption">Level 8</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../../images/lv10.png" alt="Màn 10">
+                    <div class="gallery-caption">Level 10</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="../../images/boss.png" alt="Trận Đấu Boss">
+                    <div class="gallery-caption">Boss Battle</div>
+                </div>
+            </div>
+
+            <!-- Vietnamese Content -->
+            <div class="section-title"><i class="fa-solid fa-circle-info" style="color: #10b981;"></i> Chi Tiết Trò Chơi (Tiếng Việt)</div>
+            
+            <div class="content-card">
+                <h3>Giới thiệu chung</h3>
+                <p>Aplus English Adventure là trò chơi phiêu lưu giáo dục dành cho học sinh, giúp người chơi rèn luyện Tiếng Anh và củng cố kiến thức thông qua những thử thách hấp dẫn.</p>
+                <p>Trong game, người chơi sẽ đồng hành cùng cậu bé Aplus vượt qua 10 màn chơi đầy màu sắc. Mỗi màn là một hành trình mới với địa hình, chướng ngại vật, quái vật và các trận chiến boss độc đáo. Để tiếp tục cuộc phiêu lưu, người chơi cần vượt qua thử thách và trả lời chính xác các câu hỏi.</p>
+            </div>
+
+            <div class="content-card">
+                <h3>Các phần trong bộ game</h3>
+                <p>Bộ game Aplus English Adventure được phát triển với nhiều nội dung học tập khác nhau:</p>
+                <ul class="editions-list">
+                    <li><i class="fa-solid fa-book"></i> <strong>Vocabulary B1–B2:</strong> Củng cố và mở rộng vốn từ vựng trung cấp.</li>
+                    <li><i class="fa-solid fa-spell-check"></i> <strong>English Grammar:</strong> Ôn luyện các chủ điểm ngữ pháp quan trọng.</li>
+                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>Tiếng Anh 10 Global Success:</strong> Bám sát chương trình lớp 10.</li>
+                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>Tiếng Anh 11 Global Success:</strong> Luyện tập kiến thức lớp 11.</li>
+                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>Tiếng Anh 12 Global Success:</strong> Ôn tập củng cố kiến thức lớp 12.</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h3>Điểm nổi bật</h3>
+                <ul class="feature-list">
+                    <li><i class="fa-solid fa-check-circle"></i> Gồm 10 màn chơi với độ khó tăng dần.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Kết hợp phiêu lưu, vượt chướng ngại vật và trả lời câu hỏi.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Nội dung học tập dành cho nhiều trình độ và khối lớp.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Hệ thống câu hỏi từ vựng và ngữ pháp đa dạng.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Nhiều loại quái vật cùng các trận đấu boss độc đáo.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Thu thập ngôi sao, đồng xu và phần thưởng trên đường đi.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Âm thanh, hình ảnh và hiệu ứng sinh động.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Hệ thống điểm số và mạng sống tạo động lực chinh phục.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> Màn cuối đặc biệt với nhiệm vụ đánh bại boss và giải cứu công chúa.</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h3>Hai phiên bản cài đặt</h3>
+                <p><strong>1. Phiên bản Windows – EXE:</strong> Dành cho máy tính và laptop sử dụng hệ điều hành Windows (Windows 7, 8, 10). Người chơi chỉ cần tải về và mở phiên bản EXE để bắt đầu cuộc phiêu lưu.</p>
+                <p><strong>2. Phiên bản Android – APK:</strong> Dành cho điện thoại và máy tính bảng Android. File APK bao gồm đầy đủ hình ảnh, dữ liệu câu hỏi, nhạc nền và hiệu ứng âm thanh, giúp người chơi trải nghiệm game ngay cả khi không có kết nối Internet.</p>
+            </div>
+
+            <div class="content-card" style="border-left: 4px solid #3b82f6;">
+                <h3>Thông điệp của trò chơi</h3>
+                <p>Aplus English Adventure mong muốn tạo ra một môi trường học tập vui vẻ, nơi người học có thể vừa khám phá, vừa luyện tập kiến thức và phát triển khả năng tư duy qua từng thử thách.</p>
+                <p style="font-weight: 700; color: #a7f3d0;">Bạn đã sẵn sàng đồng hành cùng Aplus, vượt qua 10 thử thách và giải cứu công chúa chưa?</p>
+                <p style="font-size: 13px; color: #94a3b8; margin-top: 10px;">Game được xây dựng bởi Mr Huy – Aplus.</p>
+            </div>
+
+            <!-- Language Divider -->
+            <div class="lang-divider">
+                <span class="lang-title">ENGLISH VERSION</span>
+            </div>
+
+            <!-- English Content -->
+            <div class="content-card">
+                <h3>Overview</h3>
+                <p>Aplus English Adventure is an educational adventure game designed to help students practise English and strengthen their knowledge through engaging challenges.</p>
+                <p>Players join Aplus on an exciting journey through 10 colourful levels. Each level introduces new environments, platforms, obstacles, monsters, and unique boss battles. To continue the adventure, players must overcome challenges and answer the questions correctly.</p>
+            </div>
+
+            <div class="content-card">
+                <h3>Game Collection</h3>
+                <p>The Aplus English Adventure collection includes several learning editions:</p>
+                <ul class="editions-list">
+                    <li><i class="fa-solid fa-book"></i> <strong>Vocabulary B1–B2:</strong> Build and expand intermediate-level English vocabulary.</li>
+                    <li><i class="fa-solid fa-spell-check"></i> <strong>English Grammar:</strong> Review and practise essential English grammar topics.</li>
+                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>English 10 – Global Success:</strong> Aligned with Grade 10 curriculum.</li>
+                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>English 11 – Global Success:</strong> Practice based on Grade 11 curriculum.</li>
+                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>English 12 – Global Success:</strong> Reinforcement based on Grade 12 curriculum.</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h3>Key Features</h3>
+                <ul class="feature-list">
+                    <li><i class="fa-solid fa-star"></i> Ten levels with gradually increasing difficulty.</li>
+                    <li><i class="fa-solid fa-star"></i> A combination of platforming, exploration, and educational quizzes.</li>
+                    <li><i class="fa-solid fa-star"></i> Learning content for different proficiency levels and school grades.</li>
+                    <li><i class="fa-solid fa-star"></i> A varied vocabulary and grammar question system.</li>
+                    <li><i class="fa-solid fa-star"></i> Multiple monsters and unique boss battles.</li>
+                    <li><i class="fa-solid fa-star"></i> Stars, coins, and special rewards to collect.</li>
+                    <li><i class="fa-solid fa-star"></i> Colourful graphics, music, sound effects, and animations.</li>
+                    <li><i class="fa-solid fa-star"></i> Score and life systems that make every challenge more exciting.</li>
+                    <li><i class="fa-solid fa-star"></i> A special final level featuring a boss battle and a mission to rescue the princess.</li>
+                </ul>
+            </div>
+
+            <div class="content-card">
+                <h3>Installation Versions</h3>
+                <p><strong>1. Windows Version – EXE:</strong> Designed for Windows computers and laptops. Download and launch the EXE version to begin the adventure.</p>
+                <p><strong>2. Android Version – APK:</strong> Designed for Android phones and tablets. The APK includes all images, quiz data, background music, and sound effects, allowing players to enjoy the complete game offline.</p>
+            </div>
+
+            <div class="content-card" style="border-left: 4px solid #3b82f6;">
+                <h3>The Game's Message</h3>
+                <p>Aplus English Adventure aims to create an enjoyable learning environment where learners can explore, practise their knowledge, develop their thinking skills, and become more confident through play.</p>
+                <p style="font-weight: 700; color: #a7f3d0;">Are you ready to join Aplus, conquer all ten challenges, and rescue the princess?</p>
+                <p style="font-size: 13px; color: #94a3b8; margin-top: 10px;">Created by Mr Huy – Aplus.</p>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>&copy; 2026 PHÒNG HỌC ẢO APLUS. Designed by huycomf@gmail.com - aplusflc.com</p>
+        </footer>
+    </div>
+    <script>
+        const bgVideo = document.querySelector('.bg-video');
+        window.addEventListener('mousemove', (e) => {
+            const windowWidth = window.innerWidth, windowHeight = window.innerHeight;
+            const mouseX = (e.clientX - windowWidth / 2) / (windowWidth / 2);
+            const mouseY = (e.clientY - windowHeight / 2) / (windowHeight / 2);
+            if (bgVideo) { bgVideo.style.transform = `scale(1.05) translate(${-mouseX * 8}px, ${-mouseY * 8}px)`; }
+        });
+    </script>
+</body>
+</html>
