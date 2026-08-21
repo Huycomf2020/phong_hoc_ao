@@ -29,7 +29,7 @@
         .nav-btn { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 18px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; }
         .nav-btn:hover, .nav-btn.active { background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #a7f3d0; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         
-        /* BỔ SUNG & ĐIỀU CHỈNH KÍCH THƯỚC CẬU BÉ APLUS (Vừa vặn, không che chữ) */
+        /* CẬU BÉ APLUS */
         .game-character-wrapper {
             position: fixed;
             left: 25px;
@@ -66,7 +66,7 @@
         }
 
         .game-character-img {
-            width: 120px; /* Đã hạ tỷ lệ từ 170px xuống 120px để cân đối */
+            width: 120px;
             height: auto;
             max-height: 170px;
             object-fit: contain;
@@ -83,7 +83,7 @@
         .game-title { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 800; color: #ffffff; margin-bottom: 10px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .game-tagline { font-size: 18px; color: #a7f3d0; font-weight: 600; margin-bottom: 20px; }
         
-        /* Download Buttons */
+        /* Download Buttons Hero */
         .download-group { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 25px; }
         .btn-dl { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 14px; text-decoration: none; font-weight: 700; font-size: 15px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .btn-exe { background: linear-gradient(135deg, #10b981, #047857); color: #ffffff; border: 1px solid #34d399; }
@@ -110,9 +110,113 @@
         .content-card { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 18px; padding: 25px; margin-bottom: 25px; line-height: 1.6; color: #cbd5e1; }
         .content-card h3 { color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 18px; margin-bottom: 12px; font-weight: 700; border-left: 4px solid #10b981; padding-left: 10px; }
         .content-card p { margin-bottom: 12px; }
-        .feature-list, .editions-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 15px; }
-        .feature-list li, .editions-list li { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px 15px; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
-        .feature-list li i, .editions-list li i { color: #10b981; font-size: 16px; }
+        .feature-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 15px; }
+        .feature-list li { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px 15px; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .feature-list li i { color: #10b981; font-size: 16px; }
+
+        /* BỐ CỤC THẺ GAME COLLECTION MỚI */
+        .editions-list { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 16px; 
+            margin-top: 15px; 
+        }
+
+        .edition-card { 
+            background: rgba(255, 255, 255, 0.04); 
+            border: 1px solid rgba(16, 185, 129, 0.25); 
+            padding: 18px; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            gap: 14px; 
+            transition: all 0.3s ease; 
+        }
+
+        .edition-card:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .edition-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .edition-icon {
+            font-size: 20px;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .edition-info {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .edition-info strong {
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .edition-actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-card-dl {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-card-win {
+            background: rgba(16, 185, 129, 0.18);
+            color: #a7f3d0;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-card-win:hover {
+            background: #10b981;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-card-apk {
+            background: rgba(59, 130, 246, 0.18);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-card-apk:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
         
         /* Language Divider */
         .lang-divider { text-align: center; margin: 40px 0; position: relative; }
@@ -172,8 +276,8 @@
                     </p>
                     
                     <div class="download-group">
-                        <a href="https://drive.google.com/open?id=1Lg7EanXIaFDvjz1npRNLBQkvVvvtlU4H&usp=drive_fs" class="btn-dl btn-exe"><i class="fa-brands fa-windows fa-lg"></i> Bản Windows (.EXE)</a>
-                        <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" class="btn-dl btn-apk"><i class="fa-brands fa-android fa-lg"></i> Bản Android (.APK)</a>
+                        <a href="https://drive.google.com/open?id=1Lg7EanXIaFDvjz1npRNLBQkvVvvtlU4H&usp=drive_fs" target="_blank" class="btn-dl btn-exe"><i class="fa-brands fa-windows fa-lg"></i> Bản Windows (.EXE)</a>
+                        <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-dl btn-apk"><i class="fa-brands fa-android fa-lg"></i> Bản Android (.APK)</a>
                         <a href="#" class="btn-dl btn-ios"><i class="fa-brands fa-apple fa-lg"></i> Bản iOS (Đang cập nhật)</a>
                     </div>
                 </div>
@@ -245,13 +349,79 @@
             <div class="content-card">
                 <h3>Các phần trong bộ game</h3>
                 <p>Bộ game Aplus English Adventure được phát triển với nhiều nội dung học tập khác nhau:</p>
-                <ul class="editions-list">
-                    <li><i class="fa-solid fa-book"></i> <strong>Vocabulary B1–B2:</strong> Củng cố và mở rộng vốn từ vựng trung cấp.</li>
-                    <li><i class="fa-solid fa-spell-check"></i> <strong>English Grammar:</strong> Ôn luyện các chủ điểm ngữ pháp quan trọng.</li>
-                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>Tiếng Anh 10 Global Success:</strong> Bám sát chương trình lớp 10.</li>
-                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>Tiếng Anh 11 Global Success:</strong> Luyện tập kiến thức lớp 11.</li>
-                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>Tiếng Anh 12 Global Success:</strong> Ôn tập củng cố kiến thức lớp 12.</li>
-                </ul>
+                
+                <!-- DANH SÁCH THẺ CÓ TÍCH HỢP 2 NÚT NÂNG CẤP -->
+                <div class="editions-list">
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-book"></i></div>
+                            <div class="edition-info">
+                                <strong>Vocabulary B1–B2</strong>
+                                <span>Củng cố và mở rộng vốn từ vựng ở trình độ trung cấp.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-spell-check"></i></div>
+                            <div class="edition-info">
+                                <strong>English Grammar</strong>
+                                <span>Ôn luyện các chủ điểm ngữ pháp Tiếng Anh quan trọng.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="edition-info">
+                                <strong>Tiếng Anh 10 Global Success</strong>
+                                <span>Nội dung bám sát chương trình Tiếng Anh lớp 10.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="edition-info">
+                                <strong>Tiếng Anh 11 Global Success</strong>
+                                <span>Luyện tập kiến thức và kỹ năng theo chương trình lớp 11.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="edition-info">
+                                <strong>Tiếng Anh 12 Global Success</strong>
+                                <span>Ôn tập và củng cố kiến thức Tiếng Anh lớp 12.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="content-card">
@@ -297,13 +467,78 @@
             <div class="content-card">
                 <h3>Game Collection</h3>
                 <p>The Aplus English Adventure collection includes several learning editions:</p>
-                <ul class="editions-list">
-                    <li><i class="fa-solid fa-book"></i> <strong>Vocabulary B1–B2:</strong> Build and expand intermediate-level English vocabulary.</li>
-                    <li><i class="fa-solid fa-spell-check"></i> <strong>English Grammar:</strong> Review and practise essential English grammar topics.</li>
-                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>English 10 – Global Success:</strong> Aligned with Grade 10 curriculum.</li>
-                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>English 11 – Global Success:</strong> Practice based on Grade 11 curriculum.</li>
-                    <li><i class="fa-solid fa-graduation-cap"></i> <strong>English 12 – Global Success:</strong> Reinforcement based on Grade 12 curriculum.</li>
-                </ul>
+                
+                <div class="editions-list">
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-book"></i></div>
+                            <div class="edition-info">
+                                <strong>Vocabulary B1–B2</strong>
+                                <span>Build and expand intermediate-level English vocabulary.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-spell-check"></i></div>
+                            <div class="edition-info">
+                                <strong>English Grammar</strong>
+                                <span>Review and practise essential English grammar topics.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="edition-info">
+                                <strong>English 10 – Global Success</strong>
+                                <span>Content aligned with Grade 10 Global Success curriculum.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="edition-info">
+                                <strong>English 11 – Global Success</strong>
+                                <span>Knowledge and skills practice based on Grade 11 curriculum.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+
+                    <div class="edition-card">
+                        <div class="edition-header">
+                            <div class="edition-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="edition-info">
+                                <strong>English 12 – Global Success</strong>
+                                <span>English revision and reinforcement based on Grade 12 curriculum.</span>
+                            </div>
+                        </div>
+                        <div class="edition-actions">
+                            <a href="https://drive.google.com/open?id=1w7TX-3Nl1z3fw_qh73wxb-Uy89i2lccE&usp=drive_fs" target="_blank" class="btn-card-dl btn-card-win"><i class="fa-brands fa-windows"></i> Windows</a>
+                            <a href="https://drive.google.com/drive/folders/1RGDMcdlh4ArMQp_anbn-aC-lLp6Zre_i?usp=sharing" target="_blank" class="btn-card-dl btn-card-apk"><i class="fa-brands fa-android"></i> Android</a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="content-card">
