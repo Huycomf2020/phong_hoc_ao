@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLUS - IELTS Listening Test 77</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .questions-pane {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
+
+        .aplus-brand {
+            color: #0f5132;
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-top {
+            height: 56px;
+            background: #ffffff;
+            border-bottom: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .part-header-banner {
+            background-color: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .main-workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .questions-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2.5rem;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .ielts-highlight {
+            background-color: #70384a;
+            color: #ffffff;
+            padding: 0 2px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .idp-popover {
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            padding: 4px;
+        }
+
+        .idp-popover-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            color: #4b5563;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .idp-popover-btn:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        .test-footer {
+            height: 60px;
+            background: #ffffff;
+            border-top: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 20;
+        }
+
+        .nav-part-btn {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-part-btn.active {
+            color: #0f5132;
+            background-color: #e8f5e9;
+        }
+
+        .q-square {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #9ca3af;
+            border-radius: 3px;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            margin: 0 2px;
+        }
+
+        .q-square.answered {
+            background-color: #e5e7eb;
+            font-weight: 700;
+            border-color: #6b7280;
+        }
+
+        .q-square.active {
+            border: 2px solid #0f5132;
+            color: #0f5132;
+            font-weight: 700;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .idp-radio-label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .idp-radio-label:hover {
+            background-color: #f3f4f6;
+        }
+        .idp-radio-label input[type="radio"], .idp-radio-label input[type="checkbox"] {
+            margin-right: 12px;
+            accent-color: #0f5132;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <!-- React & Tailwind CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnsrsVB7gzj_nugHJX_t2KJgfefljLNSeruBZhpxDQ-rk000eoN5qOpNaAagTl3Z3nHg/exec";
+
+        const LISTENING_CORRECT_ANSWERS = {
+            'l_q1': ['secondary'],
+            'l_q2': ['flute'],
+            'l_q3': ['cinema'],
+            'l_q4': ['concert'],
+            'l_q5': ['market'],
+            'l_q6': ['bythwaite'],
+            'l_q7': ['actor'],
+            'l_q8': 'A',
+            'l_q9': 'B',
+            'l_q10': 'C',
+            'l_q11': 'E',
+            'l_q12': 'D',
+            'l_q13': 'G',
+            'l_q14': 'B',
+            'l_q15': 'C',
+            'l_q16': 'A',
+            'l_q17': 'F',
+            'l_q18': 'H',
+            'l_q19': 'C',
+            'l_q20': 'B',
+            'l_q21-22': ['B', 'D'],
+            'l_q23-24': ['A', 'B'],
+            'l_q25-26': ['B', 'E'],
+            'l_q27': 'C',
+            'l_q28': 'A',
+            'l_q29': 'A',
+            'l_q30': 'C',
+            'l_q31': ['dry'],
+            'l_q32': ['hard'],
+            'l_q33': ['sugars'],
+            'l_q34': ['roots'],
+            'l_q35': ['moist', 'wet', 'damp'],
+            'l_q36': ['variety'],
+            'l_q37': ['cattle'],
+            'l_q38': ['gardens'],
+            'l_q39': ['grasses'],
+            'l_q40': ['payment', 'money']
+        };
+
+        const calculateIELTSBand = (correct) => {
+            if (correct >= 39) return "9.0";
+            if (correct >= 37) return "8.5";
+            if (correct >= 35) return "8.0";
+            if (correct >= 32) return "7.5";
+            if (correct >= 30) return "7.0";
+            if (correct >= 26) return "6.5";
+            if (correct >= 23) return "6.0";
+            if (correct >= 18) return "5.5";
+            if (correct >= 16) return "5.0";
+            if (correct >= 13) return "4.5";
+            if (correct >= 10) return "4.0";
+            if (correct >= 8)  return "3.5";
+            if (correct >= 6)  return "3.0";
+            if (correct >= 4)  return "2.5";
+            return "2.0";
+        };
+
+        const checkAnswer = (qId, value) => {
+            const correct = LISTENING_CORRECT_ANSWERS[qId];
+            if (!correct) return false;
+
+            if (Array.isArray(correct)) {
+                if (Array.isArray(value)) {
+                    const sortedCorrect = [...correct].sort();
+                    const sortedValue = [...value].sort();
+                    return sortedCorrect.length === sortedValue.length && sortedCorrect.every((val, index) => val === sortedValue[index]);
+                }
+                const cleanUser = String(value || '').trim().toLowerCase();
+                return correct.some(ans => ans.toLowerCase() === cleanUser);
+            }
+
+            return String(value || '').trim().toLowerCase() === String(correct).trim().toLowerCase();
+        };
+
+        const SetupScreen = ({ onStartTest }) => {
+            const [code, setCode] = useState('');
+            const [name, setName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = () => {
+                if (!code.trim() || !name.trim()) {
+                    setError('Vui lòng nhập đầy đủ Mã thí sinh/Lớp và Họ tên.');
+                    return;
+                }
+                onStartTest(code, name);
+            };
+
+            return (
+                <div className="fixed inset-0 bg-gray-100 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-[#0f5132]">
+                        <h2 className="text-xl font-bold text-center text-[#0f5132] mb-1">APLUS LANGUAGE CENTER</h2>
+                        <h1 className="text-2xl font-black text-center text-gray-800 mb-4">IELTS LISTENING TEST 77</h1>
+                        <p className="text-xs text-red-600 mb-6 text-center font-medium">
+                            ⚠️ Khóa chuột phải & Chống Copy. Tự động khôi phục Fullscreen khi đóng cảnh báo.
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Mã số Thí sinh / Lớp</label>
+                                <input 
+                                    type="text" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: 12A1 / APLUS102"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700">Họ và Tên Thí sinh</label>
+                                <input 
+                                    type="text" 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-[#0f5132] focus:border-[#0f5132]" 
+                                    placeholder="Ví dụ: Phan Ngọc Huy"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && <p className="text-red-500 text-xs mt-3 text-center">{error}</p>}
+                        
+                        <button 
+                            onClick={handleSubmit}
+                            className="mt-6 w-full bg-[#0f5132] text-white py-3 rounded-md font-bold hover:bg-[#0b3d26] transition-colors shadow-md"
+                        >
+                            START TEST (FULLSCREEN)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [appState, setAppState] = useState('setup');
+            const [candidate, setCandidate] = useState({ code: '', name: '' });
+            const [answers, setAnswers] = useState({});
+            const [currentPart, setCurrentPart] = useState(1);
+            const [timeLeft, setTimeLeft] = useState(35 * 60);
+            const [warningCount, setWarningCount] = useState(0);
+            const [showWarningModal, setShowWarningModal] = useState(false);
+            const [isSubmitted, setIsSubmitted] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitStatus, setSubmitStatus] = useState('');
+            const [isNotesOpen, setIsNotesOpen] = useState(false);
+            const [notesText, setNotesText] = useState('');
+
+            const [popover, setPopover] = useState({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+
+            const audioRef = useRef(null);
+            const questionsPaneRef = useRef(null);
+
+            const reEnterFullscreen = () => {
+                const elem = document.documentElement;
+                if (!document.fullscreenElement && elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                }
+            };
+
+            const handleCloseWarningModal = () => {
+                setShowWarningModal(false);
+                reEnterFullscreen();
+            };
+
+            useEffect(() => {
+                const handleContextMenu = (e) => {
+                    e.preventDefault();
+                    return false;
+                };
+
+                const handleCopy = (e) => {
+                    e.preventDefault();
+                    return false;
+                };
+
+                document.addEventListener('contextmenu', handleContextMenu);
+                document.addEventListener('copy', handleCopy);
+
+                return () => {
+                    document.removeEventListener('contextmenu', handleContextMenu);
+                    document.removeEventListener('copy', handleCopy);
+                };
+            }, []);
+
+            const handleMouseUp = (e) => {
+                const target = e.target;
+
+                if (target.classList.contains('ielts-highlight')) {
+                    const rect = target.getBoundingClientRect();
+                    setPopover({
+                        visible: true,
+                        x: rect.left + window.scrollX + (rect.width / 2) - 40,
+                        y: rect.top + window.scrollY - 55,
+                        mode: 'delete',
+                        node: target,
+                        text: ''
+                    });
+                    return;
+                }
+
+                const selection = window.getSelection();
+                if (selection && selection.toString().trim().length > 0) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+
+                    setPopover({
+                        visible: true,
+                        x: rect.left + window.scrollX + (rect.width / 2) - 60,
+                        y: rect.top + window.scrollY - 55,
+                        mode: 'create',
+                        node: null,
+                        text: selection.toString().trim()
+                    });
+                } else if (!e.target.closest('.idp-popover')) {
+                    setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+                }
+            };
+
+            const applyHighlight = () => {
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = 'ielts-highlight';
+                span.appendChild(range.extractContents());
+                range.insertNode(span);
+
+                selection.removeAllRanges();
+                setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+            };
+
+            const removeHighlight = () => {
+                if (popover.node) {
+                    const parent = popover.node.parentNode;
+                    while (popover.node.firstChild) {
+                        parent.insertBefore(popover.node.firstChild, popover.node);
+                    }
+                    parent.removeChild(popover.node);
+                }
+                setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+            };
+
+            const handleCreateNote = () => {
+                setIsNotesOpen(true);
+                if (popover.text) {
+                    setNotesText(prev => prev ? `${prev}\n- ${popover.text}` : `- ${popover.text}`);
+                }
+                setPopover({ visible: false, x: 0, y: 0, mode: 'create', node: null, text: '' });
+            };
+
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        setWarningCount(prev => prev + 1);
+                        setShowWarningModal(true);
+                    }
+                };
+
+                const handleFullscreenChange = () => {
+                    if (!document.fullscreenElement && !isSubmitted) {
+                        setWarningCount(prev => prev + 1);
+                        setShowWarningModal(true);
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                };
+            }, [appState, isSubmitted]);
+
+            useEffect(() => {
+                if (appState !== 'testing' || isSubmitted) return;
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            handleSubmitTest();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [appState, isSubmitted]);
+
+            const handleStartTest = (code, name) => {
+                setCandidate({ code, name });
+                setAppState('testing');
+                reEnterFullscreen();
+
+                setTimeout(() => {
+                    if (audioRef.current) {
+                        audioRef.current.play().catch(e => console.log("Autoplay audio error:", e));
+                    }
+                }, 500);
+            };
+
+            const handleAnswerChange = (qId, val) => {
+                setAnswers(prev => ({ ...prev, [qId]: val }));
+            };
+
+            const handleCheckboxChange = (qId, val) => {
+                setAnswers(prev => {
+                    const current = prev[qId] || [];
+                    const updated = current.includes(val) 
+                        ? current.filter(item => item !== val) 
+                        : [...current, val];
+                    return { ...prev, [qId]: updated };
+                });
+            };
+
+            const countPartAnswered = (start, end) => {
+                let cnt = 0;
+                for (let i = start; i <= end; i++) {
+                    const qKey = `l_q${i}`;
+                    const val = answers[qKey];
+                    if (Array.isArray(val) && val.length > 0) cnt++;
+                    else if (val && String(val).trim() !== '') cnt++;
+                }
+                return cnt;
+            };
+
+            const handleSubmitTest = async () => {
+                setIsSubmitted(true);
+                setIsSubmitting(true);
+
+                let correctCount = 0;
+                Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+                    if (checkAnswer(qId, answers[qId])) {
+                        if (qId.includes('-')) {
+                            correctCount += 2;
+                        } else {
+                            correctCount += 1;
+                        }
+                    }
+                });
+
+                const bandScore = calculateIELTSBand(correctCount);
+
+                const payload = {
+                    sheetName: "IELTS TESTS",
+                    testType: "IELTS TESTS - LISTENING TEST 77",
+                    candidateCode: candidate.code,
+                    candidateName: candidate.name,
+                    correctCount: `${correctCount}/40`,
+                    score: bandScore,
+                    warningCount: warningCount
+                };
+
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    setSubmitStatus('✅ Đã gửi kết quả thành công lên Google Sheets!');
+                } catch (err) {
+                    setSubmitStatus('❌ Lỗi gửi dữ liệu. Vui lòng chụp lại màn hình kết quả!');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const formatMinutesLeft = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m}:${s < 10 ? '0' : ''}${s} minutes left`;
+            };
+
+            if (appState === 'setup') {
+                return <SetupScreen onStartTest={handleStartTest} />;
+            }
+
+            return (
+                <div className="h-screen flex flex-col" onMouseUp={handleMouseUp}>
+                    {popover.visible && (
+                        <div 
+                            className="idp-popover" 
+                            style={{ top: `${popover.y}px`, left: `${popover.x}px` }}
+                        >
+                            {popover.mode === 'create' ? (
+                                <>
+                                    <button onClick={handleCreateNote} className="idp-popover-btn border-r">
+                                        <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                                        Note
+                                    </button>
+                                    <button onClick={applyHighlight} className="idp-popover-btn">
+                                        <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        Highlight
+                                    </button>
+                                </>
+                            ) : (
+                                <button onClick={removeHighlight} className="idp-popover-btn text-red-600">
+                                    <svg className="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Delete Highlight
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {showWarningModal && (
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[999] backdrop-blur-sm">
+                            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border-t-8 border-red-600 text-center animate-bounce-once">
+                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">CẢNH BÁO VI PHẠM KỲ THI</h3>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Hệ thống phát hiện bạn vừa <strong>chuyển tab</strong> hoặc <strong>thoát Toàn màn hình (Fullscreen)</strong>.
+                                </p>
+                                <div className="bg-red-50 text-red-700 p-3 rounded-lg font-bold text-xs mb-6 border border-red-200">
+                                    Số lần vi phạm ghi nhận: {warningCount}
+                                </div>
+                                <button 
+                                    onClick={handleCloseWarningModal}
+                                    className="w-full bg-[#0f5132] hover:bg-[#0b3d26] text-white py-3 rounded-lg font-bold transition-all shadow-md flex items-center justify-center space-x-2"
+                                >
+                                    <span>Quay lại bài thi (Mở Fullscreen)</span>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-2V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <header className="header-top">
+                        <div className="flex items-center space-x-6">
+                            <div className="aplus-brand">APLUS</div>
+                            <div className="text-xs text-gray-700 font-medium">
+                                Test taker ID: <span className="font-bold text-gray-900">{candidate.code} ({candidate.name})</span>
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center space-x-1">
+                                <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
+                                <span>Audio is Playing</span>
+                            </div>
+                        </div>
+
+                        <div className="font-bold text-sm text-[#f97316]">
+                            {formatMinutesLeft(timeLeft)}
+                        </div>
+
+                        <div className="flex items-center space-x-5 text-gray-600">
+                            {warningCount > 0 && (
+                                <span className="text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-bold border border-red-300">
+                                    Cảnh báo: {warningCount}
+                                </span>
+                            )}
+                            <svg className="w-5 h-5 cursor-pointer hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0"></path></svg>
+                            <svg className="w-5 h-5 cursor-pointer hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            <svg className="w-5 h-5 cursor-pointer hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            <svg 
+                                className={`w-5 h-5 cursor-pointer ${isNotesOpen ? 'text-[#0f5132]' : 'hover:text-gray-900'}`} 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                                onClick={() => setIsNotesOpen(!isNotesOpen)}
+                                title="Notes"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </div>
+                    </header>
+
+                    <div className="part-header-banner">
+                        <span>Part {currentPart}</span>
+                        <span className="text-xs text-gray-500 ml-2">Listen and answer questions {currentPart === 1 ? '1–10' : currentPart === 2 ? '11–20' : currentPart === 3 ? '21–30' : '31–40'}.</span>
+                        <audio ref={audioRef} autoPlay preload="auto" className="hidden">
+                            <source src="https://github.com/Huycomf2020/phong_hoc_ao/releases/download/ielts_audio/IELTS.Listening.Test.77.mp3" type="audio/mpeg" />
+                        </audio>
+                    </div>
+
+                    <div className="main-workspace">
+                        <div className="questions-pane custom-scrollbar" ref={questionsPaneRef}>
+                            {/* PART 1 */}
+                            {currentPart === 1 && (
+                                <div className="max-w-4xl mx-auto space-y-6">
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 1–7</h3>
+                                        <p className="text-xs text-gray-600 mb-4">Complete the table below. Write <strong>ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
+                                        
+                                        <table className="w-full border-collapse border border-gray-300 bg-white text-sm">
+                                            <thead>
+                                                <tr className="bg-gray-100">
+                                                    <th className="border border-gray-300 p-2 text-left">Event</th>
+                                                    <th className="border border-gray-300 p-2 text-left">Cost</th>
+                                                    <th className="border border-gray-300 p-2 text-left">Venue</th>
+                                                    <th className="border border-gray-300 p-2 text-left">Notes</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td className="border border-gray-300 p-2 font-bold">Jazz band</td>
+                                                    <td className="border border-gray-300 p-2">tickets available for £15</td>
+                                                    <td className="border border-gray-300 p-2">the (1) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text" value={answers['l_q1'] || ''} onChange={e => handleAnswerChange('l_q1', e.target.value)} /> school</td>
+                                                    <td className="border border-gray-300 p-2">also appearing: Carolyn Hart (plays the (2) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text" value={answers['l_q2'] || ''} onChange={e => handleAnswerChange('l_q2', e.target.value)} />)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border border-gray-300 p-2 font-bold">Duck races</td>
+                                                    <td className="border border-gray-300 p-2">£1 per duck</td>
+                                                    <td className="border border-gray-300 p-2">start behind the (3) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text" value={answers['l_q3'] || ''} onChange={e => handleAnswerChange('l_q3', e.target.value)} /></td>
+                                                    <td className="border border-gray-300 p-2">
+                                                        prize: tickets for (4) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text mb-1" value={answers['l_q4'] || ''} onChange={e => handleAnswerChange('l_q4', e.target.value)} /> at the end of the festival<br/>
+                                                        ducks can be bought in (5) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text" value={answers['l_q5'] || ''} onChange={e => handleAnswerChange('l_q5', e.target.value)} /> held
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="border border-gray-300 p-2 font-bold">Flower show</td>
+                                                    <td className="border border-gray-300 p-2">free</td>
+                                                    <td className="border border-gray-300 p-2">(6) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text" value={answers['l_q6'] || ''} onChange={e => handleAnswerChange('l_q6', e.target.value)} /> Hall</td>
+                                                    <td className="border border-gray-300 p-2">prizes presented at 5 pm by a well known (7) <input type="text" className="border rounded px-2 py-1 w-32 border-gray-400 bg-white select-text" value={answers['l_q7'] || ''} onChange={e => handleAnswerChange('l_q7', e.target.value)} /></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 8–10</h3>
+                                        <p className="text-sm text-gray-700 mb-3">Who is each play suitable for? Write the correct letter <strong>A, B or C</strong> next to questions 8–10.</p>
+
+                                        <div className="grid grid-cols-1 gap-1 bg-white p-3 rounded border text-xs font-medium mb-4">
+                                            <div>A. mainly for children</div>
+                                            <div>B. mainly for adults</div>
+                                            <div>C. suitable for people of all ages</div>
+                                        </div>
+
+                                        <div className="space-y-2 text-sm">
+                                            {[
+                                                {num: 8, name: "The Mystery of Muldoon"},
+                                                {num: 9, name: "Fire and Flood"},
+                                                {num: 10, name: "Silly Sailor"}
+                                            ].map(item => (
+                                                <div key={item.num} className="flex items-center space-x-3">
+                                                    <span className="font-bold w-56">{item.num}. {item.name}:</span>
+                                                    <input 
+                                                        type="text" 
+                                                        className="border rounded px-2 py-1 w-16 text-center border-gray-400 bg-white select-text uppercase font-bold" 
+                                                        value={answers[`l_q${item.num}`] || ''} 
+                                                        onChange={e => handleAnswerChange(`l_q${item.num}`, e.target.value)} 
+                                                        placeholder="A-C" 
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* PART 2 */}
+                            {currentPart === 2 && (
+                                <div className="max-w-4xl mx-auto space-y-6">
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 11–16</h3>
+                                        <p className="text-sm text-gray-700 mb-3">What does the speaker say about each of the following collections? Choose <strong>SIX</strong> answers from the box and write the correct letter <strong>A–G</strong> next to questions 11–16.</p>
+
+                                        <div className="grid grid-cols-1 gap-1 bg-white p-3 rounded border text-xs font-medium mb-4">
+                                            <div>A. was given by one person</div>
+                                            <div>B. was recently publicized in the media</div>
+                                            <div>C. includes some items given by members of the public</div>
+                                            <div>D. includes some items given by the artists</div>
+                                            <div>E. includes the most popular exhibits in the museum</div>
+                                            <div>F. is the largest of its kind in the country</div>
+                                            <div>G. has had some of its contents relocated</div>
+                                        </div>
+
+                                        <div className="space-y-2 text-sm">
+                                            {[
+                                                {num: 11, name: "20th- and 21st-century paintings"},
+                                                {num: 12, name: "19th-century paintings"},
+                                                {num: 13, name: "Sculptures"},
+                                                {num: 14, name: "'Around the world' exhibition"},
+                                                {num: 15, name: "Coins"},
+                                                {num: 16, name: "Porcelain and glass"}
+                                            ].map(item => (
+                                                <div key={item.num} className="flex items-center space-x-3">
+                                                    <span className="font-bold w-64">{item.num}. {item.name}:</span>
+                                                    <input 
+                                                        type="text" 
+                                                        className="border rounded px-2 py-1 w-16 text-center border-gray-400 bg-white select-text uppercase font-bold" 
+                                                        value={answers[`l_q${item.num}`] || ''} 
+                                                        onChange={e => handleAnswerChange(`l_q${item.num}`, e.target.value)} 
+                                                        placeholder="A-G" 
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 17–20</h3>
+                                        <p className="text-xs text-gray-600 mb-4">Label the plan below. Write the correct letter <strong>A–H</strong> next to questions 17–20.</p>
+
+                                        <div className="my-4 text-center border p-2 bg-white rounded">
+                                            <svg className="w-full max-w-lg mx-auto border" viewBox="0 0 600 320" style={{ background: '#fff' }}>
+                                                <rect x="10" y="10" width="580" height="300" fill="none" stroke="#000" strokeWidth="2" />
+                                                
+                                                {/* Left Rooms */}
+                                                <rect x="10" y="10" width="100" height="70" fill="#f3f4f6" stroke="#000" />
+                                                <text x="60" y="50" textAnchor="middle" fontSize="16" fontWeight="bold">C</text>
+
+                                                <rect x="10" y="80" width="100" height="40" fill="#f3f4f6" stroke="#000" />
+                                                <text x="60" y="105" textAnchor="middle" fontSize="16" fontWeight="bold">B</text>
+
+                                                <rect x="10" y="120" width="100" height="50" fill="#f3f4f6" stroke="#000" />
+                                                <text x="60" y="150" textAnchor="middle" fontSize="16" fontWeight="bold">A</text>
+
+                                                <rect x="10" y="170" width="100" height="60" fill="#e5e7eb" stroke="#000" />
+                                                <text x="60" y="205" textAnchor="middle" fontSize="12" fontWeight="bold">toilets</text>
+
+                                                {/* Middle Column Top */}
+                                                <rect x="130" y="10" width="60" height="70" fill="#f3f4f6" stroke="#000" />
+                                                <text x="160" y="50" textAnchor="middle" fontSize="16" fontWeight="bold">D</text>
+
+                                                <rect x="200" y="10" width="120" height="110" fill="#f3f4f6" stroke="#000" />
+                                                <text x="260" y="70" textAnchor="middle" fontSize="16" fontWeight="bold">E</text>
+
+                                                {/* Sitting Area & Stairs */}
+                                                <text x="140" y="150" textAnchor="middle" fontSize="12" fontWeight="bold">sitting</text>
+                                                <text x="140" y="165" textAnchor="middle" fontSize="12" fontWeight="bold">area</text>
+
+                                                <rect x="150" y="250" width="60" height="30" fill="#e5e7eb" stroke="#000" />
+                                                <text x="180" y="270" textAnchor="middle" fontSize="11">stairs</text>
+
+                                                {/* Right Side Rooms */}
+                                                <rect x="330" y="10" width="120" height="150" fill="#f3f4f6" stroke="#000" />
+                                                <text x="390" y="85" textAnchor="middle" fontSize="16" fontWeight="bold">F</text>
+
+                                                <rect x="450" y="10" width="140" height="150" fill="#f3f4f6" stroke="#000" />
+                                                <text x="520" y="85" textAnchor="middle" fontSize="16" fontWeight="bold">G</text>
+
+                                                <rect x="220" y="160" width="140" height="150" fill="#f3f4f6" stroke="#000" />
+                                                <text x="290" y="240" textAnchor="middle" fontSize="16" fontWeight="bold">H</text>
+
+                                                <text x="290" y="325" textAnchor="middle" fontSize="12" fontWeight="bold">Basement of museum</text>
+                                            </svg>
+                                        </div>
+
+                                        <div className="space-y-2 text-sm max-w-md mx-auto">
+                                            {[
+                                                {num: 17, name: "restaurant"},
+                                                {num: 18, name: "café"},
+                                                {num: 19, name: "baby-changing facilities"},
+                                                {num: 20, name: "cloakroom"}
+                                            ].map(item => (
+                                                <div key={item.num} className="flex items-center justify-between border-b pb-1">
+                                                    <span className="font-bold text-gray-800">{item.num}. {item.name}:</span>
+                                                    <input 
+                                                        type="text" 
+                                                        className="border rounded px-2 py-1 w-20 text-center border-gray-400 bg-white select-text uppercase font-bold" 
+                                                        value={answers[`l_q${item.num}`] || ''} 
+                                                        onChange={e => handleAnswerChange(`l_q${item.num}`, e.target.value)} 
+                                                        placeholder="A-H" 
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* PART 3 */}
+                            {currentPart === 3 && (
+                                <div className="max-w-4xl mx-auto space-y-6">
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 21 and 22</h3>
+                                        <p className="text-sm text-gray-700 mb-3">Which <strong>TWO</strong> characteristics were shared by the subjects of Joanna's psychology study? Choose TWO letters <strong>A–E</strong>.</p>
+
+                                        <div className="space-y-1 text-sm">
+                                            {[
+                                                {val: "A", text: "They had all won prizes for their music"},
+                                                {val: "B", text: "They had all made music recordings"},
+                                                {val: "C", text: "They were all under 27 years old"},
+                                                {val: "D", text: "They had all toured internationally"},
+                                                {val: "E", text: "They all played a string instrument"}
+                                            ].map(opt => (
+                                                <label key={opt.val} className="idp-radio-label">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={(answers['l_q21-22'] || []).includes(opt.val)} 
+                                                        onChange={() => handleCheckboxChange('l_q21-22', opt.val)} 
+                                                    />
+                                                    {opt.val}. {opt.text}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 23 and 24</h3>
+                                        <p className="text-sm text-gray-700 mb-3">Which <strong>TWO</strong> points does Joanna make about her use of telephone interviews? Choose TWO letters <strong>A–E</strong>.</p>
+
+                                        <div className="space-y-1 text-sm">
+                                            {[
+                                                {val: "A", text: "It meant rich data could be collected"},
+                                                {val: "B", text: "It allowed the involvement of top performers"},
+                                                {val: "C", text: "It led to a stressful atmosphere at times"},
+                                                {val: "D", text: "It meant interview times had to be limited"},
+                                                {val: "E", text: "It caused some technical problems"}
+                                            ].map(opt => (
+                                                <label key={opt.val} className="idp-radio-label">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={(answers['l_q23-24'] || []).includes(opt.val)} 
+                                                        onChange={() => handleCheckboxChange('l_q23-24', opt.val)} 
+                                                    />
+                                                    {opt.val}. {opt.text}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 25 and 26</h3>
+                                        <p className="text-sm text-gray-700 mb-3">Which <strong>TWO</strong> topics did Joanna originally intend to investigate in her research? Choose TWO letters <strong>A–E</strong>.</p>
+
+                                        <div className="space-y-1 text-sm">
+                                            {[
+                                                {val: "A", text: "regulations concerning concert dress"},
+                                                {val: "B", text: "audience reactions to the dress of performers"},
+                                                {val: "C", text: "changes in performer attitudes to concert dress"},
+                                                {val: "D", text: "how choice of dress relates to performer roles"},
+                                                {val: "E", text: "links between musical instrument and dress choice"}
+                                            ].map(opt => (
+                                                <label key={opt.val} className="idp-radio-label">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={(answers['l_q25-26'] || []).includes(opt.val)} 
+                                                        onChange={() => handleCheckboxChange('l_q25-26', opt.val)} 
+                                                    />
+                                                    {opt.val}. {opt.text}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 27–30</h3>
+                                        <p className="text-xs text-gray-600 mb-4">Choose the correct letter <strong>A, B or C</strong>.</p>
+
+                                        <div className="space-y-4 text-sm">
+                                            {[
+                                                { id: 'l_q27', q: '27. Joanna concentrated on women performers because', opts: ['A. women are more influenced by fashion', 'B. women\'s dress has led to more controversy', 'C. women\'s code of dress is less strict than men\'s'] },
+                                                { id: 'l_q28', q: '28. Mike Frost\'s article suggests that in popular music, women\'s dress is affected by', opts: ['A. their wish to be taken seriously', 'B. their tendency to copy each other', 'C. their reaction to the masculine nature of the music'] },
+                                                { id: 'l_q29', q: '29. What did Joanna\'s subjects say about the audience at a performance?', opts: ['A. The musicians\' choice of clothing is linked to respect for the audience', 'B. The clothing should not distract the audience from the music', 'C. The audience should make the effort to dress appropriately'] },
+                                                { id: 'l_q30', q: '30. According to the speakers, musicians could learn from sports scientists about', opts: ['A. the importance of clothing for physical freedom', 'B. the part played by clothing in improving performance', 'C. the way clothing may protect against physical injury'] }
+                                            ].map(item => (
+                                                <div key={item.id} className="p-3 bg-white rounded border">
+                                                    <p className="font-bold text-gray-800 mb-2">{item.q}</p>
+                                                    <div className="space-y-1">
+                                                        {item.opts.map((opt, i) => {
+                                                            const val = String.fromCharCode(65 + i);
+                                                            return (
+                                                                <label key={val} className="idp-radio-label">
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name={item.id} 
+                                                                        checked={answers[item.id] === val} 
+                                                                        onChange={() => handleAnswerChange(item.id, val)} 
+                                                                    />
+                                                                    {opt}
+                                                                </label>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* PART 4 */}
+                            {currentPart === 4 && (
+                                <div className="max-w-4xl mx-auto space-y-6">
+                                    <div className="border p-4 rounded-lg bg-gray-50">
+                                        <h3 className="font-bold text-lg text-gray-900 mb-1">Questions 31–40</h3>
+                                        <p className="text-xs text-gray-600 mb-4">Complete the notes below. Write <strong>ONE WORD ONLY</strong> for each answer.</p>
+
+                                        <div className="bg-white p-5 rounded border text-sm space-y-4">
+                                            <h4 className="font-bold text-base border-b pb-2 text-gray-800 text-center">The use of soil to reduce carbon dioxide (CO2) in the atmosphere</h4>
+                                            
+                                            <p className="font-bold text-gray-800 border-b pb-1 pt-2">Rattan Lal:</p>
+                                            <p>• Claims that 13% of CO2 in the atmosphere could be absorbed by agricultural soils</p>
+                                            <p>• Erosion is more likely in soil that is (31) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q31'] || ''} onChange={e => handleAnswerChange('l_q31', e.target.value)} /></p>
+                                            <p>• Lal found soil in Africa that was very (32) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q32'] || ''} onChange={e => handleAnswerChange('l_q32', e.target.value)} /></p>
+                                            <p>• It was suggested that carbon from soil was entering the atmosphere</p>
+
+                                            <p className="font-bold text-gray-800 border-b pb-1 pt-2">Soil and Carbon:</p>
+                                            <p>• Plants turn CO2 from the air into carbon based substance such as (33) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q33'] || ''} onChange={e => handleAnswerChange('l_q33', e.target.value)} /></p>
+                                            <p>• Some CO2 moves from the (34) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q34'] || ''} onChange={e => handleAnswerChange('l_q34', e.target.value)} /> of plants to microbes in soil</p>
+                                            <p>• Carbon was lost from the soil when agriculture was invented</p>
+
+                                            <p className="font-bold text-gray-800 border-b pb-1 pt-2">Regenerative agriculture:</p>
+                                            <p>• uses established practices to make sure soil remains fertile and (35) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q35'] || ''} onChange={e => handleAnswerChange('l_q35', e.target.value)} /> e.g. through year-round planting and increasing the (36) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q36'] || ''} onChange={e => handleAnswerChange('l_q36', e.target.value)} /> that are grown</p>
+
+                                            <p className="font-bold text-gray-800 border-b pb-1 pt-2">California study:</p>
+                                            <p>• taking place on a big (37) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q37'] || ''} onChange={e => handleAnswerChange('l_q37', e.target.value)} /> farm</p>
+                                            <p>• uses compost made from waste from agriculture and (38) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q38'] || ''} onChange={e => handleAnswerChange('l_q38', e.target.value)} /></p>
+
+                                            <p className="font-bold text-gray-800 border-b pb-1 pt-2">Australia study:</p>
+                                            <p>• aims to increase soil carbon by using (39) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q39'] || ''} onChange={e => handleAnswerChange('l_q39', e.target.value)} /> of plants that are always green</p>
+
+                                            <p className="font-bold text-gray-800 border-b pb-1 pt-2">Future developments may include:</p>
+                                            <p>• reducing the amount of fertilizer used in farming</p>
+                                            <p>• giving farmers (40) <input type="text" className="border rounded px-2 py-1 w-36 border-gray-400 bg-white select-text mx-1" value={answers['l_q40'] || ''} onChange={e => handleAnswerChange('l_q40', e.target.value)} /> for carbon storage, as well as their produce</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Notes Side Panel */}
+                        {isNotesOpen && (
+                            <div className="w-80 bg-gray-100 border-l border-gray-300 flex flex-col z-30 shadow-lg">
+                                <div className="p-3 bg-white border-b flex justify-between items-center font-bold text-gray-800">
+                                    <span>Notes</span>
+                                    <button onClick={() => setIsNotesOpen(false)} className="text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+                                </div>
+                                <div className="p-3 flex-1 flex flex-col">
+                                    <p className="text-xs text-gray-500 mb-2">Your private notes will show here.</p>
+                                    <textarea 
+                                        className="w-full flex-1 p-3 border border-gray-300 rounded resize-none text-sm focus:outline-none focus:ring-1 focus:ring-[#0f5132] bg-yellow-50 select-text"
+                                        placeholder="Type your notes here..."
+                                        value={notesText}
+                                        onChange={(e) => setNotesText(e.target.value)}
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer Navigation Bar IDP Standard */}
+                    <footer className="test-footer">
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(1)}
+                                className={`nav-part-btn ${currentPart === 1 ? 'active' : ''}`}
+                            >
+                                Part 1 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(1, 10)} of 10</span>
+                            </button>
+
+                            <div className="hidden md:flex items-center">
+                                {[1,2,3,4,5,6,7,8,9,10].map(q => (
+                                    <span 
+                                        key={q} 
+                                        className={`q-square ${answers[`l_q${q}`] ? 'answered' : ''}`}
+                                        onClick={() => setCurrentPart(1)}
+                                    >
+                                        {q}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                            <button 
+                                onClick={() => setCurrentPart(2)}
+                                className={`nav-part-btn ${currentPart === 2 ? 'active' : ''}`}
+                            >
+                                Part 2 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(11, 20)} of 10</span>
+                            </button>
+
+                            <button 
+                                onClick={() => setCurrentPart(3)}
+                                className={`nav-part-btn ${currentPart === 3 ? 'active' : ''}`}
+                            >
+                                Part 3 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(21, 30)} of 10</span>
+                            </button>
+
+                            <button 
+                                onClick={() => setCurrentPart(4)}
+                                className={`nav-part-btn ${currentPart === 4 ? 'active' : ''}`}
+                            >
+                                Part 4 <span className="text-xs text-gray-500 ml-1">{countPartAnswered(31, 40)} of 10</span>
+                            </button>
+
+                            <div className="flex items-center space-x-1 ml-4">
+                                <button 
+                                    onClick={() => setCurrentPart(prev => Math.max(1, prev - 1))}
+                                    className="p-1.5 border rounded bg-white hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={currentPart === 1}
+                                >
+                                    ←
+                                </button>
+                                <button 
+                                    onClick={() => setCurrentPart(prev => Math.min(4, prev + 1))}
+                                    className="p-1.5 border rounded bg-white hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={currentPart === 4}
+                                >
+                                    →
+                                </button>
+                            </div>
+
+                            <button 
+                                onClick={handleSubmitTest}
+                                className="ml-4 bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs font-bold px-5 py-2.5 rounded shadow transition-colors flex items-center"
+                            >
+                                ✓ Submit
+                            </button>
+                        </div>
+                    </footer>
+
+                    {/* Report Modal sau khi Nộp bài */}
+                    {isSubmitted && (
+                        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                <h2 className="text-2xl font-bold text-[#0f5132] border-b pb-2 mb-4">KẾT QUẢ BÀI THI IELTS LISTENING TEST 77</h2>
+                                
+                                {isSubmitting && (
+                                    <div className="p-3 bg-blue-50 text-blue-700 rounded mb-4 text-center font-medium animate-pulse">
+                                        🔄 Đang ghi điểm lên Google Sheets...
+                                    </div>
+                                )}
+                                {submitStatus && (
+                                    <div className="p-3 bg-green-50 text-green-800 rounded mb-4 text-center font-bold">
+                                        {submitStatus}
+                                    </div>
+                                )}
+
+                                {(() => {
+                                    let correct = 0;
+                                    Object.keys(LISTENING_CORRECT_ANSWERS).forEach(qId => {
+                                        if (checkAnswer(qId, answers[qId])) {
+                                            if (qId.includes('-')) {
+                                                correct += 2;
+                                            } else {
+                                                correct += 1;
+                                            }
+                                        }
+                                    });
+                                    const band = calculateIELTSBand(correct);
+
+                                    return (
+                                        <div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg text-center mb-6">
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">MÃ THÍ SINH</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.code}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">HỌ TÊN</span>
+                                                    <span className="font-bold text-base text-gray-800">{candidate.name}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">SỐ CÂU ĐÚNG</span>
+                                                    <span className="font-bold text-xl text-green-600">{correct} / 40</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs text-gray-500">BAND SCORE</span>
+                                                    <span className="font-black text-2xl text-[#0f5132]">{band}</span>
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-bold text-base text-gray-800 mb-3">Bảng Đáp Án Chi Tiết:</h3>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                                {Object.keys(LISTENING_CORRECT_ANSWERS).map((qId) => {
+                                                    const isCorr = checkAnswer(qId, answers[qId]);
+                                                    const userVal = Array.isArray(answers[qId]) ? answers[qId].join(', ') : (answers[qId] || '-');
+                                                    const keyVal = Array.isArray(LISTENING_CORRECT_ANSWERS[qId]) ? LISTENING_CORRECT_ANSWERS[qId].join(' / ') : LISTENING_CORRECT_ANSWERS[qId];
+                                                    return (
+                                                        <div key={qId} className={`p-2 border rounded ${isCorr ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                                                            <span className="font-bold">{qId.replace('l_q', 'Câu ')}:</span> {userVal}
+                                                            <br/>
+                                                            <span className="text-gray-500">Đ.Án: {keyVal}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-6 w-full bg-gray-800 text-white py-2.5 rounded font-bold hover:bg-black"
+                                >
+                                    Đóng & Làm Bài Mới
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
